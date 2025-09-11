@@ -1,0 +1,60 @@
+{
+  "name": "sports-platform",
+  "version": "1.0.0",
+  "description": "Comprehensive sports management platform for clubs",
+  "scripts": {
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "npm run build --workspaces --if-present",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "concurrently \"npm run start:gateway\" \"npm run start:identity\" \"npm run start:sports\" \"npm run start:club\" \"npm run start:communication\"",
+    "start:dev": "concurrently \"npm run start:dev:gateway\" \"npm run start:dev:identity\" \"npm run start:dev:sports\" \"npm run start:dev:club\" \"npm run start:dev:communication\"",
+    "start:gateway": "cd apps/api-gateway && npm run start:prod",
+    "start:identity": "cd apps/identity-service && npm run start:prod",
+    "start:sports": "cd apps/sports-service && npm run start:prod",
+    "start:club": "cd apps/club-management && npm run start:prod",
+    "start:communication": "cd apps/communication && npm run start:prod",
+    "start:dev:gateway": "cd apps/api-gateway && npm run start:dev",
+    "start:dev:identity": "cd apps/identity-service && npm run start:dev",
+    "start:dev:sports": "cd apps/sports-service && npm run start:dev",
+    "start:dev:club": "cd apps/club-management && npm run start:dev",
+    "start:dev:communication": "cd apps/communication && npm run start:dev",
+    "frontend:start": "cd frontend && npm run start",
+    "frontend:build": "cd frontend && npm run build",
+    "db:setup": "cd libs/database && npx prisma migrate dev",
+    "db:studio": "cd libs/database && npx prisma studio",
+    "db:reset": "cd libs/database && npx prisma migrate reset",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "npm run test:e2e --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "install:all": "npm install && npm install --workspaces && cd frontend && npm install"
+  },
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/sports-platform.git"
+  },
+  "keywords": [
+    "sports",
+    "management",
+    "platform",
+    "nestjs",
+    "angular",
+    "microservices",
+    "swimming",
+    "clubs"
+  ],
+  "author": "Sports Platform Team",
+  "license": "MIT"
+}
