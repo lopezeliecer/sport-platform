@@ -14,14 +14,30 @@ datasource db {
 // ============================================================================
 
 enum UserRole {
+  CLUB_ADMIN
   COACH
-  ADMIN
   ATHLETE
+  MEDICAL_STAFF
   PARENT
-  MEDICAL
-  DIRECTOR
+  CLUB_DIRECTOR
 
   @@map("user_role")
+}
+
+enum AuthProvider {
+  GOOGLE
+  EMAIL
+  APPLE
+
+  @@map("auth_provider")
+}
+
+enum AuthSessionStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+
+  @@map("auth_session_status")
 }
 
 enum Gender {
@@ -180,19 +196,24 @@ enum FileCategory {
 // ============================================================================
 
 model User {
-  id                String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  email             String    @unique
-  googleId          String?   @unique @map("google_id")
-  name              String
-  profilePicture    String?   @map("profile_picture")
-  phone             String?
-  emergencyContact  Json?     @map("emergency_contact")
-  preferredLanguage String    @default("en") @map("preferred_language")
-  timezone          String    @default("UTC")
-  isActive          Boolean   @default(true) @map("is_active")
-  lastLoginAt       DateTime? @map("last_login_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
+  id                     String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email                  String       @unique
+  googleId               String?      @unique @map("google_id")
+  firstName              String       @map("first_name")
+  lastName               String       @map("last_name")
+  profilePicture         String?      @map("profile_picture")
+  phone                  String?
+  emergencyContact       Json?        @map("emergency_contact")
+  preferredLanguage      String       @default("en") @map("preferred_language")
+  timezone               String       @default("UTC")
+  emailVerified          Boolean      @default(false) @map("email_verified")
+  authProvider           AuthProvider @default(GOOGLE) @map("auth_provider")
+  isActive               Boolean      @default(true) @map("is_active")
+  lastLoginAt            DateTime?    @map("last_login_at")
+  passwordResetToken     String?      @map("password_reset_token")
+  passwordResetExpiresAt DateTime?    @map("password_reset_expires_at")
+  createdAt              DateTime     @default(now()) @map("created_at")
+  updatedAt              DateTime     @updatedAt @map("updated_at")
 
   // Relations
   userClubRoles           UserClubRole[]
@@ -206,6 +227,7 @@ model User {
   approvedMedicalRecords  MedicalRecord[]      @relation("MedicalApprover")
   uploadedFiles           File[]               @relation("FileUploader")
   userSessions            UserSession[]
+  revokedSessions         UserSession[]        @relation("SessionRevokedBy")
   auditLogs               AuditLog[]
   paymentsAsUser          Payment[]            @relation("PaymentUser")
   processedPayments       Payment[]            @relation("PaymentProcessor")
@@ -252,6 +274,7 @@ model Club {
   medicalRecords      MedicalRecord[]
   files               File[]
   auditLogs           AuditLog[]
+  activeSessions      UserSession[]
 
   @@map("clubs")
 }
@@ -665,22 +688,32 @@ model File {
 // ============================================================================
 
 model UserSession {
-  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  userId         String   @map("user_id") @db.Uuid
-  clubId         String?  @map("club_id") @db.Uuid
-  tokenHash      String   @unique @map("token_hash")
-  deviceInfo     Json     @default("{}") @map("device_info")
-  ipAddress      String?  @map("ip_address") @db.Inet
-  userAgent      String?  @map("user_agent")
-  isActive       Boolean  @default(true) @map("is_active")
-  expiresAt      DateTime @map("expires_at")
-  lastActivityAt DateTime @default(now()) @map("last_activity_at")
-  createdAt      DateTime @default(now()) @map("created_at")
+  id                String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId            String            @map("user_id") @db.Uuid
+  currentClubId     String?           @map("current_club_id") @db.Uuid
+  sessionToken      String            @unique @map("session_token")
+  refreshToken      String            @unique @map("refresh_token")
+  deviceInfo        Json              @default("{}") @map("device_info")
+  ipAddress         String?           @map("ip_address") @db.Inet
+  userAgent         String?           @map("user_agent")
+  deviceFingerprint String?           @map("device_fingerprint")
+  status            AuthSessionStatus @default(ACTIVE)
+  expiresAt         DateTime          @map("expires_at")
+  refreshExpiresAt  DateTime          @map("refresh_expires_at")
+  lastActivityAt    DateTime          @default(now()) @map("last_activity_at")
+  revokedAt         DateTime?         @map("revoked_at")
+  revokedBy         String?           @map("revoked_by") @db.Uuid
+  createdAt         DateTime          @default(now()) @map("created_at")
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentClub   Club? @relation(fields: [currentClubId], references: [id], onDelete: SetNull)
+  revokedByUser User? @relation("SessionRevokedBy", fields: [revokedBy], references: [id])
 
-  @@index([userId, isActive])
+  @@index([userId, status])
+  @@index([sessionToken])
+  @@index([refreshToken])
+  @@index([expiresAt])
   @@map("user_sessions")
 }
 

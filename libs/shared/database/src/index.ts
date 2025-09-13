@@ -20,5 +20,6 @@ export {
 export * from "./utils/jsonb.util";
 export * from "./utils/pagination.util";
 
-// Re-export Prisma client
+// Re-export Prisma client and types
 export { PrismaClient } from "@prisma/client";
+export * from "../prisma/generated/client";

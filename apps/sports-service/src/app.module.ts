@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { DatabaseModule } from "../../../libs/shared/database/database.module";
+import { PrismaModule } from "./prisma/prisma.module";
 import { AthletesModule } from "./athletes/athletes.module";
 
 @Module({
@@ -9,7 +9,7 @@ import { AthletesModule } from "./athletes/athletes.module";
       isGlobal: true,
       envFilePath: ".env",
     }),
-    DatabaseModule,
+    PrismaModule,
     AthletesModule,
   ],
   controllers: [],

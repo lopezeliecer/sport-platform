@@ -22,15 +22,13 @@ import {
 } from "@nestjs/swagger";
 import { AthletesService } from "./athletes.service";
 
-// Importar usando rutas relativas para evitar problemas de módulos
+// Import local DTOs
 import {
   CreateAthleteDto,
   UpdateAthleteDto,
   AthleteResponseDto,
   AthleteSearchDto,
-  PaginatedResponseDto,
-  ApiResponseDto,
-} from "../../../../libs/shared/common/src/dto/base.dto";
+} from "./dto/athlete.dto";
 
 @ApiTags("Athletes")
 @Controller("athletes")
@@ -66,22 +64,14 @@ export class AthletesController {
     @Body() createAthleteDto: CreateAthleteDto,
     @Headers("x-club-id") clubId: string,
     @Headers("x-user-id") userId: string
-  ): Promise<ApiResponseDto<AthleteResponseDto>> {
+  ): Promise<AthleteResponseDto> {
     const athlete = await this.athletesService.create(
       createAthleteDto,
       clubId,
       userId
     );
 
-    return {
-      success: true,
-      data: athlete,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: `create-athlete-${Date.now()}`,
-        version: "1.0.0",
-      },
-    };
+    return athlete;
   }
 
   @Get()
@@ -125,22 +115,14 @@ export class AthletesController {
     @Query() searchDto: AthleteSearchDto,
     @Headers("x-club-id") clubId: string,
     @Headers("x-user-id") userId: string
-  ): Promise<ApiResponseDto<PaginatedResponseDto<AthleteResponseDto>>> {
+  ): Promise<any> {
     const result = await this.athletesService.findAll(
       searchDto,
       clubId,
       userId
     );
 
-    return {
-      success: true,
-      data: result,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: `get-athletes-${Date.now()}`,
-        version: "1.0.0",
-      },
-    };
+    return result;
   }
 
   @Get(":id")
@@ -167,18 +149,10 @@ export class AthletesController {
     @Param("id") id: string,
     @Headers("x-club-id") clubId: string,
     @Headers("x-user-id") userId: string
-  ): Promise<ApiResponseDto<AthleteResponseDto>> {
+  ): Promise<AthleteResponseDto> {
     const athlete = await this.athletesService.findOne(id, clubId, userId);
 
-    return {
-      success: true,
-      data: athlete,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: `get-athlete-${id}-${Date.now()}`,
-        version: "1.0.0",
-      },
-    };
+    return athlete;
   }
 
   @Patch(":id")
@@ -202,7 +176,7 @@ export class AthletesController {
     @Body() updateAthleteDto: UpdateAthleteDto,
     @Headers("x-club-id") clubId: string,
     @Headers("x-user-id") userId: string
-  ): Promise<ApiResponseDto<AthleteResponseDto>> {
+  ): Promise<AthleteResponseDto> {
     const athlete = await this.athletesService.update(
       id,
       updateAthleteDto,
@@ -210,15 +184,7 @@ export class AthletesController {
       userId
     );
 
-    return {
-      success: true,
-      data: athlete,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: `update-athlete-${id}-${Date.now()}`,
-        version: "1.0.0",
-      },
-    };
+    return athlete;
   }
 
   @Delete(":id")
@@ -266,21 +232,13 @@ export class AthletesController {
     @Param("id") id: string,
     @Headers("x-club-id") clubId: string,
     @Headers("x-user-id") userId: string
-  ): Promise<ApiResponseDto<any>> {
+  ): Promise<any> {
     const statistics = await this.athletesService.getStatistics(
       id,
       clubId,
       userId
     );
 
-    return {
-      success: true,
-      data: statistics,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: `get-statistics-${id}-${Date.now()}`,
-        version: "1.0.0",
-      },
-    };
+    return statistics;
   }
 }

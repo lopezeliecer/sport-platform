@@ -1,0 +1,19 @@
+{
+  "name": "@sports-platform/shared",
+  "version": "1.0.0",
+  "description": "Shared libraries for the sports platform",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.1",
+    "prisma": "^6.16.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2",
+    "@types/node": "^22.5.5"
+  }
+}
