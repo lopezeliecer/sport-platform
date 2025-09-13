@@ -1,0 +1,29 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": "./src",
+    "paths": {
+      "@sports-platform/shared/database": [
+        "../../libs/shared/database/src"
+      ],
+      "@sports-platform/shared/database/*": [
+        "../../libs/shared/database/src/*"
+      ],
+      "@sports-platform/shared/common": [
+        "../../libs/shared/common/src"
+      ],
+      "@sports-platform/shared/common/*": [
+        "../../libs/shared/common/src/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test"
+  ]
+}
