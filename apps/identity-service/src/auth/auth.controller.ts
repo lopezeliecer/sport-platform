@@ -40,6 +40,25 @@ import { Public } from "./decorators/auth.decorators";
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Get("google")
+  @Public()
+  @ApiOperation({
+    summary: "Initiate Google OAuth flow",
+    description: "Redirect to Google OAuth authorization page",
+  })
+  @ApiResponse({
+    status: 302,
+    description: "Redirect to Google OAuth",
+  })
+  googleAuthInit(@Res() res: Response) {
+    // For now, return a mock response indicating OAuth flow would start
+    return res.json({
+      message: "Google OAuth flow would be initiated here",
+      redirectUrl: "https://accounts.google.com/oauth/authorize?client_id=mock&redirect_uri=mock&scope=email+profile",
+      status: "mock_implementation"
+    });
+  }
+
   @Post("google")
   @Public()
   @HttpCode(HttpStatus.OK)
@@ -223,5 +242,56 @@ export class AuthController {
       status: "ok",
       timestamp: new Date().toISOString(),
     };
+  }
+
+  @Get("jwt-test")
+  @Public()
+  @ApiOperation({
+    summary: "JWT functionality test",
+    description: "Test JWT token generation and validation (mock)",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "JWT test completed successfully",
+  })
+  async jwtTest(): Promise<{
+    message: string;
+    tokenGenerated: boolean;
+    timestamp: string;
+    mockPayload: any;
+  }> {
+    // Test JWT generation with mock data
+    try {
+      const mockPayload = {
+        sub: "test-user-123",
+        email: "test@example.com",
+        sessionId: "test-session-456",
+        clubId: "test-club-789",
+        roles: [
+          {
+            clubId: "test-club-789",
+            role: "MEMBER",
+            permissions: ["view_profile"],
+          },
+        ],
+      };
+
+      // Generate a test token (without saving to DB)
+      const testToken = await this.authService.generateTestToken(mockPayload);
+
+      return {
+        message: "JWT foundation is working correctly",
+        tokenGenerated: !!testToken,
+        timestamp: new Date().toISOString(),
+        mockPayload,
+      };
+    } catch (error) {
+      return {
+        message: `JWT test failed: ${error.message}`,
+        tokenGenerated: false,
+        timestamp: new Date().toISOString(),
+        mockPayload: null,
+      };
+    }
   }
 }

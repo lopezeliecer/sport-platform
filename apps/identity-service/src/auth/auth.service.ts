@@ -5,6 +5,7 @@ import {
   ConflictException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "../prisma/prisma.service";
 import {
   AuthProvider,
@@ -35,7 +36,8 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private sessionsService: SessionsService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private jwtService: JwtService
   ) {}
 
   async googleAuth(
@@ -297,5 +299,27 @@ export class AuthService {
       ),
       expiresAt: role.expiresAt,
     }));
+  }
+
+  /**
+   * Generate a test JWT token for validation purposes
+   * This method is used for testing JWT functionality without creating actual sessions
+   */
+  async generateTestToken(payload: any): Promise<string> {
+    try {
+      // Create a simple test payload
+      const testPayload = {
+        sub: payload.sub,
+        email: payload.email,
+        sessionId: "test-session-123",
+        clubId: payload.clubId,
+        roles: payload.roles || [],
+        test: true, // Mark as test token
+      };
+
+      return this.jwtService.sign(testPayload);
+    } catch (error) {
+      throw new BadRequestException(`JWT test token generation failed: ${error.message}`);
+    }
   }
 }
