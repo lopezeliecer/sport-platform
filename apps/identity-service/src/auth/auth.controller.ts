@@ -11,6 +11,7 @@ import {
   Headers,
   Delete,
   Param,
+  Query,
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import {
@@ -51,12 +52,100 @@ export class AuthController {
     description: "Redirect to Google OAuth",
   })
   googleAuthInit(@Res() res: Response) {
-    // For now, return a mock response indicating OAuth flow would start
-    return res.json({
-      message: "Google OAuth flow would be initiated here",
-      redirectUrl: "https://accounts.google.com/oauth/authorize?client_id=mock&redirect_uri=mock&scope=email+profile",
-      status: "mock_implementation"
-    });
+    // Check if Google OAuth is properly configured
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const redirectUri =
+      process.env.GOOGLE_REDIRECT_URI ||
+      "http://localhost:3001/api/v1/auth/google/callback";
+
+    if (!clientId) {
+      return res.status(500).json({
+        error: "Google OAuth not configured",
+        message: "GOOGLE_CLIENT_ID environment variable is missing",
+      });
+    }
+
+    // Real Google OAuth URL construction
+    const googleAuthUrl = new URL(
+      "https://accounts.google.com/o/oauth2/v2/auth"
+    );
+    googleAuthUrl.searchParams.set("client_id", clientId);
+    googleAuthUrl.searchParams.set("redirect_uri", redirectUri);
+    googleAuthUrl.searchParams.set("response_type", "code");
+    googleAuthUrl.searchParams.set("scope", "email profile openid");
+    googleAuthUrl.searchParams.set("access_type", "offline");
+    googleAuthUrl.searchParams.set("prompt", "consent");
+
+    // For API testing, return the URL instead of redirecting
+    if (process.env.NODE_ENV === "development") {
+      return res.json({
+        message: "Google OAuth flow initiated",
+        authUrl: googleAuthUrl.toString(),
+        redirectUri,
+        status: "ready_for_oauth",
+      });
+    }
+
+    // In production, redirect to Google
+    return res.redirect(googleAuthUrl.toString());
+  }
+
+  @Get("google/callback")
+  @Public()
+  @ApiOperation({
+    summary: "Handle Google OAuth callback",
+    description: "Process the authorization code from Google OAuth",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "User authenticated successfully",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "OAuth error",
+  })
+  async googleCallback(
+    @Query("code") code: string,
+    @Query("error") error: string,
+    @Res() res: Response
+  ) {
+    if (error) {
+      return res.status(400).json({
+        error: "OAuth error",
+        message: error,
+        status: "oauth_failed",
+      });
+    }
+
+    if (!code) {
+      return res.status(400).json({
+        error: "Missing authorization code",
+        message: "No authorization code received from Google",
+        status: "oauth_failed",
+      });
+    }
+
+    try {
+      // Exchange code for access token and authenticate user
+      const authResult =
+        await this.authService.authenticateWithGoogleCode(code);
+
+      return res.json({
+        message: "Authentication successful",
+        user: authResult.user,
+        accessToken: authResult.accessToken,
+        refreshToken: authResult.refreshToken,
+        expiresIn: authResult.expiresIn,
+        status: "authenticated",
+      });
+    } catch (error) {
+      console.error("Google OAuth callback error:", error);
+      return res.status(500).json({
+        error: "Authentication failed",
+        message: "Failed to process Google OAuth callback",
+        status: "oauth_failed",
+      });
+    }
   }
 
   @Post("google")
@@ -293,5 +382,53 @@ export class AuthController {
         mockPayload: null,
       };
     }
+  }
+
+  @Get("config-check")
+  @Public()
+  @ApiOperation({
+    summary: "Check OAuth configuration",
+    description: "Check the current OAuth configuration status",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Configuration status retrieved successfully",
+  })
+  configCheck(): {
+    message: string;
+    googleOAuth: {
+      clientIdConfigured: boolean;
+      clientSecretConfigured: boolean;
+      redirectUri: string;
+      status: string;
+    };
+    environment: string;
+    timestamp: string;
+  } {
+    const hasGoogleClientId =
+      !!process.env.GOOGLE_CLIENT_ID &&
+      process.env.GOOGLE_CLIENT_ID !== "your-google-client-id";
+    const hasGoogleClientSecret =
+      !!process.env.GOOGLE_CLIENT_SECRET &&
+      process.env.GOOGLE_CLIENT_SECRET !== "your-google-client-secret";
+    const redirectUri =
+      process.env.GOOGLE_REDIRECT_URI ||
+      process.env.GOOGLE_CALLBACK_URL ||
+      "http://localhost:3001/api/v1/auth/google/callback";
+
+    return {
+      message: "OAuth configuration status",
+      googleOAuth: {
+        clientIdConfigured: hasGoogleClientId,
+        clientSecretConfigured: hasGoogleClientSecret,
+        redirectUri,
+        status:
+          hasGoogleClientId && hasGoogleClientSecret
+            ? "ready"
+            : "needs_configuration",
+      },
+      environment: process.env.NODE_ENV || "development",
+      timestamp: new Date().toISOString(),
+    };
   }
 }

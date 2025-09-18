@@ -319,7 +319,194 @@ export class AuthService {
 
       return this.jwtService.sign(testPayload);
     } catch (error) {
-      throw new BadRequestException(`JWT test token generation failed: ${error.message}`);
+      throw new BadRequestException(
+        `JWT test token generation failed: ${error.message}`
+      );
     }
+  }
+
+  /**
+   * Authenticate user with Google OAuth authorization code
+   */
+  async authenticateWithGoogleCode(code: string): Promise<AuthResponseDto> {
+    try {
+      // Exchange authorization code for access token
+      const tokenResponse = await this.exchangeGoogleCode(code);
+
+      // Get user info from Google
+      const googleUserInfo = await this.getGoogleUserInfo(
+        tokenResponse.access_token
+      );
+
+      // Find or create user and authenticate
+      const user = await this.findOrCreateGoogleUser(googleUserInfo);
+
+      // Create session
+      const sessionData = await this.sessionsService.createSession(
+        {
+          userId: user.id,
+          clubId: user.defaultClubId,
+          deviceInfo: { oauth: true, timestamp: new Date().toISOString() },
+          ipAddress: "127.0.0.1", // Should get real IP from request
+          userAgent: "OAuth-Flow",
+        },
+        user.userClubRoles
+      );
+
+      // Build response
+      return {
+        accessToken: sessionData.accessToken,
+        refreshToken: sessionData.refreshToken,
+        expiresIn: sessionData.expiresIn,
+        tokenType: "Bearer",
+        user: this.mapToUserInfo(user),
+        clubs: this.mapToClubMemberships(user.userClubRoles),
+        defaultClubId: user.defaultClubId,
+      };
+    } catch (error) {
+      console.error("Google OAuth authentication error:", error);
+      throw new BadRequestException("Failed to authenticate with Google OAuth");
+    }
+  }
+
+  /**
+   * Exchange Google OAuth authorization code for access token
+   */
+  private async exchangeGoogleCode(code: string) {
+    const clientId = this.configService.get<string>("GOOGLE_CLIENT_ID");
+    const clientSecret = this.configService.get<string>("GOOGLE_CLIENT_SECRET");
+    const redirectUri =
+      this.configService.get<string>("GOOGLE_REDIRECT_URI") ||
+      "http://localhost:3001/api/v1/auth/google/callback";
+
+    if (!clientId || !clientSecret) {
+      throw new Error("Google OAuth credentials not configured");
+    }
+
+    const tokenUrl = "https://oauth2.googleapis.com/token";
+    const params = new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code: code,
+      grant_type: "authorization_code",
+      redirect_uri: redirectUri,
+    });
+
+    const response = await fetch(tokenUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: params.toString(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(
+        `Token exchange failed: ${response.status} - ${errorData}`
+      );
+    }
+
+    return await response.json();
+  }
+
+  /**
+   * Get user information from Google using access token
+   */
+  private async getGoogleUserInfo(accessToken: string) {
+    const userInfoUrl = "https://www.googleapis.com/oauth2/v2/userinfo";
+
+    const response = await fetch(userInfoUrl, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get user info: ${response.status}`);
+    }
+
+    return await response.json();
+  }
+
+  /**
+   * Find existing user or create new one from Google user info
+   */
+  private async findOrCreateGoogleUser(googleUserInfo: any) {
+    const {
+      id: googleId,
+      email,
+      given_name,
+      family_name,
+      picture,
+      verified_email,
+    } = googleUserInfo;
+
+    // Check if user exists by Google ID or email
+    let user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ googleId: googleId }, { email: email }],
+      },
+      include: {
+        userClubRoles: {
+          where: { isActive: true },
+          include: {
+            club: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      // Create new user
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          googleId,
+          firstName: given_name || "Unknown",
+          lastName: family_name || "User",
+          profilePicture: picture,
+          emailVerified: verified_email || false,
+          authProvider: AuthProvider.GOOGLE,
+          lastLoginAt: new Date(),
+        },
+        include: {
+          userClubRoles: {
+            where: { isActive: true },
+            include: {
+              club: true,
+            },
+          },
+        },
+      });
+    } else {
+      // Update existing user
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          googleId: googleId, // Link Google ID if not already linked
+          firstName: given_name || user.firstName,
+          lastName: family_name || user.lastName,
+          profilePicture: picture || user.profilePicture,
+          emailVerified: verified_email || user.emailVerified,
+          lastLoginAt: new Date(),
+        },
+        include: {
+          userClubRoles: {
+            where: { isActive: true },
+            include: {
+              club: true,
+            },
+          },
+        },
+      });
+    }
+
+    // Add default club ID for easy access
+    const defaultClub = this.getDefaultClub(user.userClubRoles);
+    return {
+      ...user,
+      defaultClubId: defaultClub?.clubId || null,
+    };
   }
 }
