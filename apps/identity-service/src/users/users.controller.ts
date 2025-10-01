@@ -11,7 +11,7 @@ import { UsersService } from "./users.service";
 import {
   User,
   Prisma,
-} from "../../../../libs/shared/database/prisma/generated/client";
+} from "@sports-platform/shared/database/prisma/generated/client";
 
 @Controller("users")
 export class UsersController {

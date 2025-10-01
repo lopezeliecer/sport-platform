@@ -5,7 +5,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import {
   UserSession,
   AuthSessionStatus,
-} from "../../../../libs/shared/database/prisma/generated/client";
+} from "@sports-platform/shared/database/prisma/generated/client";
 import { randomBytes, createHash } from "crypto";
 
 export interface JwtPayload {

@@ -5,7 +5,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import {
   AuthSessionStatus,
   UserRole,
-} from "../../../../libs/shared/database/prisma/generated/client";
+} from "@sports-platform/shared/database/prisma/generated/client";
 import * as crypto from "crypto";
 import { JwtPayload } from "../auth/strategies/jwt.strategy";
 

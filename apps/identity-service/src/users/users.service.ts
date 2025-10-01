@@ -3,7 +3,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import {
   User,
   Prisma,
-} from "../../../../libs/shared/database/prisma/generated/client";
+} from "@sports-platform/shared/database/prisma/generated/client";
 
 @Injectable()
 export class UsersService {

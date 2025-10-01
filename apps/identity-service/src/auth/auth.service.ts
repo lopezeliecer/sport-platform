@@ -10,7 +10,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import {
   AuthProvider,
   UserRole,
-} from "../../../../libs/shared/database/prisma/generated/client";
+} from "@sports-platform/shared/database/prisma/generated/client";
 import { SessionsService } from "../sessions/sessions.service";
 import {
   GoogleAuthDto,
