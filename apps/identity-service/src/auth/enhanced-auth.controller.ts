@@ -10,58 +10,67 @@ import {
   Logger,
   Param,
   Delete,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { AuthService } from './auth.service';
-import { EnhancedSessionsService } from '../sessions/enhanced-sessions-v2.service';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RbacGuard } from './guards/rbac.guard';
-import { ClubContextMiddleware } from './middleware/club-context.middleware';
+} from "@nestjs/common";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from "@nestjs/swagger";
+import { AuthService } from "./auth.service";
+import { EnhancedSessionsService } from "../sessions/enhanced-sessions-v2.service";
+import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+import { RbacGuard } from "./guards/rbac.guard";
+import { ClubContextMiddleware } from "./middleware/club-context.middleware";
 import {
   CurrentUser,
   CurrentClubId,
   ClubContext,
-} from './middleware/club-context.middleware';
+} from "./middleware/club-context.middleware";
 import {
   RequireClubAdmin,
   RequireClubContext,
   CanManageAthletes,
-} from './decorators/permissions.decorator';
-import { GoogleAuthDto, AuthResponseDto } from './dto/auth.dto';
-import { JwtPayload } from './strategies/jwt.strategy';
+} from "./decorators/permissions.decorator";
+import { GoogleAuthDto, AuthResponseDto } from "./dto/auth.dto";
+import { JwtPayload } from "./strategies/jwt.strategy";
 
-@ApiTags('Authentication & Authorization')
-@Controller('auth')
+@ApiTags("Authentication & Authorization")
+@Controller("auth")
 export class EnhancedAuthController {
   private readonly logger = new Logger(EnhancedAuthController.name);
 
   constructor(
     private authService: AuthService,
-    private sessionsService: EnhancedSessionsService,
+    private sessionsService: EnhancedSessionsService
   ) {}
 
-  @Post('google')
-  @ApiOperation({ summary: 'Google OAuth authentication' })
-  @ApiResponse({ status: 200, description: 'Login successful', type: AuthResponseDto })
+  @Post("google")
+  @ApiOperation({ summary: "Google OAuth authentication" })
+  @ApiResponse({
+    status: 200,
+    description: "Login successful",
+    type: AuthResponseDto,
+  })
   @HttpCode(HttpStatus.OK)
   async googleAuth(
     @Body() googleAuthDto: GoogleAuthDto,
-    @Request() req: any,
+    @Request() req: any
   ): Promise<AuthResponseDto> {
-    this.logger.log('Google OAuth authentication initiated');
+    this.logger.log("Google OAuth authentication initiated");
 
     // Extraer información del dispositivo
     const deviceInfo = {
-      userAgent: req.headers['user-agent'],
+      userAgent: req.headers["user-agent"],
       ip: req.ip || req.connection.remoteAddress,
-      deviceType: this.detectDeviceType(req.headers['user-agent']),
+      deviceType: this.detectDeviceType(req.headers["user-agent"]),
     };
 
     // Usar el AuthService existente para crear/encontrar usuario
     const authResult = await this.authService.googleAuth(
       googleAuthDto,
       deviceInfo.ip,
-      deviceInfo.userAgent,
+      deviceInfo.userAgent
     );
 
     // Crear sesión enhanced con el nuevo sistema
@@ -71,7 +80,9 @@ export class EnhancedAuthController {
       clubId: authResult.defaultClubId,
     });
 
-    this.logger.log(`Usuario ${authResult.user.email} autenticado exitosamente`);
+    this.logger.log(
+      `Usuario ${authResult.user.email} autenticado exitosamente`
+    );
 
     return {
       accessToken: sessionResult.accessToken,
@@ -80,16 +91,16 @@ export class EnhancedAuthController {
       clubs: authResult.clubs,
       defaultClubId: authResult.defaultClubId,
       expiresIn: 900, // 15 minutos
-      tokenType: 'Bearer',
+      tokenType: "Bearer",
     };
   }
 
-  @Post('refresh')
-  @ApiOperation({ summary: 'Refresh access token' })
-  @ApiResponse({ status: 200, description: 'Token refreshed successfully' })
+  @Post("refresh")
+  @ApiOperation({ summary: "Refresh access token" })
+  @ApiResponse({ status: 200, description: "Token refreshed successfully" })
   @HttpCode(HttpStatus.OK)
   async refreshToken(
-    @Body('refreshToken') refreshToken: string,
+    @Body("refreshToken") refreshToken: string
   ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
     const tokens = await this.sessionsService.refreshTokens(refreshToken);
 
@@ -99,88 +110,96 @@ export class EnhancedAuthController {
     };
   }
 
-  @Post('switch-club/:clubId')
+  @Post("switch-club/:clubId")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Switch club context without re-authentication' })
-  @ApiResponse({ status: 200, description: 'Club context switched successfully' })
+  @ApiOperation({ summary: "Switch club context without re-authentication" })
+  @ApiResponse({
+    status: 200,
+    description: "Club context switched successfully",
+  })
   @HttpCode(HttpStatus.OK)
   async switchClub(
-    @Param('clubId') clubId: string,
-    @CurrentUser() user: JwtPayload,
+    @Param("clubId") clubId: string,
+    @CurrentUser() user: JwtPayload
   ): Promise<{ accessToken: string; clubId: string; message: string }> {
     const accessToken = await this.sessionsService.switchClubContext(
       user.sessionId,
-      clubId,
+      clubId
     );
 
     return {
       accessToken,
       clubId,
-      message: 'Contexto de club cambiado exitosamente',
+      message: "Contexto de club cambiado exitosamente",
     };
   }
 
-  @Get('sessions')
+  @Get("sessions")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get user active sessions (multi-device)' })
-  @ApiResponse({ status: 200, description: 'User sessions retrieved successfully' })
-  async getUserSessions(
-    @CurrentUser() user: JwtPayload,
-  ) {
+  @ApiOperation({ summary: "Get user active sessions (multi-device)" })
+  @ApiResponse({
+    status: 200,
+    description: "User sessions retrieved successfully",
+  })
+  async getUserSessions(@CurrentUser() user: JwtPayload) {
     const sessions = await this.sessionsService.getUserSessions(user.sub);
     return {
-      message: 'Sesiones activas',
+      message: "Sesiones activas",
       sessions,
       totalSessions: sessions.length,
     };
   }
 
-  @Delete('sessions/:sessionId')
+  @Delete("sessions/:sessionId")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Revoke specific session' })
-  @ApiResponse({ status: 200, description: 'Session revoked successfully' })
+  @ApiOperation({ summary: "Revoke specific session" })
+  @ApiResponse({ status: 200, description: "Session revoked successfully" })
   async revokeSession(
-    @Param('sessionId') sessionId: string,
-    @CurrentUser() user: JwtPayload,
+    @Param("sessionId") sessionId: string,
+    @CurrentUser() user: JwtPayload
   ) {
     await this.sessionsService.revokeSession(sessionId, user.sub);
     return {
-      message: 'Sesión revocada exitosamente',
+      message: "Sesión revocada exitosamente",
       revokedSessionId: sessionId,
     };
   }
 
-  @Delete('sessions/all')
+  @Delete("sessions/all")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Revoke all sessions except current' })
-  @ApiResponse({ status: 200, description: 'All sessions revoked successfully' })
-  async revokeAllSessions(
-    @CurrentUser() user: JwtPayload,
-  ) {
+  @ApiOperation({ summary: "Revoke all sessions except current" })
+  @ApiResponse({
+    status: 200,
+    description: "All sessions revoked successfully",
+  })
+  async revokeAllSessions(@CurrentUser() user: JwtPayload) {
     await this.sessionsService.revokeAllUserSessions(user.sub, user.sessionId);
     return {
-      message: 'Todas las sesiones revocadas exitosamente (excepto la actual)',
+      message: "Todas las sesiones revocadas exitosamente (excepto la actual)",
       currentSessionId: user.sessionId,
     };
   }
 
-  @Get('profile')
+  @Get("profile")
   @UseGuards(JwtAuthGuard, RbacGuard)
   @RequireClubContext()
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get user profile with club context' })
-  @ApiResponse({ status: 200, description: 'User profile retrieved successfully' })
+  @ApiOperation({ summary: "Get user profile with club context" })
+  @ApiResponse({
+    status: 200,
+    description: "User profile retrieved successfully",
+  })
   async getProfile(
     @CurrentUser() user: JwtPayload,
     @CurrentClubId() clubId: string,
-    @ClubContext() clubContext: any,
+    @ClubContext() clubContext: any
   ) {
     return {
-      message: 'Perfil de usuario',
+      message: "Perfil de usuario",
       user: {
         id: user.sub,
         email: user.email,
@@ -192,17 +211,18 @@ export class EnhancedAuthController {
     };
   }
 
-  @Get('permissions')
+  @Get("permissions")
   @UseGuards(JwtAuthGuard, RbacGuard)
   @RequireClubContext()
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get user permissions in current club' })
-  @ApiResponse({ status: 200, description: 'User permissions retrieved successfully' })
-  async getPermissions(
-    @ClubContext() clubContext: any,
-  ) {
+  @ApiOperation({ summary: "Get user permissions in current club" })
+  @ApiResponse({
+    status: 200,
+    description: "User permissions retrieved successfully",
+  })
+  async getPermissions(@ClubContext() clubContext: any) {
     return {
-      message: 'Permisos del usuario en el club actual',
+      message: "Permisos del usuario en el club actual",
       clubId: clubContext.clubId,
       roles: clubContext.userRoles,
       permissions: clubContext.permissions,
@@ -210,78 +230,85 @@ export class EnhancedAuthController {
   }
 
   // Ejemplo de endpoint que requiere permisos específicos
-  @Get('test/club-admin')
+  @Get("test/club-admin")
   @UseGuards(JwtAuthGuard, RbacGuard)
   @RequireClubAdmin()
   @RequireClubContext()
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Test endpoint - Club Admin only' })
-  @ApiResponse({ status: 200, description: 'Access granted for club admin' })
+  @ApiOperation({ summary: "Test endpoint - Club Admin only" })
+  @ApiResponse({ status: 200, description: "Access granted for club admin" })
   async testClubAdmin(
     @CurrentUser() user: JwtPayload,
-    @CurrentClubId() clubId: string,
+    @CurrentClubId() clubId: string
   ) {
     return {
-      message: 'Acceso autorizado para administrador de club',
+      message: "Acceso autorizado para administrador de club",
       userId: user.sub,
       clubId,
       timestamp: new Date(),
     };
   }
 
-  @Get('test/manage-athletes')
+  @Get("test/manage-athletes")
   @UseGuards(JwtAuthGuard, RbacGuard)
   @CanManageAthletes()
   @RequireClubContext()
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Test endpoint - Manage Athletes permission' })
-  @ApiResponse({ status: 200, description: 'Access granted for athlete management' })
+  @ApiOperation({ summary: "Test endpoint - Manage Athletes permission" })
+  @ApiResponse({
+    status: 200,
+    description: "Access granted for athlete management",
+  })
   async testManageAthletes(
     @CurrentUser() user: JwtPayload,
-    @ClubContext() clubContext: any,
+    @ClubContext() clubContext: any
   ) {
     return {
-      message: 'Acceso autorizado para gestión de atletas',
+      message: "Acceso autorizado para gestión de atletas",
       userId: user.sub,
       clubContext,
       timestamp: new Date(),
     };
   }
 
-  @Post('logout')
+  @Post("logout")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Logout from current session' })
-  @ApiResponse({ status: 200, description: 'Logout successful' })
+  @ApiOperation({ summary: "Logout from current session" })
+  @ApiResponse({ status: 200, description: "Logout successful" })
   @HttpCode(HttpStatus.OK)
-  async logout(
-    @CurrentUser() user: JwtPayload,
-  ) {
+  async logout(@CurrentUser() user: JwtPayload) {
     await this.sessionsService.revokeSession(user.sessionId, user.sub);
-    
+
     this.logger.log(`Usuario ${user.email} cerró sesión`);
-    
+
     return {
-      message: 'Sesión cerrada exitosamente',
+      message: "Sesión cerrada exitosamente",
       sessionId: user.sessionId,
     };
   }
 
   // Métodos privados
 
-  private detectDeviceType(userAgent?: string): 'mobile' | 'desktop' | 'tablet' {
-    if (!userAgent) return 'desktop';
+  private detectDeviceType(
+    userAgent?: string
+  ): "mobile" | "desktop" | "tablet" {
+    if (!userAgent) return "desktop";
 
     const ua = userAgent.toLowerCase();
-    
-    if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
-      return 'mobile';
+
+    if (
+      ua.includes("mobile") ||
+      ua.includes("android") ||
+      ua.includes("iphone")
+    ) {
+      return "mobile";
     }
-    
-    if (ua.includes('tablet') || ua.includes('ipad')) {
-      return 'tablet';
+
+    if (ua.includes("tablet") || ua.includes("ipad")) {
+      return "tablet";
     }
-    
-    return 'desktop';
+
+    return "desktop";
   }
 }

@@ -1,8 +1,8 @@
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { JwtPayload } from '../strategies/jwt.strategy';
+import { Injectable, NestMiddleware, Logger } from "@nestjs/common";
+import { Request, Response, NextFunction } from "express";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
+import { JwtPayload } from "../strategies/jwt.strategy";
 
 declare global {
   namespace Express {
@@ -24,19 +24,19 @@ export class ClubContextMiddleware implements NestMiddleware {
 
   constructor(
     private jwtService: JwtService,
-    private configService: ConfigService,
+    private configService: ConfigService
   ) {}
 
   use(req: Request, res: Response, next: NextFunction) {
     try {
       // Extraer token del header Authorization
       const token = this.extractTokenFromHeader(req);
-      
+
       if (token) {
         try {
           // Verificar y decodificar JWT
           const payload = this.jwtService.verify<JwtPayload>(token, {
-            secret: this.configService.get<string>('JWT_SECRET'),
+            secret: this.configService.get<string>("JWT_SECRET"),
           });
 
           // Agregar información del usuario al request
@@ -46,12 +46,12 @@ export class ClubContextMiddleware implements NestMiddleware {
           // Configurar contexto de club
           if (payload.clubId) {
             const clubRoles = payload.roles
-              .filter(role => role.clubId === payload.clubId)
-              .map(role => role.role);
+              .filter((role) => role.clubId === payload.clubId)
+              .map((role) => role.role);
 
             const clubPermissions = payload.roles
-              .filter(role => role.clubId === payload.clubId)
-              .flatMap(role => role.permissions);
+              .filter((role) => role.clubId === payload.clubId)
+              .flatMap((role) => role.permissions);
 
             req.clubContext = {
               clubId: payload.clubId,
@@ -60,7 +60,7 @@ export class ClubContextMiddleware implements NestMiddleware {
             };
 
             this.logger.debug(
-              `Contexto de club establecido: ${payload.clubId} para usuario ${payload.sub}`,
+              `Contexto de club establecido: ${payload.clubId} para usuario ${payload.sub}`
             );
           }
         } catch (error) {
@@ -77,33 +77,33 @@ export class ClubContextMiddleware implements NestMiddleware {
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+    const [type, token] = request.headers.authorization?.split(" ") ?? [];
+    return type === "Bearer" ? token : undefined;
   }
 }
 
 /**
  * Decorator para obtener el contexto de club desde el request
  */
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 
 export const ClubContext = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
     return request.clubContext;
-  },
+  }
 );
 
 export const CurrentUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
     return request.jwtUser;
-  },
+  }
 );
 
 export const CurrentClubId = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
     return request.clubId;
-  },
+  }
 );
