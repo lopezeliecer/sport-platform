@@ -56,6 +56,7 @@ export class AuthController {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const redirectUri =
       process.env.GOOGLE_REDIRECT_URI ||
+      process.env.GOOGLE_CALLBACK_URL ||
       "http://localhost:3001/api/v1/auth/google/callback";
 
     if (!clientId) {
