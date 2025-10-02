@@ -8,7 +8,7 @@ import { SharedAuthModule } from "../../../libs/shared/auth/src/shared-auth.modu
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ".env",
+      envFilePath: ["../../.env", ".env"],
     }),
     SharedAuthModule, // Módulo de autenticación compartido
     PrismaModule,

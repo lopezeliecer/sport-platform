@@ -18,12 +18,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
   }
 
   async validate(payload: JwtPayload): Promise<JwtPayload> {
-    if (!payload.sub || !payload.email) {
-      throw new UnauthorizedException("Token inválido");
+    if (!payload.sub) {
+      throw new UnauthorizedException("Token inválido - falta user ID");
     }
 
-    // Aquí se pueden agregar validaciones adicionales
-    // como verificar si la sesión sigue activa, etc.
+    // El email puede estar vacío durante el flujo OAuth inicial
+    // hasta que se complete el perfil del usuario
 
     return payload;
   }
