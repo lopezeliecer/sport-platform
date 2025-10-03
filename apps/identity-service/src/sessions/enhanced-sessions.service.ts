@@ -122,7 +122,7 @@ export class EnhancedSessionsService {
       .map((role) => ({
         clubId: role.clubId,
         role: role.role,
-        permissions: role.permissions || []
+        permissions: role.permissions || [],
       }));
 
     const jwtPayload: JwtPayload = {
@@ -225,7 +225,7 @@ export class EnhancedSessionsService {
         .map((role) => ({
           clubId: role.clubId,
           role: role.role,
-          permissions: role.permissions || []
+          permissions: role.permissions || [],
         }));
 
       const jwtPayload: JwtPayload = {
@@ -306,7 +306,7 @@ export class EnhancedSessionsService {
     const roles = session.user.userClubRoles.map((role) => ({
       clubId: role.clubId,
       role: role.role,
-      permissions: role.permissions || []
+      permissions: role.permissions || [],
     }));
 
     const jwtPayload: JwtPayload = {
