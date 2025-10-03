@@ -6,18 +6,8 @@ import {
   UserSession,
   AuthSessionStatus,
 } from "@sports-platform/shared/database/prisma/generated/client";
+import { JwtPayload } from "@sports-platform/shared/auth";
 import { randomBytes, createHash } from "crypto";
-
-export interface JwtPayload {
-  sub: string; // user id
-  email: string;
-  clubId?: string;
-  roles: string[];
-  permissions: string[];
-  sessionId: string;
-  iat?: number;
-  exp?: number;
-}
 
 export interface RefreshTokenPayload {
   sub: string; // user id
@@ -129,16 +119,17 @@ export class EnhancedSessionsService {
     // Preparar payload para JWT
     const roles = user.userClubRoles
       .filter((role) => !clubId || role.clubId === clubId)
-      .map((role) => role.role);
-
-    const permissions = this.extractPermissions(roles);
+      .map((role) => ({
+        clubId: role.clubId,
+        role: role.role,
+        permissions: role.permissions || []
+      }));
 
     const jwtPayload: JwtPayload = {
       sub: userId,
       email: user.email,
       clubId: clubId || user.userClubRoles[0]?.clubId,
       roles,
-      permissions,
       sessionId: session.id,
     };
 
@@ -231,16 +222,17 @@ export class EnhancedSessionsService {
           (role) =>
             !session.currentClubId || role.clubId === session.currentClubId
         )
-        .map((role) => role.role);
-
-      const permissions = this.extractPermissions(roles);
+        .map((role) => ({
+          clubId: role.clubId,
+          role: role.role,
+          permissions: role.permissions || []
+        }));
 
       const jwtPayload: JwtPayload = {
         sub: session.userId,
         email: session.user.email,
         clubId: session.currentClubId || session.user.userClubRoles[0]?.clubId,
         roles,
-        permissions,
         sessionId: session.id,
       };
 
@@ -311,15 +303,17 @@ export class EnhancedSessionsService {
     });
 
     // Generar nuevo JWT con contexto del nuevo club
-    const roles = session.user.userClubRoles.map((role) => role.role);
-    const permissions = this.extractPermissions(roles);
+    const roles = session.user.userClubRoles.map((role) => ({
+      clubId: role.clubId,
+      role: role.role,
+      permissions: role.permissions || []
+    }));
 
     const jwtPayload: JwtPayload = {
       sub: session.userId,
       email: session.user.email,
       clubId,
       roles,
-      permissions,
       sessionId: session.id,
     };
 

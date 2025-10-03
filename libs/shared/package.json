@@ -5,7 +5,11 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:auth && npm run build:database && npm run build:common && npm run build:audit",
+    "build:auth": "cd auth && tsc",
+    "build:database": "cd database && tsc", 
+    "build:common": "cd common && tsc",
+    "build:audit": "cd audit && tsc",
     "dev": "tsc --watch"
   },
   "dependencies": {
