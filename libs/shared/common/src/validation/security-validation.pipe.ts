@@ -12,7 +12,9 @@ import { SanitizationService } from "./sanitization.service";
 export class SecurityValidationPipe implements PipeTransform<any> {
   constructor(private readonly sanitizationService: SanitizationService) {}
 
-  async transform(value: any, { metatype }: ArgumentMetadata) {
+  async transform(value: any, metadata: ArgumentMetadata) {
+    const metatype = (metadata as any).metatype || (metadata as any).metaType;
+
     if (!metatype || !this.toValidate(metatype)) {
       return value;
     }
@@ -27,8 +29,6 @@ export class SecurityValidationPipe implements PipeTransform<any> {
     const errors = await validate(object, {
       whitelist: true, // Strip unknown properties
       forbidNonWhitelisted: true, // Throw error on unknown properties
-      transform: true, // Apply transformations
-      validateCustomDecorators: true,
       stopAtFirstError: false,
     });
 

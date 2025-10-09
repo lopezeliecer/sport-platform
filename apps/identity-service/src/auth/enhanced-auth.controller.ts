@@ -44,6 +44,11 @@ import {
   SkipThrottle,
 } from "../../../../libs/shared/common/src/security/throttle.decorators";
 import { Public } from "./decorators/auth.decorators";
+import {
+  RequireApiKey,
+  ApiKeyPermissions,
+  AllowedServices,
+} from "../../../../libs/shared/common/src/security/api-key.guard";
 
 @ApiTags("Authentication & Authorization")
 @Controller("auth")
@@ -376,6 +381,166 @@ export class EnhancedAuthController {
         status: "oauth_failed",
       });
     }
+  }
+
+  // Service-to-Service API Key Protected Endpoints
+
+  @Get("service/verify-token")
+  @RequireApiKey()
+  @ApiKeyPermissions("auth:verify")
+  @AllowedServices("api-gateway", "sports-service", "club-management")
+  @SkipThrottle() // Internal service calls don't need throttling
+  @ApiOperation({
+    summary: "Verify JWT token (Service-to-Service)",
+    description:
+      "Validates a JWT token for other services. Requires API key authentication.",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Token is valid",
+    schema: {
+      type: "object",
+      properties: {
+        valid: { type: "boolean" },
+        user: { type: "object" },
+        clubId: { type: "string" },
+        permissions: { type: "array" },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: "Invalid token or API key" })
+  async verifyTokenForService(
+    @Query("token") token: string,
+    @Request() req: any
+  ) {
+    try {
+      // Verify the JWT token
+      const payload = await this.authService.verifyJwtToken(token);
+
+      // Get session information
+      const session = await this.sessionsService.getSessionById(
+        payload.sessionId
+      );
+
+      return {
+        valid: true,
+        user: {
+          id: payload.sub,
+          email: payload.email,
+          sessionId: payload.sessionId,
+        },
+        clubId: session?.currentClubId,
+        permissions: [], // Would need to calculate from session data
+        requestedBy: req.service, // API key service name
+        verifiedAt: new Date().toISOString(),
+      };
+    } catch (error) {
+      return {
+        valid: false,
+        error: error.message,
+        requestedBy: req.service,
+        verifiedAt: new Date().toISOString(),
+      };
+    }
+  }
+
+  @Post("service/create-service-token")
+  @RequireApiKey()
+  @ApiKeyPermissions("user:write", "session:manage")
+  @AllowedServices("api-gateway", "identity-service")
+  @ThrottleStrict() // Very limited for security
+  @ApiOperation({
+    summary: "Create service token (Service-to-Service)",
+    description:
+      "Creates a service-specific token for system operations. Requires high-level API key permissions.",
+  })
+  @ApiResponse({
+    status: 201,
+    description: "Service token created successfully",
+  })
+  async createServiceToken(
+    @Body()
+    createTokenDto: {
+      service: string;
+      permissions: string[];
+      expiresInMinutes?: number;
+    },
+    @Request() req: any
+  ) {
+    const serviceToken = await this.authService.createServiceToken(
+      createTokenDto.service,
+      createTokenDto.permissions,
+      createTokenDto.expiresInMinutes || 60 // Default 1 hour
+    );
+
+    this.logger.log(
+      `Service token created for ${createTokenDto.service} by ${req.service}`
+    );
+
+    return {
+      serviceToken,
+      expiresIn: createTokenDto.expiresInMinutes || 60,
+      createdBy: req.service,
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  @Get("service/user/:userId/profile")
+  @RequireApiKey()
+  @ApiKeyPermissions("user:read")
+  @AllowedServices("sports-service", "club-management", "communication")
+  @SkipThrottle()
+  @ApiOperation({
+    summary: "Get user profile (Service-to-Service)",
+    description:
+      "Retrieves user profile for other services. Requires API key with user:read permission.",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "User profile retrieved successfully",
+  })
+  async getUserProfileForService(
+    @Param("userId") userId: string,
+    @Request() req: any
+  ) {
+    const user = await this.authService.getUserProfile(userId);
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profilePictureUrl: user.profilePicture,
+        isActive: user.isActive,
+      },
+      requestedBy: req.service,
+      retrievedAt: new Date().toISOString(),
+    };
+  }
+
+  @Get("service/sessions/active-count")
+  @RequireApiKey()
+  @ApiKeyPermissions("session:manage")
+  @AllowedServices("api-gateway", "identity-service")
+  @SkipThrottle()
+  @ApiOperation({
+    summary: "Get active sessions count (Service-to-Service)",
+    description:
+      "Returns the count of active sessions for monitoring purposes.",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Active sessions count retrieved",
+  })
+  async getActiveSessionsCount(@Request() req: any) {
+    const count = await this.sessionsService.getActiveSessionsCount();
+
+    return {
+      activeSessionsCount: count,
+      requestedBy: req.service,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   // Métodos privados

@@ -503,4 +503,34 @@ export class EnhancedSessionsService {
 
     return Array.from(allPermissions);
   }
+
+  // Service-to-Service methods
+
+  async getSessionById(sessionId: string) {
+    return await this.prisma.userSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            isActive: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getActiveSessionsCount(): Promise<number> {
+    return await this.prisma.userSession.count({
+      where: {
+        status: "ACTIVE",
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+    });
+  }
 }
