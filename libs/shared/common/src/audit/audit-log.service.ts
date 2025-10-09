@@ -27,7 +27,7 @@ export class AuditLogService {
       50000
     );
     this.initializeAlertThresholds();
-    
+
     // Log service initialization
     this.logEvent({
       eventType: AuditEventType.SERVICE_STARTED,
@@ -653,20 +653,22 @@ export class AuditLogService {
     try {
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const initialAlertCount = this.alerts.size;
-      
+
       const activeAlerts = Array.from(this.alerts.entries()).filter(
         ([, alert]) => alert.timestamp > oneDayAgo
       );
 
       this.alerts.clear();
       activeAlerts.forEach(([id, alert]) => this.alerts.set(id, alert));
-      
+
       const cleanedCount = initialAlertCount - activeAlerts.length;
       if (cleanedCount > 0) {
-        this.logger.debug(`Scheduled cleanup: removed ${cleanedCount} old alerts`);
+        this.logger.debug(
+          `Scheduled cleanup: removed ${cleanedCount} old alerts`
+        );
       }
     } catch (error) {
-      this.logger.error('Error during scheduled alert cleanup:', error);
+      this.logger.error("Error during scheduled alert cleanup:", error);
     }
   }
 }
