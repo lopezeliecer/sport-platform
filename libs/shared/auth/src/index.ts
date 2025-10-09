@@ -16,6 +16,7 @@ export type {
 
 // Decorators (exportar específicamente para evitar conflictos)
 export {
+  Public,
   RequirePermission,
   RequireRoles,
   RequireClubContext,

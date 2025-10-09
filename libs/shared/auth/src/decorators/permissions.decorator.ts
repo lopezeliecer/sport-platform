@@ -8,6 +8,12 @@ import { Module, Action, Scope, UserRole } from "../types/auth.types";
 export const PERMISSION_KEY = "permissions";
 export const ROLES_KEY = "roles";
 export const CLUB_CONTEXT_KEY = "club_context";
+export const PUBLIC_KEY = "public";
+
+/**
+ * Decorator para endpoints públicos (sin autenticación requerida)
+ */
+export const Public = () => SetMetadata(PUBLIC_KEY, true);
 
 /**
  * Decorator para requerir permisos específicos

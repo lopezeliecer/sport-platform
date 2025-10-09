@@ -8,7 +8,6 @@ import {
   Res,
   HttpCode,
   HttpStatus,
-  Headers,
   Delete,
   Param,
   Query,
@@ -19,9 +18,13 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
-  ApiHeader,
 } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
+import {
+  ThrottleRefreshToken,
+  ThrottleAPI,
+  ThrottleStrict,
+} from "../../../../libs/shared/common/src/security/throttle.decorators";
 import {
   GoogleAuthDto,
   RefreshTokenDto,
@@ -31,7 +34,6 @@ import {
   UserInfoDto,
   ClubMembershipDto,
   SessionInfoDto,
-  RevokeSessionDto,
 } from "./dto/auth.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { Public } from "./decorators/auth.decorators";
@@ -177,6 +179,7 @@ export class AuthController {
 
   @Post("refresh")
   @Public()
+  @ThrottleRefreshToken()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: "Refresh access token",
@@ -198,6 +201,7 @@ export class AuthController {
 
   @Post("logout")
   @UseGuards(JwtAuthGuard)
+  @ThrottleAPI()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
   @ApiOperation({
@@ -214,6 +218,7 @@ export class AuthController {
 
   @Post("switch-club")
   @UseGuards(JwtAuthGuard)
+  @ThrottleAPI()
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOperation({
@@ -330,105 +335,6 @@ export class AuthController {
   healthCheck(): { status: string; timestamp: string } {
     return {
       status: "ok",
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  @Get("jwt-test")
-  @Public()
-  @ApiOperation({
-    summary: "JWT functionality test",
-    description: "Test JWT token generation and validation (mock)",
-  })
-  @ApiResponse({
-    status: 200,
-    description: "JWT test completed successfully",
-  })
-  async jwtTest(): Promise<{
-    message: string;
-    tokenGenerated: boolean;
-    timestamp: string;
-    mockPayload: any;
-  }> {
-    // Test JWT generation with mock data
-    try {
-      const mockPayload = {
-        sub: "test-user-123",
-        email: "test@example.com",
-        sessionId: "test-session-456",
-        clubId: "test-club-789",
-        roles: [
-          {
-            clubId: "test-club-789",
-            role: "MEMBER",
-            permissions: ["view_profile"],
-          },
-        ],
-      };
-
-      // Generate a test token (without saving to DB)
-      const testToken = await this.authService.generateTestToken(mockPayload);
-
-      return {
-        message: "JWT foundation is working correctly",
-        tokenGenerated: !!testToken,
-        timestamp: new Date().toISOString(),
-        mockPayload,
-      };
-    } catch (error) {
-      return {
-        message: `JWT test failed: ${error.message}`,
-        tokenGenerated: false,
-        timestamp: new Date().toISOString(),
-        mockPayload: null,
-      };
-    }
-  }
-
-  @Get("config-check")
-  @Public()
-  @ApiOperation({
-    summary: "Check OAuth configuration",
-    description: "Check the current OAuth configuration status",
-  })
-  @ApiResponse({
-    status: 200,
-    description: "Configuration status retrieved successfully",
-  })
-  configCheck(): {
-    message: string;
-    googleOAuth: {
-      clientIdConfigured: boolean;
-      clientSecretConfigured: boolean;
-      redirectUri: string;
-      status: string;
-    };
-    environment: string;
-    timestamp: string;
-  } {
-    const hasGoogleClientId =
-      !!process.env.GOOGLE_CLIENT_ID &&
-      process.env.GOOGLE_CLIENT_ID !== "your-google-client-id";
-    const hasGoogleClientSecret =
-      !!process.env.GOOGLE_CLIENT_SECRET &&
-      process.env.GOOGLE_CLIENT_SECRET !== "your-google-client-secret";
-    const redirectUri =
-      process.env.GOOGLE_REDIRECT_URI ||
-      process.env.GOOGLE_CALLBACK_URL ||
-      "http://localhost:3001/api/v1/auth/google/callback";
-
-    return {
-      message: "OAuth configuration status",
-      googleOAuth: {
-        clientIdConfigured: hasGoogleClientId,
-        clientSecretConfigured: hasGoogleClientSecret,
-        redirectUri,
-        status:
-          hasGoogleClientId && hasGoogleClientSecret
-            ? "ready"
-            : "needs_configuration",
-      },
-      environment: process.env.NODE_ENV || "development",
       timestamp: new Date().toISOString(),
     };
   }

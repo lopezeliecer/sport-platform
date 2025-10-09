@@ -3,6 +3,7 @@ import {
   BadRequestException,
   UnauthorizedException,
   ConflictException,
+  NotFoundException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
@@ -508,5 +509,56 @@ export class AuthService {
       ...user,
       defaultClubId: defaultClub?.clubId || null,
     };
+  }
+
+  // Service-to-Service Authentication Methods
+
+  async verifyJwtToken(token: string): Promise<any> {
+    try {
+      return this.jwtService.verify(token);
+    } catch (error) {
+      throw new UnauthorizedException("Invalid JWT token");
+    }
+  }
+
+  async createServiceToken(
+    service: string,
+    permissions: string[],
+    expiresInMinutes: number = 60
+  ): Promise<string> {
+    const payload = {
+      sub: `service:${service}`,
+      service,
+      permissions,
+      type: "service",
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + expiresInMinutes * 60,
+    };
+
+    return this.jwtService.sign(payload, {
+      expiresIn: `${expiresInMinutes}m`,
+    });
+  }
+
+  async getUserProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        profilePicture: true,
+        isActive: true,
+        createdAt: true,
+        lastLoginAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    return user;
   }
 }

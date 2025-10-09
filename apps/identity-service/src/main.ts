@@ -4,26 +4,63 @@ import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { ConfigService } from "@nestjs/config";
 import helmet from "helmet";
 import { AppModule } from "./app.module";
+import {
+  createSecurityConfig,
+  addCustomSecurityHeaders,
+} from "../../../libs/shared/common/src/security/security.config";
+import { CustomThrottlerGuard } from "../../../libs/shared/common/src/security/custom-throttler.guard";
+import { SecurityValidationPipe } from "../../../libs/shared/common/src/validation/security-validation.pipe";
+import { SanitizationService } from "../../../libs/shared/common/src/validation/sanitization.service";
+import { randomUUID } from "crypto";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const sanitizationService = app.get(SanitizationService);
 
-  // Security
-  app.use(helmet());
-  app.enableCors({
-    origin: configService.get("FRONTEND_URL", "http://localhost:4200"),
-    credentials: true,
+  const isProduction = configService.get("NODE_ENV") === "production";
+  const securityConfig = createSecurityConfig(isProduction);
+
+  // Security Headers
+  app.use(helmet(securityConfig.helmet));
+
+  // Override specific headers if needed
+  app.use((req, res, next) => {
+    res.setHeader("X-Frame-Options", "DENY"); // Force DENY instead of SAMEORIGIN
+    next();
   });
 
-  // Global validation pipe
+  // Custom security headers
+  app.use(
+    addCustomSecurityHeaders({
+      "X-API-Version": "v1",
+      "X-Request-ID": randomUUID(),
+    })
+  );
+
+  // CORS Configuration
+  app.enableCors(securityConfig.cors);
+
+  // Global Security Validation Pipe
   app.useGlobalPipes(
+    new SecurityValidationPipe(sanitizationService),
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+      exceptionFactory: (errors) => {
+        console.error("Validation errors:", errors);
+        return new ValidationPipe().createExceptionFactory()(errors);
+      },
     })
   );
+
+  // Global Rate Limiting - Now configured in AppModule with ThrottlerGuard
+  const customThrottlerGuard = app.get(CustomThrottlerGuard);
+  app.useGlobalGuards(customThrottlerGuard);
 
   // Global prefix
   app.setGlobalPrefix("api/v1");
