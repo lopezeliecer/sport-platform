@@ -7,6 +7,8 @@ import {
   HttpStatus,
   Post,
   Body,
+  ValidationPipe,
+  UsePipes,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -26,36 +28,14 @@ import {
   AuditStatus,
   AuditQueryOptions,
 } from "../../../../libs/shared/common/src/audit/audit-log.interface";
-
-export class AuditQueryDto {
-  startDate?: string;
-  endDate?: string;
-  eventTypes?: string;
-  severities?: string;
-  statuses?: string;
-  userIds?: string;
-  services?: string;
-  searchTerm?: string;
-  limit?: number;
-  offset?: number;
-  sortBy?: "timestamp" | "severity" | "eventType";
-  sortOrder?: "ASC" | "DESC";
-}
-
-export class ManualAuditLogDto {
-  eventType: AuditEventType;
-  severity: AuditSeverity;
-  message: string;
-  description?: string;
-  resourceType?: string;
-  resourceId?: string;
-}
+import { AuditQueryDto, ManualAuditLogDto } from "./dto";
 
 @ApiTags("Audit Logging")
 @Controller("audit")
 @UseGuards(JwtAuthGuard, RbacGuard)
 @ApiBearerAuth()
 @ThrottleAPI()
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class AuditLogController {
   constructor(private readonly auditLogService: AuditLogService) {}
 
