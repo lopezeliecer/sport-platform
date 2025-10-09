@@ -10,7 +10,10 @@ import {
   Logger,
   Param,
   Delete,
+  Res,
+  Query,
 } from "@nestjs/common";
+import { Response } from "express";
 import {
   ApiTags,
   ApiOperation,
@@ -34,6 +37,13 @@ import {
 } from "./decorators/permissions.decorator";
 import { GoogleAuthDto, AuthResponseDto } from "./dto/auth.dto";
 import { JwtPayload } from "./strategies/jwt.strategy";
+import {
+  ThrottleLogin,
+  ThrottleAPI,
+  ThrottleStrict,
+  SkipThrottle,
+} from "../../../../libs/shared/common/src/security/throttle.decorators";
+import { Public } from "./decorators/auth.decorators";
 
 @ApiTags("Authentication & Authorization")
 @Controller("auth")
@@ -46,6 +56,7 @@ export class EnhancedAuthController {
   ) {}
 
   @Post("google")
+  @ThrottleLogin() // 3 requests per minute for auth
   @ApiOperation({ summary: "Google OAuth authentication" })
   @ApiResponse({
     status: 200,
@@ -96,6 +107,7 @@ export class EnhancedAuthController {
   }
 
   @Post("refresh")
+  @ThrottleAPI() // 30 requests per minute for refresh
   @ApiOperation({ summary: "Refresh access token" })
   @ApiResponse({ status: 200, description: "Token refreshed successfully" })
   @HttpCode(HttpStatus.OK)
@@ -229,48 +241,6 @@ export class EnhancedAuthController {
     };
   }
 
-  // Ejemplo de endpoint que requiere permisos específicos
-  @Get("test/club-admin")
-  @UseGuards(JwtAuthGuard, RbacGuard)
-  @RequireClubAdmin()
-  @RequireClubContext()
-  @ApiBearerAuth()
-  @ApiOperation({ summary: "Test endpoint - Club Admin only" })
-  @ApiResponse({ status: 200, description: "Access granted for club admin" })
-  async testClubAdmin(
-    @CurrentUser() user: JwtPayload,
-    @CurrentClubId() clubId: string
-  ) {
-    return {
-      message: "Acceso autorizado para administrador de club",
-      userId: user.sub,
-      clubId,
-      timestamp: new Date(),
-    };
-  }
-
-  @Get("test/manage-athletes")
-  @UseGuards(JwtAuthGuard, RbacGuard)
-  @CanManageAthletes()
-  @RequireClubContext()
-  @ApiBearerAuth()
-  @ApiOperation({ summary: "Test endpoint - Manage Athletes permission" })
-  @ApiResponse({
-    status: 200,
-    description: "Access granted for athlete management",
-  })
-  async testManageAthletes(
-    @CurrentUser() user: JwtPayload,
-    @ClubContext() clubContext: any
-  ) {
-    return {
-      message: "Acceso autorizado para gestión de atletas",
-      userId: user.sub,
-      clubContext,
-      timestamp: new Date(),
-    };
-  }
-
   @Post("logout")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -286,6 +256,126 @@ export class EnhancedAuthController {
       message: "Sesión cerrada exitosamente",
       sessionId: user.sessionId,
     };
+  }
+
+  @Get("health")
+  @SkipThrottle() // Skip throttling for health checks
+  @ApiOperation({ summary: "Health check endpoint" })
+  @ApiResponse({ status: 200, description: "Service is healthy" })
+  healthCheck(): { status: string; timestamp: string; service: string } {
+    return {
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      service: "enhanced-auth-controller",
+    };
+  }
+
+  @Get("google")
+  @Public()
+  @ApiOperation({
+    summary: "Initiate Google OAuth flow",
+    description: "Redirect to Google OAuth authorization page",
+  })
+  @ApiResponse({
+    status: 302,
+    description: "Redirect to Google OAuth",
+  })
+  googleAuthInit(@Res() res: Response) {
+    // Check if Google OAuth is properly configured
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const redirectUri =
+      process.env.GOOGLE_REDIRECT_URI ||
+      process.env.GOOGLE_CALLBACK_URL ||
+      "http://localhost:3001/api/v1/auth/google/callback";
+
+    if (!clientId) {
+      return res.status(500).json({
+        error: "Google OAuth not configured",
+        message: "GOOGLE_CLIENT_ID environment variable is missing",
+      });
+    }
+
+    // Real Google OAuth URL construction
+    const googleAuthUrl = new URL(
+      "https://accounts.google.com/o/oauth2/v2/auth"
+    );
+    googleAuthUrl.searchParams.set("client_id", clientId);
+    googleAuthUrl.searchParams.set("redirect_uri", redirectUri);
+    googleAuthUrl.searchParams.set("response_type", "code");
+    googleAuthUrl.searchParams.set("scope", "email profile openid");
+    googleAuthUrl.searchParams.set("access_type", "offline");
+    googleAuthUrl.searchParams.set("prompt", "consent");
+
+    // For API testing, return the URL instead of redirecting
+    if (process.env.NODE_ENV === "development") {
+      return res.json({
+        message: "Google OAuth flow initiated",
+        authUrl: googleAuthUrl.toString(),
+        redirectUri,
+        status: "ready_for_oauth",
+      });
+    }
+
+    // In production, redirect to Google
+    return res.redirect(googleAuthUrl.toString());
+  }
+
+  @Get("google/callback")
+  @Public()
+  @ApiOperation({
+    summary: "Handle Google OAuth callback",
+    description: "Process the authorization code from Google OAuth",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "User authenticated successfully",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "OAuth error",
+  })
+  async googleCallback(
+    @Query("code") code: string,
+    @Query("error") error: string,
+    @Res() res: Response
+  ) {
+    if (error) {
+      return res.status(400).json({
+        error: "OAuth error",
+        message: error,
+        status: "oauth_failed",
+      });
+    }
+
+    if (!code) {
+      return res.status(400).json({
+        error: "Missing authorization code",
+        message: "No authorization code received from Google",
+        status: "oauth_failed",
+      });
+    }
+
+    try {
+      // Exchange code for access token and authenticate user
+      const authResult =
+        await this.authService.authenticateWithGoogleCode(code);
+
+      return res.json({
+        message: "Authentication successful",
+        user: authResult.user,
+        accessToken: authResult.accessToken,
+        refreshToken: authResult.refreshToken,
+        expiresIn: authResult.expiresIn,
+        status: "authenticated",
+      });
+    } catch (error) {
+      console.error("Google OAuth callback error:", error);
+      return res.status(500).json({
+        error: "Authentication failed",
+        message: "Failed to process Google OAuth callback",
+        status: "oauth_failed",
+      });
+    }
   }
 
   // Métodos privados

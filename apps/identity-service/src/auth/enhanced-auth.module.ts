@@ -9,7 +9,6 @@ import { EnhancedSessionsService } from "../sessions/enhanced-sessions-v2.servic
 import { SessionsService } from "../sessions/sessions.service";
 
 // Controllers
-import { AuthController } from "./auth.controller";
 import { EnhancedAuthController } from "./enhanced-auth.controller";
 
 // Strategies
@@ -46,8 +45,7 @@ import { PrismaModule } from "../prisma/prisma.module";
     PrismaModule,
   ],
   controllers: [
-    AuthController, // Controlador original (mantener compatibilidad)
-    EnhancedAuthController, // Nuevo controlador con RBAC completo
+    EnhancedAuthController, // Controlador único de autenticación
   ],
   providers: [
     // Services
