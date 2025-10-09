@@ -1,6 +1,6 @@
 import { Module, MiddlewareConsumer, NestModule } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { ThrottlerModule, ThrottlerGuard, seconds } from "@nestjs/throttler";
+import { ThrottlerModule } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
 import { EnhancedAuthModule } from "./auth/enhanced-auth.module";
 import { UsersModule } from "./users/users.module";
@@ -28,7 +28,7 @@ import { ApiKeyMiddleware } from "../../../libs/shared/common/src/security/api-k
     // Global Security Guards
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: CustomThrottlerGuard,
     },
   ],
 })

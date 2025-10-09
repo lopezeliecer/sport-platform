@@ -11,6 +11,7 @@ import {
 import { CustomThrottlerGuard } from "../../../libs/shared/common/src/security/custom-throttler.guard";
 import { SecurityValidationPipe } from "../../../libs/shared/common/src/validation/security-validation.pipe";
 import { SanitizationService } from "../../../libs/shared/common/src/validation/sanitization.service";
+import { randomUUID } from "crypto";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -33,7 +34,7 @@ async function bootstrap() {
   app.use(
     addCustomSecurityHeaders({
       "X-API-Version": "v1",
-      "X-Request-ID": Math.random().toString(36).substring(7),
+      "X-Request-ID": randomUUID(),
     })
   );
 
