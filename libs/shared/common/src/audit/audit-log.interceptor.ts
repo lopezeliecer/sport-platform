@@ -5,7 +5,7 @@ import {
   CallHandler,
   Logger,
 } from "@nestjs/common";
-import { Observable } from "rxjs";
+import { Observable, throwError } from "rxjs";
 import { tap, catchError } from "rxjs/operators";
 import { Request, Response } from "express";
 import { randomUUID } from "crypto";
@@ -50,21 +50,27 @@ export class AuditLogInterceptor implements NestInterceptor {
           data
         );
       }),
-      catchError(async (error) => {
+      catchError((error) => {
         const endTime = Date.now();
         const duration = endTime - startTime;
 
-        // Log failed request
-        await this.logFailedRequest(
+        // Log failed request asynchronously and return error Observable
+        this.logFailedRequest(
           request,
           response,
           auditContext,
           duration,
           error
-        );
+        ).catch((logError) => {
+          // Handle logging errors to prevent them from affecting the main request flow
+          this.logger.error(
+            "Failed to log audit event for failed request:",
+            logError
+          );
+        });
 
-        // Re-throw the error
-        throw error;
+        // Return error as Observable
+        return throwError(() => error);
       })
     );
   }
