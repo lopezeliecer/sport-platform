@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { Cron, CronExpression } from "@nestjs/schedule";
 import { randomUUID } from "crypto";
 import {
   AuditLogEntry,
@@ -26,8 +27,7 @@ export class AuditLogService {
       50000
     );
     this.initializeAlertThresholds();
-    this.startPeriodicCleanup();
-
+    
     // Log service initialization
     this.logEvent({
       eventType: AuditEventType.SERVICE_STARTED,
@@ -644,19 +644,29 @@ export class AuditLogService {
     this.logger.debug(`Cleaned up ${toRemove.length} old audit log entries`);
   }
 
-  private startPeriodicCleanup(): void {
-    // Clean up old alerts every hour
-    setInterval(
-      () => {
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        const activeAlerts = Array.from(this.alerts.entries()).filter(
-          ([, alert]) => alert.timestamp > oneDayAgo
-        );
+  /**
+   * Scheduled task to clean up old alerts every hour
+   * Using @nestjs/schedule for proper lifecycle management
+   */
+  @Cron(CronExpression.EVERY_HOUR)
+  handleAlertCleanup() {
+    try {
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const initialAlertCount = this.alerts.size;
+      
+      const activeAlerts = Array.from(this.alerts.entries()).filter(
+        ([, alert]) => alert.timestamp > oneDayAgo
+      );
 
-        this.alerts.clear();
-        activeAlerts.forEach(([id, alert]) => this.alerts.set(id, alert));
-      },
-      60 * 60 * 1000
-    ); // Every hour
+      this.alerts.clear();
+      activeAlerts.forEach(([id, alert]) => this.alerts.set(id, alert));
+      
+      const cleanedCount = initialAlertCount - activeAlerts.length;
+      if (cleanedCount > 0) {
+        this.logger.debug(`Scheduled cleanup: removed ${cleanedCount} old alerts`);
+      }
+    } catch (error) {
+      this.logger.error('Error during scheduled alert cleanup:', error);
+    }
   }
 }
