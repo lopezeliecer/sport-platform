@@ -43,6 +43,12 @@ import {
   ThrottleStrict,
   SkipThrottle,
 } from "../../../../libs/shared/common/src/security/throttle.decorators";
+import { AuditLogService } from "../../../../libs/shared/common/src/audit/audit-log.service";
+import {
+  AuditEventType,
+  AuditSeverity,
+  AuditStatus,
+} from "../../../../libs/shared/common/src/audit/audit-log.interface";
 import { Public } from "./decorators/auth.decorators";
 import {
   RequireApiKey,
@@ -57,7 +63,8 @@ export class EnhancedAuthController {
 
   constructor(
     private authService: AuthService,
-    private sessionsService: EnhancedSessionsService
+    private sessionsService: EnhancedSessionsService,
+    private auditLogService: AuditLogService
   ) {}
 
   @Post("google")
@@ -82,33 +89,74 @@ export class EnhancedAuthController {
       deviceType: this.detectDeviceType(req.headers["user-agent"]),
     };
 
-    // Usar el AuthService existente para crear/encontrar usuario
-    const authResult = await this.authService.googleAuth(
-      googleAuthDto,
-      deviceInfo.ip,
-      deviceInfo.userAgent
-    );
+    try {
+      // Log auth attempt
+      await this.auditLogService.logEvent({
+        eventType: AuditEventType.LOGIN_ATTEMPT,
+        severity: AuditSeverity.LOW,
+        status: AuditStatus.SUCCESS,
+        message: "Google OAuth login attempt",
+        context: {
+          method: "google_oauth",
+          userAgent: deviceInfo.userAgent,
+          ip: deviceInfo.ip,
+          deviceType: deviceInfo.deviceType,
+        },
+      });
 
-    // Crear sesión enhanced con el nuevo sistema
-    const sessionResult = await this.sessionsService.createSession({
-      userId: authResult.user.id,
-      deviceInfo,
-      clubId: authResult.defaultClubId,
-    });
+      // Usar el AuthService existente para crear/encontrar usuario
+      const authResult = await this.authService.googleAuth(
+        googleAuthDto,
+        deviceInfo.ip,
+        deviceInfo.userAgent
+      );
 
-    this.logger.log(
-      `Usuario ${authResult.user.email} autenticado exitosamente`
-    );
+      // Crear sesión enhanced con el nuevo sistema
+      const sessionResult = await this.sessionsService.createSession({
+        userId: authResult.user.id,
+        deviceInfo,
+        clubId: authResult.defaultClubId,
+      });
 
-    return {
-      accessToken: sessionResult.accessToken,
-      refreshToken: sessionResult.refreshToken,
-      user: authResult.user,
-      clubs: authResult.clubs,
-      defaultClubId: authResult.defaultClubId,
-      expiresIn: 900, // 15 minutos
-      tokenType: "Bearer",
-    };
+      // Log successful authentication using helper method
+      await this.auditLogService.logAuthenticationSuccess(authResult.user.id, {
+        method: "google_oauth",
+        email: authResult.user.email,
+        userAgent: deviceInfo.userAgent,
+        ip: deviceInfo.ip,
+        deviceType: deviceInfo.deviceType,
+        clubId: authResult.defaultClubId,
+        clubCount: authResult.clubs?.length || 0,
+      });
+
+      this.logger.log(
+        `Usuario ${authResult.user.email} autenticado exitosamente`
+      );
+
+      return {
+        accessToken: sessionResult.accessToken,
+        refreshToken: sessionResult.refreshToken,
+        user: authResult.user,
+        clubs: authResult.clubs,
+        defaultClubId: authResult.defaultClubId,
+        expiresIn: 900, // 15 minutos
+        tokenType: "Bearer",
+      };
+    } catch (error) {
+      // Log failed authentication using helper method
+      await this.auditLogService.logAuthenticationFailure(
+        "unknown_email_google_oauth",
+        {
+          method: "google_oauth",
+          userAgent: deviceInfo.userAgent,
+          ip: deviceInfo.ip,
+          deviceType: deviceInfo.deviceType,
+        },
+        error.message
+      );
+
+      throw error;
+    }
   }
 
   @Post("refresh")
