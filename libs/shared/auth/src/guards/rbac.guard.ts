@@ -11,6 +11,7 @@ import {
   PERMISSION_KEY,
   ROLES_KEY,
   CLUB_CONTEXT_KEY,
+  PUBLIC_KEY,
 } from "../decorators/permissions.decorator";
 import {
   JwtPayload,
@@ -88,6 +89,15 @@ export class RbacGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
+    // Verificar si el endpoint es público
+    const isPublic = this.reflector.get<boolean>(
+      PUBLIC_KEY,
+      context.getHandler()
+    );
+    if (isPublic) {
+      return true;
+    }
+
     // Obtener metadatos del endpoint
     const requiredPermission = this.reflector.get<{
       module: Module;
@@ -105,9 +115,15 @@ export class RbacGuard implements CanActivate {
       context.getHandler()
     );
 
-    // Si no hay restricciones, permitir acceso
+    // Si no hay restricciones definidas, DENEGAR acceso por defecto (Principio de Seguridad)
+    // Solo endpoints públicos específicos deben usar @Public() decorator
     if (!requiredPermission && !requiredRoles && !requiresClubContext) {
-      return true;
+      this.logger.warn(
+        `Access denied to ${request.url} - No security configuration defined. Use @Public() for public endpoints.`
+      );
+      throw new ForbiddenException(
+        "Endpoint requires explicit security configuration"
+      );
     }
 
     // Verificar que el usuario esté autenticado
