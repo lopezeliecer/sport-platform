@@ -8,6 +8,7 @@ import {
 import { Observable } from "rxjs";
 import { tap, catchError } from "rxjs/operators";
 import { Request, Response } from "express";
+import { randomUUID } from "crypto";
 import { AuditLogService } from "./audit-log.service";
 import {
   AuditEventType,
@@ -342,6 +343,6 @@ export class AuditLogInterceptor implements NestInterceptor {
   }
 
   private generateRequestId(): string {
-    return Math.random().toString(36).substring(2, 15);
+    return randomUUID();
   }
 }
