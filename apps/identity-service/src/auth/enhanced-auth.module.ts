@@ -24,6 +24,7 @@ import { ClubContextMiddleware } from "./middleware/club-context.middleware";
 
 // Other modules
 import { PrismaModule } from "../prisma/prisma.module";
+import { AuditLogModule } from "../audit/audit-log.module";
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { PrismaModule } from "../prisma/prisma.module";
       inject: [ConfigService],
     }),
     PrismaModule,
+    AuditLogModule, // Add audit logging capabilities
   ],
   controllers: [
     EnhancedAuthController, // Controlador único de autenticación

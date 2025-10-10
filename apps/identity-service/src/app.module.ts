@@ -1,14 +1,16 @@
 import { Module, MiddlewareConsumer, NestModule } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { ThrottlerModule } from "@nestjs/throttler";
-import { APP_GUARD } from "@nestjs/core";
+import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { EnhancedAuthModule } from "./auth/enhanced-auth.module";
 import { UsersModule } from "./users/users.module";
 import { ApiKeyModule } from "./api-keys/api-key.module";
+import { AuditLogModule } from "./audit/audit-log.module";
 import { createThrottlerOptions } from "../../../libs/shared/common/src/security/throttler.config";
 import { SanitizationService } from "../../../libs/shared/common/src/validation/sanitization.service";
 import { CustomThrottlerGuard } from "@sports-platform/shared/common/src/security/custom-throttler.guard";
 import { ApiKeyMiddleware } from "../../../libs/shared/common/src/security/api-key.middleware";
+import { AuditLogInterceptor } from "../../../libs/shared/common/src/audit/audit-log.interceptor";
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { ApiKeyMiddleware } from "../../../libs/shared/common/src/security/api-k
     EnhancedAuthModule, // Único módulo de autenticación
     UsersModule,
     ApiKeyModule, // Add API key management
+    AuditLogModule, // Add audit logging
   ],
   providers: [
     // Security Services (must be provided before guards)
@@ -29,6 +32,11 @@ import { ApiKeyMiddleware } from "../../../libs/shared/common/src/security/api-k
     {
       provide: APP_GUARD,
       useClass: CustomThrottlerGuard,
+    },
+    // Global Audit Interceptor
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditLogInterceptor,
     },
   ],
 })
