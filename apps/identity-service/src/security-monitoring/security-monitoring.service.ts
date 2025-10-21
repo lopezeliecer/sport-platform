@@ -392,10 +392,12 @@ export class SecurityMonitoringService {
       alertsGenerated: alertsInRange.length,
       alertsResolved: alertsInRange.filter((a) => a.resolved).length,
       averageResponseTime:
-        eventsInRange.reduce(
-          (sum, e) => sum + (e.metadata.responseTime || 0),
-          0
-        ) / eventsInRange.length || 0,
+        eventsInRange.length > 0
+          ? eventsInRange.reduce(
+              (sum, e) => sum + (e.metadata.responseTime || 0),
+              0
+            ) / eventsInRange.length
+          : 0,
       timeRange: { start, end },
     };
   }
