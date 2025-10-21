@@ -6,11 +6,13 @@ import { EnhancedAuthModule } from "./auth/enhanced-auth.module";
 import { UsersModule } from "./users/users.module";
 import { ApiKeyModule } from "./api-keys/api-key.module";
 import { AuditLogModule } from "./audit/audit-log.module";
+import { SecurityMonitoringModule } from "./security-monitoring/security-monitoring.module";
 import { createThrottlerOptions } from "../../../libs/shared/common/src/security/throttler.config";
 import { SanitizationService } from "../../../libs/shared/common/src/validation/sanitization.service";
 import { CustomThrottlerGuard } from "@sports-platform/shared/common/src/security/custom-throttler.guard";
 import { ApiKeyMiddleware } from "../../../libs/shared/common/src/security/api-key.middleware";
 import { AuditLogInterceptor } from "../../../libs/shared/common/src/audit/audit-log.interceptor";
+import { SecurityMonitoringInterceptor } from "./security-monitoring/security-monitoring.interceptor";
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { AuditLogInterceptor } from "../../../libs/shared/common/src/audit/audit
     UsersModule,
     ApiKeyModule, // Add API key management
     AuditLogModule, // Add audit logging
+    SecurityMonitoringModule, // Add security monitoring
   ],
   providers: [
     // Security Services (must be provided before guards)
@@ -37,6 +40,11 @@ import { AuditLogInterceptor } from "../../../libs/shared/common/src/audit/audit
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditLogInterceptor,
+    },
+    // Global Security Monitoring Interceptor
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SecurityMonitoringInterceptor,
     },
   ],
 })
