@@ -446,7 +446,7 @@ export class SecretsManagementService implements OnModuleInit {
       throw new Error(`No validation rule found for secret type: ${type}`);
     }
     
-    this.logger.debug(`Validating secret: type=${type}, length=${value.length}, preview=${value.substring(0, 10)}...`);
+    this.logger.debug(`Validating secret: type=${type}, length=${value.length}`);
 
     // Length validation
     if (value.length < rule.minLength) {
