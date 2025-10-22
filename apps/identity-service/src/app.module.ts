@@ -7,6 +7,7 @@ import { UsersModule } from "./users/users.module";
 import { ApiKeyModule } from "./api-keys/api-key.module";
 import { AuditLogModule } from "./audit/audit-log.module";
 import { SecurityMonitoringModule } from "./security-monitoring/security-monitoring.module";
+import { EnvironmentSecurityModule } from "./environment-security/environment-security.module";
 import { createThrottlerOptions } from "../../../libs/shared/common/src/security/throttler.config";
 import { SanitizationService } from "../../../libs/shared/common/src/validation/sanitization.service";
 import { CustomThrottlerGuard } from "@sports-platform/shared/common/src/security/custom-throttler.guard";
@@ -16,6 +17,7 @@ import { SecurityMonitoringInterceptor } from "./security-monitoring/security-mo
 
 @Module({
   imports: [
+    EnvironmentSecurityModule, // Must be first for configuration validation
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ["../../.env", ".env"],

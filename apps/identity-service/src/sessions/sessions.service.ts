@@ -8,6 +8,7 @@ import {
 } from "@sports-platform/shared/database/prisma/generated/client";
 import * as crypto from "crypto";
 import { JwtPayload } from "../auth/strategies/jwt.strategy";
+import { createHash, randomBytes } from "crypto";
 
 export interface CreateSessionData {
   userId: string;
@@ -300,10 +301,10 @@ export class SessionsService {
   }
 
   private generateSecureToken(): string {
-    return crypto.randomBytes(32).toString("hex");
+    return randomBytes(32).toString("hex");
   }
 
   private hashToken(token: string): string {
-    return crypto.createHash("sha256").update(token).digest("hex");
+    return createHash("sha256").update(token).digest("hex");
   }
 }
