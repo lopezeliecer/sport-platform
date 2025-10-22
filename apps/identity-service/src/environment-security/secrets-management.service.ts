@@ -5,10 +5,8 @@ import {
   createCipheriv, 
   createDecipheriv, 
   randomBytes, 
+  randomUUID, 
   scrypt, 
-  createHash, 
-  createHmac,
-  timingSafeEqual 
 } from 'crypto';
 import { promisify } from 'util';
 import { 
@@ -251,7 +249,7 @@ export class SecretsManagementService implements OnModuleInit {
 
       // Create metadata
       const metadata: SecretMetadata = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name,
         type,
         description: options.description,
@@ -659,7 +657,7 @@ export class SecretsManagementService implements OnModuleInit {
     errorMessage?: string
   ): Promise<void> {
     const logEntry: SecretAccessLog = {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       secretId,
       secretName,
       accessedAt: new Date(),
@@ -667,7 +665,7 @@ export class SecretsManagementService implements OnModuleInit {
       operation,
       success,
       errorMessage,
-      requestId: crypto.randomUUID(),
+      requestId: randomUUID(),
     };
 
     this.accessLogs.push(logEntry);

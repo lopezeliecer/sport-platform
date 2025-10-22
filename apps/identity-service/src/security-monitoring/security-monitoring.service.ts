@@ -15,6 +15,7 @@ import {
   AuditSeverity,
   AuditStatus,
 } from "../../../../libs/shared/common/src/audit/audit-log.interface";
+import { randomUUID } from "crypto";
 
 @Injectable()
 export class SecurityMonitoringService {
@@ -110,7 +111,7 @@ export class SecurityMonitoringService {
   ): Promise<void> {
     const securityEvent: SecurityEvent = {
       ...event,
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       timestamp: new Date(),
     };
 
@@ -220,7 +221,7 @@ export class SecurityMonitoringService {
     relatedEvents: SecurityEvent[]
   ): Promise<void> {
     const alert: SecurityAlert = {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       eventType: triggerEvent.type,
       severity: pattern.severity,
       message: `${pattern.name}: ${pattern.description}`,

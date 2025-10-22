@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { createHash, createHmac, randomBytes, scrypt, createCipheriv, createDecipheriv } from 'crypto';
+import { createHash, createHmac, randomBytes, scrypt, createCipheriv, createDecipheriv, randomUUID } from 'crypto';
 import { promisify } from 'util';
 import {
   EnvironmentSecurityConfig,
@@ -691,7 +691,7 @@ export class EnvironmentSecurityService implements OnModuleInit {
 
       if (currentHash !== storedHash) {
         const violation: SecurityViolation = {
-          id: crypto.randomUUID(),
+          id: randomUUID(),
           timestamp: new Date(),
           type: 'CONFIGURATION_TAMPER',
           severity: 'CRITICAL',

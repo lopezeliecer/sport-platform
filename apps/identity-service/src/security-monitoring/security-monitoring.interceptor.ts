@@ -13,6 +13,7 @@ import {
   SecurityEventType,
   SecuritySeverity,
 } from "./interfaces/security-event.interface";
+import { randomUUID } from "crypto";
 
 @Injectable()
 export class SecurityMonitoringInterceptor implements NestInterceptor {
@@ -27,7 +28,7 @@ export class SecurityMonitoringInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
 
-    const requestId = crypto.randomUUID();
+    const requestId = randomUUID();
     const sourceIp = this.extractIpAddress(request);
     const userAgent = request.headers["user-agent"];
     const endpoint = request.url;
