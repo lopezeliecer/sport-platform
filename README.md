@@ -97,6 +97,7 @@ sports-platform/
 ### Backend
 
 - **Framework**: NestJS with TypeScript
+
 ## 🛠️ Development
 
 ### Code Quality & Formatting
@@ -117,12 +118,14 @@ npm run format:check:root # Check formatting
 ### Git Commit Workflow
 
 When you commit, a smart validation script runs that:
+
 - ✅ Checks code quality with ESLint
 - 🎨 Validates formatting with Prettier
 - 🔬 Performs TypeScript type checking
 - 🤔 Shows all issues and asks what to do
 
 **You are NEVER blocked from committing!** The script offers three choices:
+
 1. Commit anyway (if in a hurry)
 2. Cancel and fix later
 3. Auto-fix and retry validation
@@ -154,6 +157,7 @@ npm run db:reset         # Reset database (dev only!)
 ### Code Style Guide
 
 See [`docs/LINTING_GUIDE.md`](docs/LINTING_GUIDE.md) for:
+
 - ESLint rules and configuration
 - Prettier formatting standards
 - How to customize linting rules
