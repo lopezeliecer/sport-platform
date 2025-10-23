@@ -62,6 +62,12 @@ export enum Permission {
   CLUB_VIEW_ANALYTICS = "club:view_analytics",
   CLUB_MANAGE_BILLING = "club:manage_billing",
   CLUB_EXPORT_DATA = "club:export_data",
+
+  // Security permissions
+  SECURITY_VIEW = "security:view",
+  SECURITY_MANAGE = "security:manage",
+  SECURITY_AUDIT = "security:audit",
+  SECURITY_TESTING = "security:testing",
 }
 
 export enum PermissionScope {
@@ -182,6 +188,12 @@ export const ROLE_PERMISSIONS: Record<string, PermissionDefinition[]> = {
     { permission: Permission.CLUB_VIEW_ANALYTICS, scope: PermissionScope.CLUB },
     { permission: Permission.CLUB_MANAGE_BILLING, scope: PermissionScope.CLUB },
     { permission: Permission.CLUB_EXPORT_DATA, scope: PermissionScope.CLUB },
+
+    // Security permissions for club admins
+    { permission: Permission.SECURITY_VIEW, scope: PermissionScope.CLUB },
+    { permission: Permission.SECURITY_MANAGE, scope: PermissionScope.CLUB },
+    { permission: Permission.SECURITY_AUDIT, scope: PermissionScope.CLUB },
+    { permission: Permission.SECURITY_TESTING, scope: PermissionScope.CLUB },
   ],
 
   COACH: [
