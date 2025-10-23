@@ -241,8 +241,11 @@ export class SecurityTestingService {
     const inputSanitized = this.sanitizeInput(payload);
     const containsSQLKeywords = /(\bDROP\b|\bUNION\b|\bSELECT\b|\bINSERT\b|\bUPDATE\b|\bDELETE\b)/i.test(payload);
     
+    // Even with Prisma ORM protection, detect SQL keywords as a warning indicator
+    const hasSQLPattern = containsSQLKeywords && !inputSanitized.includes(payload);
+    
     return {
-      isVulnerable: false, // Prisma ORM provides protection
+      isVulnerable: hasSQLPattern, // Vulnerable if SQL keywords detected after sanitization check
       inputSanitized: inputSanitized !== payload,
       outputEncoded: true,
       vulnerabilityType: 'SQL_INJECTION',
@@ -257,8 +260,11 @@ export class SecurityTestingService {
     const inputSanitized = this.sanitizeInput(payload);
     const containsScriptTags = /<script|javascript:|on\w+=/i.test(payload);
     
+    // Even with input validation and DOMPurify protection, detect script patterns as a warning indicator
+    const hasXSSPattern = containsScriptTags && !inputSanitized.includes(payload);
+    
     return {
-      isVulnerable: false, // Input validation and DOMPurify provide protection
+      isVulnerable: hasXSSPattern, // Vulnerable if script patterns detected after sanitization check
       inputSanitized: inputSanitized !== payload,
       outputEncoded: true,
       vulnerabilityType: 'XSS',
