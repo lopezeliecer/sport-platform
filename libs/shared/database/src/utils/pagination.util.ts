@@ -127,7 +127,7 @@ export class PaginationUtil {
     // Handle nested field sorting (e.g., "user.name")
     if (sortBy.includes('.')) {
       const parts = sortBy.split('.');
-      let orderBy: any = {};
+      const orderBy: any = {};
       let current = orderBy;
 
       for (let i = 0; i < parts.length - 1; i++) {

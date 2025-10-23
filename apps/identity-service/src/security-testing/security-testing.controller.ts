@@ -36,12 +36,12 @@ export class SecurityTestingController {
   @ApiResponse({ status: 200, description: 'Security tests completed' })
   async runFullSecurityTestSuite(): Promise<SecurityTestResult[]> {
     this.logger.log('Running full security test suite...');
-    
+
     try {
       const results = await this.securityTestingService.runFullSecurityTestSuite();
-      
+
       this.logger.log(`Security test suite completed: ${results.length} tests run`);
-      
+
       return results;
     } catch (error) {
       this.logger.error('Security test suite failed', error.stack);
@@ -211,7 +211,7 @@ export class SecurityTestingController {
   @ApiResponse({ status: 200, description: 'Test JWT generated' })
   async generateTestJWT() {
     const token = await this.securityTestingService.generateTestJWT();
-    
+
     return {
       token,
       note: 'This is a test JWT for security analysis only',
@@ -225,13 +225,15 @@ export class SecurityTestingController {
   @ApiResponse({ status: 200, description: 'Security testing dashboard data' })
   async getSecurityDashboard() {
     const report = this.securityTestingService.getSecurityTestReport();
-    
-    const criticalIssues = report.results.filter(r => !r.passed && r.riskLevel === 'CRITICAL');
-    const highIssues = report.results.filter(r => !r.passed && r.riskLevel === 'HIGH');
-    const mediumIssues = report.results.filter(r => !r.passed && r.riskLevel === 'MEDIUM');
-    
-    const securityScore = report.summary.total > 0 ? 
-      Math.round((report.summary.passed / report.summary.total) * 100) : 100;
+
+    const criticalIssues = report.results.filter((r) => !r.passed && r.riskLevel === 'CRITICAL');
+    const highIssues = report.results.filter((r) => !r.passed && r.riskLevel === 'HIGH');
+    const mediumIssues = report.results.filter((r) => !r.passed && r.riskLevel === 'MEDIUM');
+
+    const securityScore =
+      report.summary.total > 0
+        ? Math.round((report.summary.passed / report.summary.total) * 100)
+        : 100;
 
     return {
       securityScore,
@@ -240,12 +242,15 @@ export class SecurityTestingController {
         critical: criticalIssues.length,
         high: highIssues.length,
         medium: mediumIssues.length,
-        low: report.summary.failed - criticalIssues.length - highIssues.length - mediumIssues.length,
+        low:
+          report.summary.failed - criticalIssues.length - highIssues.length - mediumIssues.length,
       },
       recentTests: report.results.slice(-10), // Last 10 tests
       recommendations: report.recommendations,
-      lastTestRun: report.results.length > 0 ? 
-        Math.max(...report.results.map(r => r.timestamp.getTime())) : null,
+      lastTestRun:
+        report.results.length > 0
+          ? Math.max(...report.results.map((r) => r.timestamp.getTime()))
+          : null,
       timestamp: new Date().toISOString(),
     };
   }

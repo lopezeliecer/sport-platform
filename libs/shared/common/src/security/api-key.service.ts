@@ -189,7 +189,9 @@ export class ApiKeyService {
    * Check rate limits for API key
    */
   private checkRateLimit(apiKey: ApiKey): boolean {
-    if (!apiKey.rateLimit) return true;
+    if (!apiKey.rateLimit) {
+      return true;
+    }
 
     const now = Date.now();
     const windowStart = now - apiKey.rateLimit.windowMs;

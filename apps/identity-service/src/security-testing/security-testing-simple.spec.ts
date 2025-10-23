@@ -33,20 +33,20 @@ describe('SecurityTestingService', () => {
           provide: EnvironmentSecurityService,
           useValue: {
             validateEnvironment: jest.fn().mockResolvedValue(true),
-            getSecurityStatus: jest.fn().mockResolvedValue({ 
-              status: 'secure', 
-              checks: { hasSecureDefaults: true } 
+            getSecurityStatus: jest.fn().mockResolvedValue({
+              status: 'secure',
+              checks: { hasSecureDefaults: true },
             }),
             getSecurityConfig: jest.fn().mockReturnValue({
               securityLevel: 'high',
               hasRequiredSecrets: true,
               secretsAreEncrypted: true,
-              hasValidationRules: true
+              hasValidationRules: true,
             }),
           },
         },
         {
-          provide: SecretsManagementService, 
+          provide: SecretsManagementService,
           useValue: {
             validateSecrets: jest.fn().mockResolvedValue({ valid: 4, invalid: 0 }),
             getSecretMetadata: jest.fn().mockResolvedValue({ encrypted: true }),
@@ -55,9 +55,9 @@ describe('SecurityTestingService', () => {
         {
           provide: SecurityMonitoringService,
           useValue: {
-            getSecurityMetrics: jest.fn().mockResolvedValue({ 
-              alerts: 0, 
-              threats: 0 
+            getSecurityMetrics: jest.fn().mockResolvedValue({
+              alerts: 0,
+              threats: 0,
             }),
           },
         },
@@ -75,14 +75,14 @@ describe('SecurityTestingService', () => {
 
   describe('Authentication Security Tests', () => {
     it('should test authentication bypass prevention', async () => {
-      const testToken = jwtService.sign({ 
-        userId: 'test', 
+      const testToken = jwtService.sign({
+        userId: 'test',
         role: 'user',
         iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + (15 * 60)
+        exp: Math.floor(Date.now() / 1000) + 15 * 60,
       });
       const result = await service.testAuthenticationBypass(testToken);
-      
+
       expect(result).toBeDefined();
       expect(typeof result.isSecure).toBe('boolean');
       expect(Array.isArray(result.vulnerabilities)).toBe(true);
@@ -90,14 +90,14 @@ describe('SecurityTestingService', () => {
     });
 
     it('should analyze JWT security', async () => {
-      const testToken = jwtService.sign({ 
-        userId: 'test', 
+      const testToken = jwtService.sign({
+        userId: 'test',
         role: 'user',
         iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + (15 * 60) // 15 minutes
+        exp: Math.floor(Date.now() / 1000) + 15 * 60, // 15 minutes
       });
       const result = await service.analyzeJWTSecurity(testToken);
-      
+
       expect(result).toBeDefined();
       expect(typeof result.hasStrongSecret).toBe('boolean');
       expect(typeof result.hasValidExpiration).toBe('boolean');
@@ -108,7 +108,7 @@ describe('SecurityTestingService', () => {
 
     it('should test session fixation', async () => {
       const result = await service.testSessionFixation();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.isVulnerable).toBe('boolean');
       expect(typeof result.sessionIdChangesOnLogin).toBe('boolean');
@@ -118,7 +118,7 @@ describe('SecurityTestingService', () => {
 
     it('should test password strength', async () => {
       const result = await service.testPasswordStrength('weakpass');
-      
+
       expect(result).toBeDefined();
       expect(typeof result.isWeak).toBe('boolean');
       expect(typeof result.shouldBeRejected).toBe('boolean');
@@ -129,7 +129,7 @@ describe('SecurityTestingService', () => {
   describe('Authorization Security Tests', () => {
     it('should test RBAC enforcement', async () => {
       const result = await service.testRBACEnforcement('coach', 'athletes');
-      
+
       expect(result).toBeDefined();
       expect(typeof result.hasAccess).toBe('boolean');
       expect(typeof result.permissionValidated).toBe('boolean');
@@ -139,7 +139,7 @@ describe('SecurityTestingService', () => {
 
     it('should test privilege escalation', async () => {
       const result = await service.testPrivilegeEscalation();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.isVulnerable).toBe('boolean');
       expect(typeof result.canEscalateVertically).toBe('boolean');
@@ -148,7 +148,7 @@ describe('SecurityTestingService', () => {
 
     it('should test tenant isolation', async () => {
       const result = await service.testTenantIsolation();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.hasDataLeakage).toBe('boolean');
       expect(typeof result.canAccessOtherTenantData).toBe('boolean');
@@ -159,7 +159,7 @@ describe('SecurityTestingService', () => {
   describe('Input Validation Security Tests', () => {
     it('should test SQL injection prevention', async () => {
       const result = await service.testSQLInjection("'; DROP TABLE users; --");
-      
+
       expect(result).toBeDefined();
       expect(typeof result.isVulnerable).toBe('boolean');
       expect(typeof result.vulnerabilityType).toBe('string');
@@ -170,7 +170,7 @@ describe('SecurityTestingService', () => {
 
     it('should test XSS prevention', async () => {
       const result = await service.testXSSPrevention('<script>alert("xss")</script>');
-      
+
       expect(result).toBeDefined();
       expect(typeof result.isVulnerable).toBe('boolean');
       expect(typeof result.vulnerabilityType).toBe('string');
@@ -181,7 +181,7 @@ describe('SecurityTestingService', () => {
 
     it('should test input size limits', async () => {
       const result = await service.testInputSizeLimits();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.hasProperLimits).toBe('boolean');
       expect(typeof result.rejectsOversizedInput).toBe('boolean');
@@ -192,7 +192,7 @@ describe('SecurityTestingService', () => {
   describe('Environment Security Tests', () => {
     it('should test environment security', async () => {
       const result = await service.testEnvironmentSecurity();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.hasSecureDefaults).toBe('boolean');
       expect(typeof result.hasRequiredSecrets).toBe('boolean');
@@ -202,7 +202,7 @@ describe('SecurityTestingService', () => {
 
     it('should test secrets management', async () => {
       const result = await service.testSecretsManagement();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.encryptionIsStrong).toBe('boolean');
       expect(typeof result.secretsAreRotated).toBe('boolean');
@@ -212,7 +212,7 @@ describe('SecurityTestingService', () => {
 
     it('should test configuration tampering', async () => {
       const result = await service.testConfigurationTampering();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.isVulnerable).toBe('boolean');
       expect(typeof result.hasIntegrityChecks).toBe('boolean');
@@ -223,7 +223,7 @@ describe('SecurityTestingService', () => {
   describe('Network Security Tests', () => {
     it('should test HTTPS enforcement', async () => {
       const result = await service.testHTTPSEnforcement();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.enforcesHTTPS).toBe('boolean');
       expect(typeof result.hasSecurityHeaders).toBe('boolean');
@@ -233,7 +233,7 @@ describe('SecurityTestingService', () => {
 
     it('should test CORS configuration', async () => {
       const result = await service.testCORSConfiguration();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.hasRestrictivePolicy).toBe('boolean');
       expect(typeof result.preventsCSRF).toBe('boolean');
@@ -242,7 +242,7 @@ describe('SecurityTestingService', () => {
 
     it('should test rate limiting', async () => {
       const result = await service.testRateLimiting();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.isEnforced).toBe('boolean');
       expect(typeof result.preventsDoS).toBe('boolean');
@@ -253,7 +253,7 @@ describe('SecurityTestingService', () => {
   describe('Security Monitoring Tests', () => {
     it('should test security logging', async () => {
       const result = await service.testSecurityLogging();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.logsAuthenticationEvents).toBe('boolean');
       expect(typeof result.logsAuthorizationFailures).toBe('boolean');
@@ -263,7 +263,7 @@ describe('SecurityTestingService', () => {
 
     it('should test threat detection', async () => {
       const result = await service.testThreatDetection();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.detectsSuspiciousActivity).toBe('boolean');
       expect(typeof result.hasAutomaticResponse).toBe('boolean');
@@ -272,7 +272,7 @@ describe('SecurityTestingService', () => {
 
     it('should test audit trail integrity', async () => {
       const result = await service.testAuditTrailIntegrity();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.hasImmutableLogs).toBe('boolean');
       expect(typeof result.hasDigitalSignatures).toBe('boolean');
@@ -283,7 +283,7 @@ describe('SecurityTestingService', () => {
   describe('Performance Impact Tests', () => {
     it('should measure security performance impact', async () => {
       const result = await service.testSecurityPerformance();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.authenticationOverhead).toBe('number');
       expect(typeof result.authorizationOverhead).toBe('number');
@@ -294,7 +294,7 @@ describe('SecurityTestingService', () => {
 
     it('should perform security stress testing', async () => {
       const result = await service.testSecurityStress();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.handlesHighAuthLoad).toBe('boolean');
       expect(typeof result.maintainsSecurityUnderLoad).toBe('boolean');
@@ -305,7 +305,7 @@ describe('SecurityTestingService', () => {
   describe('Compliance Tests', () => {
     it('should test compliance requirements', async () => {
       const result = await service.testSecurityCompliance();
-      
+
       expect(result).toBeDefined();
       expect(typeof result.meetsGDPRRequirements).toBe('boolean');
       expect(typeof result.hasDataProtection).toBe('boolean');
@@ -317,13 +317,13 @@ describe('SecurityTestingService', () => {
   describe('Full Security Test Suite', () => {
     it('should run full security test suite', async () => {
       const results = await service.runFullSecurityTestSuite();
-      
+
       expect(results).toBeDefined();
       expect(Array.isArray(results)).toBe(true);
       expect(results.length).toBeGreaterThan(0);
-      
+
       // Verify each result has the correct SecurityTestResult interface fields
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result.testName).toBeDefined();
         expect(typeof result.testName).toBe('string');
         expect(typeof result.passed).toBe('boolean');
@@ -337,9 +337,9 @@ describe('SecurityTestingService', () => {
     it('should generate security test report', async () => {
       // First run some tests to populate results
       await service.runFullSecurityTestSuite();
-      
+
       const report = service.getSecurityTestReport();
-      
+
       expect(report).toBeDefined();
       expect(report.summary).toBeDefined();
       expect(typeof report.summary.total).toBe('number');
@@ -355,13 +355,13 @@ describe('SecurityTestingService', () => {
 
   describe('Additional Utility Tests', () => {
     it('should validate JWT token structure', async () => {
-      const testToken = jwtService.sign({ 
-        userId: 'test', 
+      const testToken = jwtService.sign({
+        userId: 'test',
         role: 'user',
         iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + (15 * 60)
+        exp: Math.floor(Date.now() / 1000) + 15 * 60,
       });
-      
+
       // Test that we can analyze the token without errors
       const result = await service.analyzeJWTSecurity(testToken);
       expect(result).toBeDefined();
@@ -370,7 +370,7 @@ describe('SecurityTestingService', () => {
 
     it('should handle invalid tokens gracefully', async () => {
       const invalidToken = 'invalid.token.here';
-      
+
       try {
         const result = await service.analyzeJWTSecurity(invalidToken);
         // The service should handle invalid tokens gracefully

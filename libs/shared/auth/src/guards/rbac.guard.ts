@@ -58,17 +58,25 @@ function hasPermission(
   };
 
   const rolePerms = ROLE_PERMISSIONS[userRole];
-  if (!rolePerms) return false;
+  if (!rolePerms) {
+    return false;
+  }
 
   // Verificar permisos de admin
-  if (rolePerms['*'] && rolePerms['*'].includes('*')) return true;
+  if (rolePerms['*'] && rolePerms['*'].includes('*')) {
+    return true;
+  }
 
   // Verificar permisos específicos del módulo
   const modulePerms = rolePerms[module];
-  if (!modulePerms) return false;
+  if (!modulePerms) {
+    return false;
+  }
 
   // Verificar si tiene todos los permisos del módulo
-  if (modulePerms.includes('*')) return true;
+  if (modulePerms.includes('*')) {
+    return true;
+  }
 
   // Verificar acción específica
   return modulePerms.includes(action);

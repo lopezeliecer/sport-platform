@@ -87,7 +87,7 @@ export class SecurityTestingService {
 
       // Test JWT validation
       const jwtToken = token.startsWith('Bearer ') ? token.substring(7) : token;
-      
+
       try {
         await this.jwtService.verifyAsync(jwtToken);
         tokenValidated = true;
@@ -99,7 +99,6 @@ export class SecurityTestingService {
       // If we reach here with an invalid test token, there might be a security issue
       vulnerabilities.push('Invalid token was accepted');
       return { isSecure: false, vulnerabilities, tokenValidated };
-
     } catch (error) {
       this.logger.debug(`Authentication bypass test completed: ${error.message}`);
       return { isSecure: true, vulnerabilities, tokenValidated };
@@ -112,23 +111,22 @@ export class SecurityTestingService {
   async analyzeJWTSecurity(token: string): Promise<JWTSecurityAnalysis> {
     try {
       const decoded = this.jwtService.decode(token, { complete: true }) as any;
-      
+
       // Check secret strength
       const jwtSecret = this.configService.get<string>('JWT_SECRET');
       const secretEntropy = this.calculateEntropy(jwtSecret);
       const hasStrongSecret = secretEntropy >= 4.0 && jwtSecret.length >= 32;
 
       // Check expiration
-      const hasValidExpiration = decoded.payload.exp && 
-        (decoded.payload.exp - decoded.payload.iat) <= 86400; // Max 24 hours
+      const hasValidExpiration =
+        decoded.payload.exp && decoded.payload.exp - decoded.payload.iat <= 86400; // Max 24 hours
 
       // Check algorithm security
       const secureAlgorithms = ['HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512'];
       const hasSecureAlgorithm = secureAlgorithms.includes(decoded.header.alg);
 
       // Check issuer
-      const hasValidIssuer = decoded.payload.iss && 
-        decoded.payload.iss.includes('sports-platform');
+      const hasValidIssuer = decoded.payload.iss && decoded.payload.iss.includes('sports-platform');
 
       return {
         hasStrongSecret,
@@ -163,19 +161,31 @@ export class SecurityTestingService {
   /**
    * Test password strength requirements
    */
-  async testPasswordStrength(password: string): Promise<{ isWeak: boolean; shouldBeRejected: boolean; score: number }> {
+  async testPasswordStrength(
+    password: string,
+  ): Promise<{ isWeak: boolean; shouldBeRejected: boolean; score: number }> {
     let score = 0;
     const weakPatterns = ['password', '123456', 'admin', 'qwerty', 'letmein', 'welcome'];
-    
+
     // Check against weak patterns
     const isCommonPassword = weakPatterns.includes(password.toLowerCase());
-    
+
     // Basic strength checks
-    if (password.length >= 8) score += 1;
-    if (/[a-z]/.test(password)) score += 1;
-    if (/[A-Z]/.test(password)) score += 1;
-    if (/[0-9]/.test(password)) score += 1;
-    if (/[^a-zA-Z0-9]/.test(password)) score += 1;
+    if (password.length >= 8) {
+      score += 1;
+    }
+    if (/[a-z]/.test(password)) {
+      score += 1;
+    }
+    if (/[A-Z]/.test(password)) {
+      score += 1;
+    }
+    if (/[0-9]/.test(password)) {
+      score += 1;
+    }
+    if (/[^a-zA-Z0-9]/.test(password)) {
+      score += 1;
+    }
 
     const isWeak = isCommonPassword || score < 3;
     const shouldBeRejected = isWeak || password.length < 8;
@@ -189,11 +199,11 @@ export class SecurityTestingService {
   async testRBACEnforcement(role: string, resource: string): Promise<RBACTestResult> {
     // Define role-resource mappings for testing
     const rolePermissions = {
-      'ATHLETE': ['athlete-profile', 'training-calendar'],
-      'COACH': ['athlete-profile', 'training-calendar', 'training-sessions', 'performance-data'],
-      'ADMIN': ['admin-dashboard', 'user-management', 'club-settings', 'reports'],
-      'PARENT': ['athlete-data', 'notifications', 'payments'],
-      'MEDICAL_STAFF': ['medical-records', 'health-data', 'injury-reports'],
+      ATHLETE: ['athlete-profile', 'training-calendar'],
+      COACH: ['athlete-profile', 'training-calendar', 'training-sessions', 'performance-data'],
+      ADMIN: ['admin-dashboard', 'user-management', 'club-settings', 'reports'],
+      PARENT: ['athlete-data', 'notifications', 'payments'],
+      MEDICAL_STAFF: ['medical-records', 'health-data', 'injury-reports'],
     };
 
     const allowedResources = rolePermissions[role] || [];
@@ -210,7 +220,11 @@ export class SecurityTestingService {
   /**
    * Test privilege escalation prevention
    */
-  async testPrivilegeEscalation(): Promise<{ isVulnerable: boolean; canEscalateVertically: boolean; canEscalateHorizontally: boolean }> {
+  async testPrivilegeEscalation(): Promise<{
+    isVulnerable: boolean;
+    canEscalateVertically: boolean;
+    canEscalateHorizontally: boolean;
+  }> {
     // Simulate privilege escalation attempts
     const canEscalateVertically = false; // Cannot gain higher privileges
     const canEscalateHorizontally = false; // Cannot access other user's data
@@ -225,7 +239,11 @@ export class SecurityTestingService {
   /**
    * Test multi-tenant isolation
    */
-  async testTenantIsolation(): Promise<{ hasDataLeakage: boolean; canAccessOtherTenantData: boolean; tenantSwitchingSecure: boolean }> {
+  async testTenantIsolation(): Promise<{
+    hasDataLeakage: boolean;
+    canAccessOtherTenantData: boolean;
+    tenantSwitchingSecure: boolean;
+  }> {
     return {
       hasDataLeakage: false,
       canAccessOtherTenantData: false,
@@ -239,11 +257,12 @@ export class SecurityTestingService {
   async testSQLInjection(payload: string): Promise<VulnerabilityTestResult> {
     // Simulate input sanitization check
     const inputSanitized = this.sanitizeInput(payload);
-    const containsSQLKeywords = /(\bDROP\b|\bUNION\b|\bSELECT\b|\bINSERT\b|\bUPDATE\b|\bDELETE\b)/i.test(payload);
-    
+    const containsSQLKeywords =
+      /(\bDROP\b|\bUNION\b|\bSELECT\b|\bINSERT\b|\bUPDATE\b|\bDELETE\b)/i.test(payload);
+
     // Even with Prisma ORM protection, detect SQL keywords as a warning indicator
     const hasSQLPattern = containsSQLKeywords && !inputSanitized.includes(payload);
-    
+
     return {
       isVulnerable: hasSQLPattern, // Vulnerable if SQL keywords detected after sanitization check
       inputSanitized: inputSanitized !== payload,
@@ -259,10 +278,10 @@ export class SecurityTestingService {
   async testXSSPrevention(payload: string): Promise<VulnerabilityTestResult> {
     const inputSanitized = this.sanitizeInput(payload);
     const containsScriptTags = /<script|javascript:|on\w+=/i.test(payload);
-    
+
     // Even with input validation and DOMPurify protection, detect script patterns as a warning indicator
     const hasXSSPattern = containsScriptTags && !inputSanitized.includes(payload);
-    
+
     return {
       isVulnerable: hasXSSPattern, // Vulnerable if script patterns detected after sanitization check
       inputSanitized: inputSanitized !== payload,
@@ -275,7 +294,11 @@ export class SecurityTestingService {
   /**
    * Test input size limits
    */
-  async testInputSizeLimits(): Promise<{ hasProperLimits: boolean; rejectsOversizedInput: boolean; preventsDoS: boolean }> {
+  async testInputSizeLimits(): Promise<{
+    hasProperLimits: boolean;
+    rejectsOversizedInput: boolean;
+    preventsDoS: boolean;
+  }> {
     return {
       hasProperLimits: true,
       rejectsOversizedInput: true,
@@ -286,9 +309,14 @@ export class SecurityTestingService {
   /**
    * Test environment security
    */
-  async testEnvironmentSecurity(): Promise<{ hasSecureDefaults: boolean; hasRequiredSecrets: boolean; secretsAreEncrypted: boolean; hasValidationRules: boolean }> {
+  async testEnvironmentSecurity(): Promise<{
+    hasSecureDefaults: boolean;
+    hasRequiredSecrets: boolean;
+    secretsAreEncrypted: boolean;
+    hasValidationRules: boolean;
+  }> {
     const config = this.environmentSecurity.getSecurityConfig();
-    
+
     return {
       hasSecureDefaults: config.securityLevel === 'high' || config.securityLevel === 'standard',
       hasRequiredSecrets: true,
@@ -300,7 +328,12 @@ export class SecurityTestingService {
   /**
    * Test secrets management security
    */
-  async testSecretsManagement(): Promise<{ encryptionIsStrong: boolean; secretsAreRotated: boolean; accessIsLogged: boolean; hasBackupStrategy: boolean }> {
+  async testSecretsManagement(): Promise<{
+    encryptionIsStrong: boolean;
+    secretsAreRotated: boolean;
+    accessIsLogged: boolean;
+    hasBackupStrategy: boolean;
+  }> {
     return {
       encryptionIsStrong: true, // AES-256-GCM
       secretsAreRotated: true,
@@ -312,7 +345,11 @@ export class SecurityTestingService {
   /**
    * Test configuration tampering prevention
    */
-  async testConfigurationTampering(): Promise<{ isVulnerable: boolean; hasIntegrityChecks: boolean; detectsChanges: boolean }> {
+  async testConfigurationTampering(): Promise<{
+    isVulnerable: boolean;
+    hasIntegrityChecks: boolean;
+    detectsChanges: boolean;
+  }> {
     return {
       isVulnerable: false,
       hasIntegrityChecks: true,
@@ -323,7 +360,12 @@ export class SecurityTestingService {
   /**
    * Test HTTPS enforcement and security headers
    */
-  async testHTTPSEnforcement(): Promise<{ enforcesHTTPS: boolean; hasSecurityHeaders: boolean; hasCSPHeader: boolean; hasHSTSHeader: boolean }> {
+  async testHTTPSEnforcement(): Promise<{
+    enforcesHTTPS: boolean;
+    hasSecurityHeaders: boolean;
+    hasCSPHeader: boolean;
+    hasHSTSHeader: boolean;
+  }> {
     return {
       enforcesHTTPS: this.configService.get('NODE_ENV') === 'production',
       hasSecurityHeaders: true,
@@ -335,7 +377,11 @@ export class SecurityTestingService {
   /**
    * Test CORS configuration
    */
-  async testCORSConfiguration(): Promise<{ hasRestrictivePolicy: boolean; preventsCSRF: boolean; allowsOnlyTrustedOrigins: boolean }> {
+  async testCORSConfiguration(): Promise<{
+    hasRestrictivePolicy: boolean;
+    preventsCSRF: boolean;
+    allowsOnlyTrustedOrigins: boolean;
+  }> {
     return {
       hasRestrictivePolicy: true,
       preventsCSRF: true,
@@ -346,7 +392,11 @@ export class SecurityTestingService {
   /**
    * Test rate limiting
    */
-  async testRateLimiting(): Promise<{ isEnforced: boolean; preventsDoS: boolean; hasDifferentLimitsPerEndpoint: boolean }> {
+  async testRateLimiting(): Promise<{
+    isEnforced: boolean;
+    preventsDoS: boolean;
+    hasDifferentLimitsPerEndpoint: boolean;
+  }> {
     return {
       isEnforced: true,
       preventsDoS: true,
@@ -357,7 +407,12 @@ export class SecurityTestingService {
   /**
    * Test security logging
    */
-  async testSecurityLogging(): Promise<{ logsAuthenticationEvents: boolean; logsAuthorizationFailures: boolean; logsSensitiveAccess: boolean; hasProperLogLevel: boolean }> {
+  async testSecurityLogging(): Promise<{
+    logsAuthenticationEvents: boolean;
+    logsAuthorizationFailures: boolean;
+    logsSensitiveAccess: boolean;
+    hasProperLogLevel: boolean;
+  }> {
     return {
       logsAuthenticationEvents: true,
       logsAuthorizationFailures: true,
@@ -369,7 +424,11 @@ export class SecurityTestingService {
   /**
    * Test threat detection
    */
-  async testThreatDetection(): Promise<{ detectsSuspiciousActivity: boolean; hasAutomaticResponse: boolean; alertsAdministrators: boolean }> {
+  async testThreatDetection(): Promise<{
+    detectsSuspiciousActivity: boolean;
+    hasAutomaticResponse: boolean;
+    alertsAdministrators: boolean;
+  }> {
     return {
       detectsSuspiciousActivity: true,
       hasAutomaticResponse: true,
@@ -380,7 +439,11 @@ export class SecurityTestingService {
   /**
    * Test audit trail integrity
    */
-  async testAuditTrailIntegrity(): Promise<{ hasImmutableLogs: boolean; hasDigitalSignatures: boolean; preventsLogTampering: boolean }> {
+  async testAuditTrailIntegrity(): Promise<{
+    hasImmutableLogs: boolean;
+    hasDigitalSignatures: boolean;
+    preventsLogTampering: boolean;
+  }> {
     return {
       hasImmutableLogs: true,
       hasDigitalSignatures: true,
@@ -391,7 +454,12 @@ export class SecurityTestingService {
   /**
    * Test security performance
    */
-  async testSecurityPerformance(): Promise<{ authenticationOverhead: number; authorizationOverhead: number; loggingOverhead: number; encryptionOverhead: number }> {
+  async testSecurityPerformance(): Promise<{
+    authenticationOverhead: number;
+    authorizationOverhead: number;
+    loggingOverhead: number;
+    encryptionOverhead: number;
+  }> {
     // Simulate performance measurements in milliseconds
     return {
       authenticationOverhead: 25, // Should be < 50ms
@@ -404,7 +472,11 @@ export class SecurityTestingService {
   /**
    * Test security under stress
    */
-  async testSecurityStress(): Promise<{ handlesHighAuthLoad: boolean; maintainsSecurityUnderLoad: boolean; hasGracefulDegradation: boolean }> {
+  async testSecurityStress(): Promise<{
+    handlesHighAuthLoad: boolean;
+    maintainsSecurityUnderLoad: boolean;
+    hasGracefulDegradation: boolean;
+  }> {
     return {
       handlesHighAuthLoad: true,
       maintainsSecurityUnderLoad: true,
@@ -415,7 +487,12 @@ export class SecurityTestingService {
   /**
    * Test security compliance
    */
-  async testSecurityCompliance(): Promise<{ meetsGDPRRequirements: boolean; hasDataProtection: boolean; hasUserConsent: boolean; hasDataRetentionPolicies: boolean }> {
+  async testSecurityCompliance(): Promise<{
+    meetsGDPRRequirements: boolean;
+    hasDataProtection: boolean;
+    hasUserConsent: boolean;
+    hasDataRetentionPolicies: boolean;
+  }> {
     return {
       meetsGDPRRequirements: true,
       hasDataProtection: true,
@@ -427,7 +504,11 @@ export class SecurityTestingService {
   /**
    * Test security documentation
    */
-  async testSecurityDocumentation(): Promise<{ hasSecurityPolicies: boolean; hasIncidentResponsePlan: boolean; hasSecurityGuidelines: boolean }> {
+  async testSecurityDocumentation(): Promise<{
+    hasSecurityPolicies: boolean;
+    hasIncidentResponsePlan: boolean;
+    hasSecurityGuidelines: boolean;
+  }> {
     return {
       hasSecurityPolicies: true,
       hasIncidentResponsePlan: true,
@@ -445,7 +526,7 @@ export class SecurityTestingService {
       role: 'ATHLETE',
       clubId: 'test-club-id',
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (15 * 60), // 15 minutes
+      exp: Math.floor(Date.now() / 1000) + 15 * 60, // 15 minutes
     };
 
     return this.jwtService.signAsync(payload);
@@ -522,10 +603,11 @@ export class SecurityTestingService {
 
       // Performance tests
       const perfTest = await this.testSecurityPerformance();
-      const performancePassed = perfTest.authenticationOverhead < 50 && 
-                               perfTest.authorizationOverhead < 20 &&
-                               perfTest.loggingOverhead < 10;
-      
+      const performancePassed =
+        perfTest.authenticationOverhead < 50 &&
+        perfTest.authorizationOverhead < 20 &&
+        perfTest.loggingOverhead < 10;
+
       results.push({
         testName: 'Security Performance',
         passed: performancePassed,
@@ -547,22 +629,24 @@ export class SecurityTestingService {
   /**
    * Get security test report
    */
-  getSecurityTestReport(): { 
+  getSecurityTestReport(): {
     summary: { total: number; passed: number; failed: number; criticalIssues: number };
     results: SecurityTestResult[];
     recommendations: string[];
   } {
     const total = this.testResults.length;
-    const passed = this.testResults.filter(r => r.passed).length;
+    const passed = this.testResults.filter((r) => r.passed).length;
     const failed = total - passed;
-    const criticalIssues = this.testResults.filter(r => !r.passed && r.riskLevel === 'CRITICAL').length;
+    const criticalIssues = this.testResults.filter(
+      (r) => !r.passed && r.riskLevel === 'CRITICAL',
+    ).length;
 
     const recommendations: string[] = [];
-    
+
     if (criticalIssues > 0) {
       recommendations.push('Immediately address all CRITICAL security issues');
     }
-    
+
     if (failed > 0) {
       recommendations.push('Review and fix failed security tests');
     }
@@ -586,15 +670,15 @@ export class SecurityTestingService {
     for (const char of str) {
       freq[char] = (freq[char] || 0) + 1;
     }
-    
+
     let entropy = 0;
     const length = str.length;
-    
+
     for (const count of Object.values(freq)) {
       const p = (count as number) / length;
       entropy -= p * Math.log2(p);
     }
-    
+
     return entropy;
   }
 
