@@ -490,7 +490,9 @@ export class AuditLogService {
 
   private async checkForSecurityAlerts(entry: AuditLogEntry): Promise<void> {
     const threshold = this.alertThresholds.get(entry.eventType);
-    if (!threshold) return;
+    if (!threshold) {
+      return;
+    }
 
     // Count recent similar events from same IP/user
     const recentEvents = Array.from(this.auditLogs.values()).filter(
@@ -519,9 +521,15 @@ export class AuditLogService {
   }
 
   private determineRetentionPolicy(eventType: AuditEventType, severity: AuditSeverity): string {
-    if (severity === AuditSeverity.CRITICAL) return '7_YEARS';
-    if (severity === AuditSeverity.HIGH) return '3_YEARS';
-    if (eventType.includes('LOGIN') || eventType.includes('ACCESS')) return '1_YEAR';
+    if (severity === AuditSeverity.CRITICAL) {
+      return '7_YEARS';
+    }
+    if (severity === AuditSeverity.HIGH) {
+      return '3_YEARS';
+    }
+    if (eventType.includes('LOGIN') || eventType.includes('ACCESS')) {
+      return '1_YEAR';
+    }
     return '6_MONTHS';
   }
 
@@ -578,7 +586,9 @@ export class AuditLogService {
   }
 
   private cleanupOldEntries(): void {
-    if (this.auditLogs.size <= this.maxLogEntries) return;
+    if (this.auditLogs.size <= this.maxLogEntries) {
+      return;
+    }
 
     // Remove oldest entries when limit is exceeded
     const entries = Array.from(this.auditLogs.entries()).sort(

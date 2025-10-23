@@ -26,7 +26,9 @@ export function createSecurityConfig(isProduction: boolean = false): SecurityCon
   const corsConfig: CorsOptions = {
     origin: (origin, callback) => {
       // Allow requests with no origin (mobile apps, server-to-server)
-      if (!origin) return callback(null, true);
+      if (!origin) {
+        return callback(null, true);
+      }
 
       if (allowedOrigins.includes(origin)) {
         callback(null, true);

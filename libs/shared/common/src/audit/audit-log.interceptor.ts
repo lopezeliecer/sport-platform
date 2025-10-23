@@ -165,15 +165,29 @@ export class AuditLogInterceptor implements NestInterceptor {
 
   private determineEventType(method: string, path: string, success: boolean): AuditEventType {
     // Authentication endpoints
-    if (path.includes('/auth/google') && success) return AuditEventType.LOGIN_SUCCESS;
-    if (path.includes('/auth/google') && !success) return AuditEventType.LOGIN_FAILED;
-    if (path.includes('/auth/logout')) return AuditEventType.LOGOUT;
-    if (path.includes('/auth/refresh')) return AuditEventType.TOKEN_REFRESH;
+    if (path.includes('/auth/google') && success) {
+      return AuditEventType.LOGIN_SUCCESS;
+    }
+    if (path.includes('/auth/google') && !success) {
+      return AuditEventType.LOGIN_FAILED;
+    }
+    if (path.includes('/auth/logout')) {
+      return AuditEventType.LOGOUT;
+    }
+    if (path.includes('/auth/refresh')) {
+      return AuditEventType.TOKEN_REFRESH;
+    }
 
     // API key endpoints
-    if (path.includes('/api-keys') && method === 'POST') return AuditEventType.API_KEY_CREATED;
-    if (path.includes('/api-keys') && method === 'GET') return AuditEventType.DATA_READ;
-    if (path.includes('/api-keys/rotate')) return AuditEventType.API_KEY_ROTATED;
+    if (path.includes('/api-keys') && method === 'POST') {
+      return AuditEventType.API_KEY_CREATED;
+    }
+    if (path.includes('/api-keys') && method === 'GET') {
+      return AuditEventType.DATA_READ;
+    }
+    if (path.includes('/api-keys/rotate')) {
+      return AuditEventType.API_KEY_ROTATED;
+    }
 
     // Data operations
     switch (method) {
@@ -192,18 +206,30 @@ export class AuditLogInterceptor implements NestInterceptor {
   }
 
   private determineSeverity(method: string, statusCode: number): AuditSeverity {
-    if (statusCode >= 500) return AuditSeverity.HIGH;
-    if (statusCode >= 400) return AuditSeverity.MEDIUM;
-    if (method === 'DELETE') return AuditSeverity.MEDIUM;
+    if (statusCode >= 500) {
+      return AuditSeverity.HIGH;
+    }
+    if (statusCode >= 400) {
+      return AuditSeverity.MEDIUM;
+    }
+    if (method === 'DELETE') {
+      return AuditSeverity.MEDIUM;
+    }
     return AuditSeverity.LOW;
   }
 
   private determineErrorSeverity(error: any): AuditSeverity {
     const statusCode = error.status || error.statusCode || 500;
 
-    if (statusCode >= 500) return AuditSeverity.HIGH;
-    if (statusCode === 401 || statusCode === 403) return AuditSeverity.MEDIUM;
-    if (statusCode === 429) return AuditSeverity.HIGH; // Rate limiting is serious
+    if (statusCode >= 500) {
+      return AuditSeverity.HIGH;
+    }
+    if (statusCode === 401 || statusCode === 403) {
+      return AuditSeverity.MEDIUM;
+    }
+    if (statusCode === 429) {
+      return AuditSeverity.HIGH;
+    } // Rate limiting is serious
     return AuditSeverity.MEDIUM;
   }
 
@@ -240,7 +266,9 @@ export class AuditLogInterceptor implements NestInterceptor {
   }
 
   private sanitizeRequestBody(body: any): any {
-    if (!body) return undefined;
+    if (!body) {
+      return undefined;
+    }
 
     // Remove sensitive fields from request body
     const sensitiveFields = [
