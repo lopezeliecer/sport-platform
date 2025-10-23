@@ -11,14 +11,8 @@ import { EnvironmentSecurityController } from './environment-security.controller
     ConfigModule, // Access to configuration
     ScheduleModule.forRoot(), // For cron jobs
   ],
-  providers: [
-    EnvironmentSecurityService,
-    SecretsManagementService,
-  ],
+  providers: [EnvironmentSecurityService, SecretsManagementService],
   controllers: [EnvironmentSecurityController],
-  exports: [
-    EnvironmentSecurityService,
-    SecretsManagementService,
-  ],
+  exports: [EnvironmentSecurityService, SecretsManagementService],
 })
 export class EnvironmentSecurityModule {}

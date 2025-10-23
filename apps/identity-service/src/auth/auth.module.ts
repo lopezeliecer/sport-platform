@@ -1,35 +1,32 @@
-import { Module } from "@nestjs/common";
-import { JwtModule } from "@nestjs/jwt";
-import { PassportModule } from "@nestjs/passport";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { PrismaModule } from "../prisma/prisma.module";
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PrismaModule } from '../prisma/prisma.module';
 
-import { AuthController } from "./auth.controller";
-import { AuthService } from "./auth.service";
-import { SessionsService } from "../sessions/sessions.service";
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { SessionsService } from '../sessions/sessions.service';
 
-import { GoogleStrategy } from "./strategies/google.strategy";
-import { JwtStrategy } from "./strategies/jwt.strategy";
+import { GoogleStrategy } from './strategies/google.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
-import { JwtAuthGuard } from "./guards/jwt-auth.guard";
-import { RolesGuard } from "./guards/roles.guard";
-import { PermissionsGuard } from "./guards/permissions.guard";
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { PermissionsGuard } from './guards/permissions.guard';
 
 @Module({
   imports: [
     PrismaModule,
-    PassportModule.register({ defaultStrategy: "jwt" }),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>(
-          "JWT_SECRET",
-          "your-default-secret-key"
-        ),
+        secret: configService.get<string>('JWT_SECRET', 'your-default-secret-key'),
         signOptions: {
-          expiresIn: "15m",
-          issuer: "sports-platform",
-          audience: "sports-platform-users",
+          expiresIn: '15m',
+          issuer: 'sports-platform',
+          audience: 'sports-platform-users',
         },
       }),
       inject: [ConfigService],

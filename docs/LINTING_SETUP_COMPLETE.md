@@ -5,12 +5,14 @@
 ### 1. **Comprehensive Linting Configuration** 🔍
 
 #### ESLint Setup
+
 - ✅ Root `.eslintrc.json` with TypeScript support
 - ✅ Service-level ESLint configs (identity, sports, gateway, club, communication)
 - ✅ Rules for code quality, style consistency, and best practices
 - ✅ Integration with Prettier for formatting
 
 #### Prettier Configuration
+
 - ✅ Root `.prettierrc.json` with consistent formatting rules
 - ✅ `.prettierignore` for files to exclude from formatting
 - ✅ Single quotes, 100 char line width, 2-space indents
@@ -19,6 +21,7 @@
 ### 2. **Developer-Friendly Pre-Commit Workflow** 🚀
 
 #### Smart Validation Script (`scripts/validate-commit.sh`)
+
 - ✅ **Never blocks commits** - Always gives developer choice
 - ✅ **Shows all issues** before commit (errors + warnings)
 - ✅ **Three options** when issues found:
@@ -30,6 +33,7 @@
 - ✅ **Helpful guidance** with fix commands
 
 #### Husky Integration
+
 - ✅ `.husky/pre-commit` hook configured
 - ✅ Calls validation script on every commit
 - ✅ Executable permissions set correctly
@@ -37,6 +41,7 @@
 ### 3. **Comprehensive Npm Scripts** 📝
 
 #### Linting Scripts
+
 ```bash
 npm run lint          # Fix ESLint issues
 npm run lint:check    # Check for issues (don't fix)
@@ -48,6 +53,7 @@ npm run type-check:all     # TypeScript type checking
 ```
 
 #### Service-level Scripts
+
 ```bash
 # In any service directory (e.g., apps/identity-service)
 npm run lint          # Fix issues
@@ -59,6 +65,7 @@ npm run format:check  # Check formatting
 ### 4. **Complete Documentation** 📚
 
 #### `docs/LINTING_GUIDE.md`
+
 - Overview of ESLint, Prettier, Husky setup
 - Detailed ESLint rules explanation
 - Prettier configuration details
@@ -69,6 +76,7 @@ npm run format:check  # Check formatting
 - Troubleshooting guide
 
 #### `docs/DEVELOPER_COMMIT_WORKFLOW.md`
+
 - Complete developer workflow guide
 - Three commit options explained
 - Common workflows with examples
@@ -79,6 +87,7 @@ npm run format:check  # Check formatting
 - Troubleshooting
 
 #### `docs/COMMIT_QUICK_REFERENCE.md`
+
 - Quick reference card
 - Menu example
 - When to use each option
@@ -87,6 +96,7 @@ npm run format:check  # Check formatting
 - File locations
 
 #### Updated `README.md`
+
 - Development section with commands
 - Git commit workflow overview
 - Code quality tools explanation
@@ -95,6 +105,7 @@ npm run format:check  # Check formatting
 ### 5. **Configuration Files** 🗂️
 
 #### Created Files
+
 ```
 ✅ .eslintrc.json                  (Root ESLint config)
 ✅ .prettierrc.json                (Prettier config)
@@ -107,6 +118,7 @@ npm run format:check  # Check formatting
 ```
 
 #### Updated Files
+
 ```
 ✅ README.md                       (Added development section)
 ✅ package.json                    (Added lint-staged config)
@@ -117,17 +129,20 @@ npm run format:check  # Check formatting
 ## How It Works
 
 ### User Commits Code
+
 ```bash
 git commit -m "Add new feature"
 ```
 
 ### Pre-Commit Hook Triggers
+
 ```
 ↓
 → Runs: ./scripts/validate-commit.sh
 ```
 
 ### Validation Script Checks
+
 ```
 1. Get staged files
 2. Run ESLint on .ts/.js files
@@ -136,6 +151,7 @@ git commit -m "Add new feature"
 ```
 
 ### Issues Found?
+
 ```
 Yes ↓
   → Show all issues
@@ -153,51 +169,58 @@ No ↓
 ## Philosophy & Principles
 
 ### ✅ Developer First
+
 - Never block commits
 - Always provide choice
 - Show issues for learning
 - Offer convenience features (auto-fix)
 
 ### ✅ No Surprises
+
 - Validate before commit, not in CI
 - Show all issues clearly
 - Explain what to do to fix
 
 ### ✅ Safety Net
+
 - CI/CD is final gatekeeper
 - Even if issues committed, pipeline catches them
 - Developers learn both at commit & CI time
 
 ### ✅ Flexibility
+
 - Emergency bypass available (`--no-verify`)
 - Three options for every situation
 - Manual validation commands available
 
 ## Key Features
 
-| Feature | Benefit |
-|---------|---------|
-| **Never blocks** | Developers can always commit when needed |
-| **Shows issues** | Developers learn and improve code quality |
-| **Interactive** | Gives developers choice and control |
-| **Auto-fix option** | Solves formatting issues in seconds |
-| **Color-coded** | Easy to read and understand output |
-| **Documentation** | Clear guides for all workflows |
-| **CI/CD Safety** | Pipeline catches anything that slips through |
+| Feature             | Benefit                                      |
+| ------------------- | -------------------------------------------- |
+| **Never blocks**    | Developers can always commit when needed     |
+| **Shows issues**    | Developers learn and improve code quality    |
+| **Interactive**     | Gives developers choice and control          |
+| **Auto-fix option** | Solves formatting issues in seconds          |
+| **Color-coded**     | Easy to read and understand output           |
+| **Documentation**   | Clear guides for all workflows               |
+| **CI/CD Safety**    | Pipeline catches anything that slips through |
 
 ## Quick Start for Developers
 
 1. **Make changes and stage them**
+
    ```bash
    git add .
    ```
 
 2. **Commit (validation script runs automatically)**
+
    ```bash
    git commit -m "Your message"
    ```
 
 3. **See validation results and choose**
+
    ```
    Choose [1], [2], or [3]
    ```
@@ -236,15 +259,18 @@ git checkout -- test.txt  # Clean up
 ## What's Next?
 
 ### Immediate
+
 - ✅ Developers can start using the pre-commit workflow
 - ✅ Run `npm run lint:fix` and `npm run format:root` before first commit
 
 ### Short Term
+
 - Consider adding git hook for push (stricter checks)
 - Add code coverage validation
 - Add security scanning
 
 ### Long Term
+
 - Integrate with CI/CD dashboard
 - Performance metrics for linting
 - Team-wide linting standards dashboard
@@ -271,6 +297,7 @@ config files:
 ## Support & Help
 
 For developers:
+
 - First check: `docs/COMMIT_QUICK_REFERENCE.md` (2 min read)
 - Then check: `docs/DEVELOPER_COMMIT_WORKFLOW.md` (detailed)
 - For linting details: `docs/LINTING_GUIDE.md`

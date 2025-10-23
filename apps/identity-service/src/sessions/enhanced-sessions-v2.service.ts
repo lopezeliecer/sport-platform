@@ -1,12 +1,12 @@
-import { Injectable, UnauthorizedException, Logger } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import { ConfigService } from "@nestjs/config";
-import { PrismaService } from "../prisma/prisma.service";
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma/prisma.service';
 import {
   UserSession,
   AuthSessionStatus,
-} from "@sports-platform/shared/database/prisma/generated/client";
-import { randomBytes, createHash } from "crypto";
+} from '@sports-platform/shared/database/prisma/generated/client';
+import { randomBytes, createHash } from 'crypto';
 
 export interface JwtPayload {
   sub: string; // user id
@@ -31,7 +31,7 @@ export interface CreateSessionDto {
   deviceInfo?: {
     userAgent?: string;
     ip?: string;
-    deviceType?: "mobile" | "desktop" | "tablet";
+    deviceType?: 'mobile' | 'desktop' | 'tablet';
     browserName?: string;
     os?: string;
   };
@@ -60,17 +60,13 @@ export class EnhancedSessionsService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {
-    this.JWT_SECRET =
-      this.configService.get<string>("JWT_SECRET") || "development-jwt-secret";
-    this.JWT_EXPIRES_IN =
-      this.configService.get<string>("JWT_EXPIRES_IN") || "15m";
+    this.JWT_SECRET = this.configService.get<string>('JWT_SECRET') || 'development-jwt-secret';
+    this.JWT_EXPIRES_IN = this.configService.get<string>('JWT_EXPIRES_IN') || '15m';
     this.REFRESH_SECRET =
-      this.configService.get<string>("REFRESH_SECRET") ||
-      "development-refresh-secret";
-    this.REFRESH_EXPIRES_IN =
-      this.configService.get<string>("REFRESH_EXPIRES_IN") || "7d";
+      this.configService.get<string>('REFRESH_SECRET') || 'development-refresh-secret';
+    this.REFRESH_EXPIRES_IN = this.configService.get<string>('REFRESH_EXPIRES_IN') || '7d';
   }
 
   /**
@@ -123,7 +119,7 @@ export class EnhancedSessionsService {
     });
 
     if (!user) {
-      throw new UnauthorizedException("Usuario no encontrado");
+      throw new UnauthorizedException('Usuario no encontrado');
     }
 
     // Preparar payload para JWT
@@ -159,7 +155,7 @@ export class EnhancedSessionsService {
     });
 
     this.logger.log(
-      `Nueva sesión creada para usuario ${userId} en dispositivo ${deviceInfo?.deviceType || "unknown"}`
+      `Nueva sesión creada para usuario ${userId} en dispositivo ${deviceInfo?.deviceType || 'unknown'}`,
     );
 
     return {
@@ -178,12 +174,9 @@ export class EnhancedSessionsService {
   }> {
     try {
       // Verificar refresh token
-      const payload = this.jwtService.verify<RefreshTokenPayload>(
-        refreshToken,
-        {
-          secret: this.REFRESH_SECRET,
-        }
-      );
+      const payload = this.jwtService.verify<RefreshTokenPayload>(refreshToken, {
+        secret: this.REFRESH_SECRET,
+      });
 
       // Buscar sesión activa
       const session = await this.prisma.userSession.findFirst({
@@ -207,10 +200,8 @@ export class EnhancedSessionsService {
       });
 
       if (!session) {
-        this.logger.warn(
-          `Intento de refresh con token inválido para sesión ${payload.sessionId}`
-        );
-        throw new UnauthorizedException("Refresh token inválido");
+        this.logger.warn(`Intento de refresh con token inválido para sesión ${payload.sessionId}`);
+        throw new UnauthorizedException('Refresh token inválido');
       }
 
       // Generar nuevos tokens
@@ -227,10 +218,7 @@ export class EnhancedSessionsService {
 
       // Preparar nuevo JWT payload
       const roles = session.user.userClubRoles
-        .filter(
-          (role) =>
-            !session.currentClubId || role.clubId === session.currentClubId
-        )
+        .filter((role) => !session.currentClubId || role.clubId === session.currentClubId)
         .map((role) => role.role);
 
       const permissions = this.extractPermissions(roles);
@@ -260,9 +248,7 @@ export class EnhancedSessionsService {
         expiresIn: this.REFRESH_EXPIRES_IN,
       });
 
-      this.logger.log(
-        `Tokens renovados para usuario ${session.userId}, sesión ${session.id}`
-      );
+      this.logger.log(`Tokens renovados para usuario ${session.userId}, sesión ${session.id}`);
 
       return {
         accessToken,
@@ -270,7 +256,7 @@ export class EnhancedSessionsService {
       };
     } catch (error) {
       this.logger.error(`Error al renovar tokens: ${error.message}`);
-      throw new UnauthorizedException("Refresh token inválido");
+      throw new UnauthorizedException('Refresh token inválido');
     }
   }
 
@@ -297,11 +283,11 @@ export class EnhancedSessionsService {
     });
 
     if (!session) {
-      throw new UnauthorizedException("Sesión inválida");
+      throw new UnauthorizedException('Sesión inválida');
     }
 
     if (session.user.userClubRoles.length === 0) {
-      throw new UnauthorizedException("No tienes permisos en este club");
+      throw new UnauthorizedException('No tienes permisos en este club');
     }
 
     // Actualizar club actual en sesión
@@ -343,7 +329,7 @@ export class EnhancedSessionsService {
         status: AuthSessionStatus.ACTIVE,
         expiresAt: { gt: new Date() },
       },
-      orderBy: { lastActivityAt: "desc" },
+      orderBy: { lastActivityAt: 'desc' },
     });
 
     return sessions.map((session) => ({
@@ -379,10 +365,7 @@ export class EnhancedSessionsService {
   /**
    * Revocar todas las sesiones del usuario (excepto la actual)
    */
-  async revokeAllUserSessions(
-    userId: string,
-    excludeSessionId?: string
-  ): Promise<void> {
+  async revokeAllUserSessions(userId: string, excludeSessionId?: string): Promise<void> {
     const where: any = {
       userId,
       status: AuthSessionStatus.ACTIVE,
@@ -401,7 +384,7 @@ export class EnhancedSessionsService {
     });
 
     this.logger.log(
-      `Todas las sesiones revocadas para usuario ${userId}${excludeSessionId ? ` (excepto ${excludeSessionId})` : ""}`
+      `Todas las sesiones revocadas para usuario ${userId}${excludeSessionId ? ` (excepto ${excludeSessionId})` : ''}`,
     );
   }
 
@@ -434,10 +417,7 @@ export class EnhancedSessionsService {
   async cleanupExpiredSessions(): Promise<void> {
     const expiredCount = await this.prisma.userSession.updateMany({
       where: {
-        OR: [
-          { expiresAt: { lt: new Date() } },
-          { refreshExpiresAt: { lt: new Date() } },
-        ],
+        OR: [{ expiresAt: { lt: new Date() } }, { refreshExpiresAt: { lt: new Date() } }],
         status: AuthSessionStatus.ACTIVE,
       },
       data: {
@@ -445,26 +425,26 @@ export class EnhancedSessionsService {
       },
     });
 
-    this.logger.log(
-      `${expiredCount.count} sesiones expiradas marcadas para limpieza`
-    );
+    this.logger.log(`${expiredCount.count} sesiones expiradas marcadas para limpieza`);
   }
 
   // Métodos privados
 
   private generateSecureToken(): string {
-    return randomBytes(32).toString("hex");
+    return randomBytes(32).toString('hex');
   }
 
   private hashToken(token: string): string {
-    return createHash("sha256").update(token).digest("hex");
+    return createHash('sha256').update(token).digest('hex');
   }
 
   private generateDeviceFingerprint(deviceInfo?: any): string {
-    if (!deviceInfo) return this.generateSecureToken();
+    if (!deviceInfo) {
+      return this.generateSecureToken();
+    }
 
-    const fingerprint = `${deviceInfo.userAgent || ""}${deviceInfo.ip || ""}${deviceInfo.browserName || ""}${deviceInfo.os || ""}`;
-    return createHash("md5").update(fingerprint).digest("hex");
+    const fingerprint = `${deviceInfo.userAgent || ''}${deviceInfo.ip || ''}${deviceInfo.browserName || ''}${deviceInfo.os || ''}`;
+    return createHash('md5').update(fingerprint).digest('hex');
   }
 
   private extractPermissions(roles: string[]): string[] {
@@ -474,29 +454,29 @@ export class EnhancedSessionsService {
     roles.forEach((role) => {
       // Agregar permisos base según el rol
       switch (role) {
-        case "CLUB_ADMIN":
-          allPermissions.add("*");
+        case 'CLUB_ADMIN':
+          allPermissions.add('*');
           break;
-        case "COACH":
-          allPermissions.add("athletes:read");
-          allPermissions.add("training:*");
-          allPermissions.add("performance:*");
+        case 'COACH':
+          allPermissions.add('athletes:read');
+          allPermissions.add('training:*');
+          allPermissions.add('performance:*');
           break;
-        case "ATHLETE":
-          allPermissions.add("training:read:own");
-          allPermissions.add("performance:*:own");
+        case 'ATHLETE':
+          allPermissions.add('training:read:own');
+          allPermissions.add('performance:*:own');
           break;
-        case "MEDICAL_STAFF":
-          allPermissions.add("medical:*");
-          allPermissions.add("athletes:read");
+        case 'MEDICAL_STAFF':
+          allPermissions.add('medical:*');
+          allPermissions.add('athletes:read');
           break;
-        case "PARENT":
-          allPermissions.add("athletes:read:children");
-          allPermissions.add("payments:*:children");
+        case 'PARENT':
+          allPermissions.add('athletes:read:children');
+          allPermissions.add('payments:*:children');
           break;
-        case "CLUB_DIRECTOR":
-          allPermissions.add("reports:*");
-          allPermissions.add("analytics:*");
+        case 'CLUB_DIRECTOR':
+          allPermissions.add('reports:*');
+          allPermissions.add('analytics:*');
           break;
       }
     });
@@ -526,7 +506,7 @@ export class EnhancedSessionsService {
   async getActiveSessionsCount(): Promise<number> {
     return await this.prisma.userSession.count({
       where: {
-        status: "ACTIVE",
+        status: 'ACTIVE',
         expiresAt: {
           gt: new Date(),
         },

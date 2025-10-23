@@ -1,5 +1,5 @@
 // Main module
-export * from "./shared-auth.module";
+export * from './shared-auth.module';
 
 // Types (exportar específicamente para evitar conflictos)
 export type {
@@ -12,7 +12,7 @@ export type {
   Scope,
   Permission,
   AuthenticatedRequest,
-} from "./types/auth.types";
+} from './types/auth.types';
 
 // Decorators (exportar específicamente para evitar conflictos)
 export {
@@ -46,14 +46,14 @@ export {
   CurrentUser,
   CurrentUserId,
   CurrentClubId,
-} from "./decorators/permissions.decorator";
+} from './decorators/permissions.decorator';
 
 // Guards
-export * from "./guards/jwt-auth.guard";
-export * from "./guards/rbac.guard";
+export * from './guards/jwt-auth.guard';
+export * from './guards/rbac.guard';
 
 // Strategies
-export * from "./strategies/jwt.strategy";
+export * from './strategies/jwt.strategy';
 
 // Services
-export * from "./services/auth-validation.service";
+export * from './services/auth-validation.service';

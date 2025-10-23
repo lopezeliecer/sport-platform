@@ -1,14 +1,14 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { JwtService } from "@nestjs/jwt";
-import { PrismaService } from "../prisma/prisma.service";
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '../prisma/prisma.service';
 import {
   AuthSessionStatus,
   UserRole,
-} from "@sports-platform/shared/database/prisma/generated/client";
-import * as crypto from "crypto";
-import { JwtPayload } from "../auth/strategies/jwt.strategy";
-import { createHash, randomBytes } from "crypto";
+} from '@sports-platform/shared/database/prisma/generated/client';
+import * as crypto from 'crypto';
+import { JwtPayload } from '../auth/strategies/jwt.strategy';
+import { createHash, randomBytes } from 'crypto';
 
 export interface CreateSessionData {
   userId: string;
@@ -36,18 +36,18 @@ export interface SessionInfo {
 
 @Injectable()
 export class SessionsService {
-  private readonly JWT_EXPIRY = "15m"; // 15 minutes
-  private readonly REFRESH_EXPIRY = "7d"; // 7 days
+  private readonly JWT_EXPIRY = '15m'; // 15 minutes
+  private readonly REFRESH_EXPIRY = '7d'; // 7 days
 
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {}
 
   async createSession(
     data: CreateSessionData,
-    userRoles: any[]
+    userRoles: any[],
   ): Promise<{
     accessToken: string;
     refreshToken: string;
@@ -81,9 +81,9 @@ export class SessionsService {
     });
 
     // Create JWT payload
-    const payload: Omit<JwtPayload, "iat" | "exp"> = {
+    const payload: Omit<JwtPayload, 'iat' | 'exp'> = {
       sub: data.userId,
-      email: userRoles[0]?.user?.email || "",
+      email: userRoles[0]?.user?.email || '',
       sessionId: session.id,
       clubId: data.clubId,
       roles: userRoles.map((role) => ({
@@ -135,7 +135,7 @@ export class SessionsService {
     });
 
     if (!session) {
-      throw new UnauthorizedException("Invalid refresh token");
+      throw new UnauthorizedException('Invalid refresh token');
     }
 
     // Generate new tokens
@@ -161,7 +161,7 @@ export class SessionsService {
     });
 
     // Create new JWT
-    const payload: Omit<JwtPayload, "iat" | "exp"> = {
+    const payload: Omit<JwtPayload, 'iat' | 'exp'> = {
       sub: session.userId,
       email: session.user.email,
       sessionId: session.id,
@@ -169,7 +169,7 @@ export class SessionsService {
       roles: session.user.userClubRoles.map((role) => ({
         clubId: role.clubId,
         role: role.role,
-        permissions: (role.permissions as string[]) || [],
+        permissions: role.permissions || [],
       })),
     };
 
@@ -205,9 +205,7 @@ export class SessionsService {
       refreshExpiresAt: session.refreshExpiresAt,
       lastActivityAt: session.lastActivityAt,
       createdAt: session.createdAt,
-      isActive:
-        session.status === AuthSessionStatus.ACTIVE &&
-        session.expiresAt > new Date(),
+      isActive: session.status === AuthSessionStatus.ACTIVE && session.expiresAt > new Date(),
     };
   }
 
@@ -236,10 +234,7 @@ export class SessionsService {
     });
   }
 
-  async revokeAllUserSessions(
-    userId: string,
-    exceptSessionId?: string
-  ): Promise<void> {
+  async revokeAllUserSessions(userId: string, exceptSessionId?: string): Promise<void> {
     const whereCondition: any = {
       userId,
       status: AuthSessionStatus.ACTIVE,
@@ -267,7 +262,7 @@ export class SessionsService {
           gt: new Date(),
         },
       },
-      orderBy: { lastActivityAt: "desc" },
+      orderBy: { lastActivityAt: 'desc' },
     });
 
     return sessions.map((session) => ({
@@ -301,10 +296,10 @@ export class SessionsService {
   }
 
   private generateSecureToken(): string {
-    return randomBytes(32).toString("hex");
+    return randomBytes(32).toString('hex');
   }
 
   private hashToken(token: string): string {
-    return createHash("sha256").update(token).digest("hex");
+    return createHash('sha256').update(token).digest('hex');
   }
 }

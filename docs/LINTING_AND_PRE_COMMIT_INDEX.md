@@ -34,6 +34,7 @@
 ## 📖 Documentation Structure
 
 ### Level 1: Quick Reference (5 minutes)
+
 ```
 COMMIT_QUICK_REFERENCE.md
 ├── Menu options table
@@ -41,9 +42,11 @@ COMMIT_QUICK_REFERENCE.md
 ├── Common examples
 └── Quick troubleshooting
 ```
+
 **Best for:** Busy developers, quick lookup
 
 ### Level 2: Complete Workflow (15 minutes)
+
 ```
 DEVELOPER_COMMIT_WORKFLOW.md
 ├── Pre-commit flow explanation
@@ -53,9 +56,11 @@ DEVELOPER_COMMIT_WORKFLOW.md
 ├── Best practices
 └── Troubleshooting guide
 ```
+
 **Best for:** Understanding the workflow, learning patterns
 
 ### Level 3: Visual Understanding (10 minutes)
+
 ```
 COMMIT_WORKFLOW_DIAGRAM.md
 ├── Main flow chart
@@ -65,9 +70,11 @@ COMMIT_WORKFLOW_DIAGRAM.md
 ├── Integration points
 └── Status indicators
 ```
+
 **Best for:** Visual learners, understanding architecture
 
 ### Level 4: Technical Details (20 minutes)
+
 ```
 LINTING_GUIDE.md
 ├── ESLint configuration
@@ -79,9 +86,11 @@ LINTING_GUIDE.md
 ├── CI/CD integration
 └── Troubleshooting
 ```
+
 **Best for:** Customizing rules, debugging issues
 
 ### Level 5: Complete Overview (30 minutes)
+
 ```
 COMPLETE_SETUP_SUMMARY.md
 ├── What was implemented
@@ -92,9 +101,11 @@ COMPLETE_SETUP_SUMMARY.md
 ├── Key benefits
 └── Verification checklist
 ```
+
 **Best for:** Team leads, setup verification, onboarding
 
 ### Level 6: Setup Completion
+
 ```
 LINTING_SETUP_COMPLETE.md
 ├── What was implemented
@@ -104,6 +115,7 @@ LINTING_SETUP_COMPLETE.md
 ├── Verification steps
 └── What's next
 ```
+
 **Best for:** Confirming everything is set up
 
 ---
@@ -111,31 +123,37 @@ LINTING_SETUP_COMPLETE.md
 ## 🗺️ Topic-Based Quick Links
 
 ### Committing Code
+
 - **Quick reference** → [`COMMIT_QUICK_REFERENCE.md`](COMMIT_QUICK_REFERENCE.md)
 - **Full workflow** → [`DEVELOPER_COMMIT_WORKFLOW.md`](DEVELOPER_COMMIT_WORKFLOW.md)
 - **Diagrams** → [`COMMIT_WORKFLOW_DIAGRAM.md`](COMMIT_WORKFLOW_DIAGRAM.md)
 
 ### Understanding Options
+
 - **Option 1 (Commit anyway)** → [`COMMIT_QUICK_REFERENCE.md`](COMMIT_QUICK_REFERENCE.md#the-three-choices)
 - **Option 2 (Cancel & fix)** → [`DEVELOPER_COMMIT_WORKFLOW.md`](DEVELOPER_COMMIT_WORKFLOW.md#workflow-2-clean-commit-fix-now)
 - **Option 3 (Auto-fix)** → [`DEVELOPER_COMMIT_WORKFLOW.md`](DEVELOPER_COMMIT_WORKFLOW.md#workflow-3-smart-commit-auto-fix)
 
 ### Fixing Issues
+
 - **ESLint errors** → [`LINTING_GUIDE.md`](LINTING_GUIDE.md#eslint-rules)
 - **Formatting issues** → [`DEVELOPER_COMMIT_WORKFLOW.md`](DEVELOPER_COMMIT_WORKFLOW.md#fixing-common-issues)
 - **TypeScript errors** → [`LINTING_GUIDE.md`](LINTING_GUIDE.md#further-customization)
 - **Hook problems** → [`DEVELOPER_COMMIT_WORKFLOW.md`](DEVELOPER_COMMIT_WORKFLOW.md#troubleshooting)
 
 ### Configuration
+
 - **ESLint rules** → [`LINTING_GUIDE.md`](LINTING_GUIDE.md#eslint-rules)
 - **Prettier settings** → [`LINTING_GUIDE.md`](LINTING_GUIDE.md#prettier-configuration)
 - **Pre-commit hooks** → [`LINTING_GUIDE.md`](LINTING_GUIDE.md#pre-commit-hooks)
 
 ### IDE Setup
+
 - **VS Code** → [`LINTING_GUIDE.md`](LINTING_GUIDE.md#vs-code-configuration)
 - **Extensions** → [`DEVELOPER_COMMIT_WORKFLOW.md`](DEVELOPER_COMMIT_WORKFLOW.md#ide-integration)
 
 ### Commands Reference
+
 - **Linting commands** → [`LINTING_GUIDE.md`](LINTING_GUIDE.md#usage)
 - **Formatting commands** → [`LINTING_GUIDE.md`](LINTING_GUIDE.md#running-formatters)
 - **Manual validation** → [`DEVELOPER_COMMIT_WORKFLOW.md`](DEVELOPER_COMMIT_WORKFLOW.md#manual-validation-commands)
@@ -145,21 +163,25 @@ LINTING_SETUP_COMPLETE.md
 ## 💡 Recommended Reading Path
 
 ### For New Developers
+
 1. [`COMMIT_QUICK_REFERENCE.md`](COMMIT_QUICK_REFERENCE.md) - 5 min
 2. Try your first commit - 2 min
 3. Ask questions if needed - 5 min
 
 ### For Experienced Developers
+
 1. [`COMMIT_QUICK_REFERENCE.md`](COMMIT_QUICK_REFERENCE.md) - 5 min
 2. [`COMMIT_WORKFLOW_DIAGRAM.md`](COMMIT_WORKFLOW_DIAGRAM.md) - 10 min
 3. Done! Reference as needed
 
 ### For Team Leads
+
 1. [`COMPLETE_SETUP_SUMMARY.md`](COMPLETE_SETUP_SUMMARY.md) - 20 min
 2. [`LINTING_GUIDE.md`](LINTING_GUIDE.md) - 15 min
 3. Share [`COMMIT_QUICK_REFERENCE.md`](COMMIT_QUICK_REFERENCE.md) with team - 5 min
 
 ### For Customizing Rules
+
 1. [`LINTING_GUIDE.md`](LINTING_GUIDE.md) - Complete details
 2. Check `.eslintrc.json` and `.prettierrc.json`
 3. Update and test changes
@@ -169,24 +191,31 @@ LINTING_SETUP_COMPLETE.md
 ## 🎯 By Use Case
 
 ### "I'm committing code"
+
 → Follow steps in [`COMMIT_QUICK_REFERENCE.md`](COMMIT_QUICK_REFERENCE.md)
 
 ### "I got an error in validation"
+
 → Look it up in [`DEVELOPER_COMMIT_WORKFLOW.md`](DEVELOPER_COMMIT_WORKFLOW.md#fixing-common-issues)
 
 ### "I want to understand the whole flow"
+
 → Read [`DEVELOPER_COMMIT_WORKFLOW.md`](DEVELOPER_COMMIT_WORKFLOW.md) or view [`COMMIT_WORKFLOW_DIAGRAM.md`](COMMIT_WORKFLOW_DIAGRAM.md)
 
 ### "I need to debug pre-commit hook"
+
 → Check troubleshooting in [`LINTING_GUIDE.md`](LINTING_GUIDE.md#common-issues) and [`DEVELOPER_COMMIT_WORKFLOW.md`](DEVELOPER_COMMIT_WORKFLOW.md#troubleshooting)
 
 ### "I want to customize linting rules"
+
 → Study [`LINTING_GUIDE.md`](LINTING_GUIDE.md#further-customization) and config files
 
 ### "I'm setting up a new service"
+
 → Copy `.eslintrc.json` from another service, update extends path
 
 ### "I need to brief my team"
+
 → Share [`COMMIT_QUICK_REFERENCE.md`](COMMIT_QUICK_REFERENCE.md) + [`README.md` dev section](../README.md#-development)
 
 ---
@@ -224,11 +253,13 @@ docs/
 ## 🚀 Getting Started Right Now
 
 ### First Time?
+
 1. Read [`COMMIT_QUICK_REFERENCE.md`](COMMIT_QUICK_REFERENCE.md) (5 min)
 2. Make a test commit (2 min)
 3. You're ready! 🎉
 
 ### Questions?
+
 → Check this index for the right doc
 → Look up the topic in the relevant guide
 → Ask your team lead if stuck
@@ -237,19 +268,20 @@ docs/
 
 ## 📞 Support Resources
 
-| Need | See | Time |
-|------|-----|------|
-| Quick overview | [Quick Ref](COMMIT_QUICK_REFERENCE.md) | 5 min |
-| Complete workflow | [Workflow Guide](DEVELOPER_COMMIT_WORKFLOW.md) | 15 min |
-| Visual explanation | [Diagrams](COMMIT_WORKFLOW_DIAGRAM.md) | 10 min |
-| Technical details | [Linting Guide](LINTING_GUIDE.md) | 20 min |
-| Setup verification | [Setup Summary](COMPLETE_SETUP_SUMMARY.md) | 30 min |
+| Need               | See                                            | Time   |
+| ------------------ | ---------------------------------------------- | ------ |
+| Quick overview     | [Quick Ref](COMMIT_QUICK_REFERENCE.md)         | 5 min  |
+| Complete workflow  | [Workflow Guide](DEVELOPER_COMMIT_WORKFLOW.md) | 15 min |
+| Visual explanation | [Diagrams](COMMIT_WORKFLOW_DIAGRAM.md)         | 10 min |
+| Technical details  | [Linting Guide](LINTING_GUIDE.md)              | 20 min |
+| Setup verification | [Setup Summary](COMPLETE_SETUP_SUMMARY.md)     | 30 min |
 
 ---
 
 ## 🎓 Learning Paths
 
 ### Path A: Minimal (Just Want to Commit)
+
 ```
 Quick Reference (5 min)
         ↓
@@ -257,9 +289,11 @@ Try first commit (2 min)
         ↓
 Done! Refer back as needed
 ```
+
 **Total Time: 7 minutes**
 
 ### Path B: Complete (Want to Understand)
+
 ```
 Quick Reference (5 min)
         ↓
@@ -269,9 +303,11 @@ Developer Workflow (15 min)
         ↓
 Ready for all situations!
 ```
+
 **Total Time: 30 minutes**
 
 ### Path C: Technical (Want to Customize)
+
 ```
 Complete Summary (20 min)
         ↓
@@ -281,6 +317,7 @@ Review config files (10 min)
         ↓
 Ready to customize!
 ```
+
 **Total Time: 50 minutes**
 
 ---
@@ -300,15 +337,19 @@ Ready to customize!
 ## 🔗 Cross-References
 
 ### Related to Security
+
 → See `docs/` for security documentation
 
 ### Related to CI/CD
+
 → Ask your DevOps team about pipeline configuration
 
 ### Related to Git
+
 → See workflow guides in this documentation
 
 ### Related to IDE Setup
+
 → Check IDE Integration section in relevant guide
 
 ---

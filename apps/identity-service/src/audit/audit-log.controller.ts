@@ -9,29 +9,23 @@ import {
   Body,
   ValidationPipe,
   UsePipes,
-} from "@nestjs/common";
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiQuery,
-} from "@nestjs/swagger";
-import { AuditLogService } from "../../../../libs/shared/common/src/audit/audit-log.service";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
-import { RbacGuard } from "../auth/guards/rbac.guard";
-import { RequireClubAdmin } from "../auth/decorators/permissions.decorator";
-import { ThrottleAPI } from "../../../../libs/shared/common/src/security/throttle.decorators";
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { AuditLogService } from '../../../../libs/shared/common/src/audit/audit-log.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RbacGuard } from '../auth/guards/rbac.guard';
+import { RequireClubAdmin } from '../auth/decorators/permissions.decorator';
+import { ThrottleAPI } from '../../../../libs/shared/common/src/security/throttle.decorators';
 import {
   AuditEventType,
   AuditSeverity,
   AuditStatus,
   AuditQueryOptions,
-} from "../../../../libs/shared/common/src/audit/audit-log.interface";
-import { AuditQueryDto, ManualAuditLogDto } from "./dto";
+} from '../../../../libs/shared/common/src/audit/audit-log.interface';
+import { AuditQueryDto, ManualAuditLogDto } from './dto';
 
-@ApiTags("Audit Logging")
-@Controller("audit")
+@ApiTags('Audit Logging')
+@Controller('audit')
 @UseGuards(JwtAuthGuard, RbacGuard)
 @ApiBearerAuth()
 @ThrottleAPI()
@@ -39,96 +33,91 @@ import { AuditQueryDto, ManualAuditLogDto } from "./dto";
 export class AuditLogController {
   constructor(private readonly auditLogService: AuditLogService) {}
 
-  @Get("logs")
+  @Get('logs')
   @RequireClubAdmin()
   @ApiOperation({
-    summary: "Query audit logs",
-    description:
-      "Retrieve audit logs with filtering, searching, and pagination options",
+    summary: 'Query audit logs',
+    description: 'Retrieve audit logs with filtering, searching, and pagination options',
   })
   @ApiQuery({
-    name: "startDate",
+    name: 'startDate',
     required: false,
-    description: "Start date (ISO string)",
+    description: 'Start date (ISO string)',
   })
   @ApiQuery({
-    name: "endDate",
+    name: 'endDate',
     required: false,
-    description: "End date (ISO string)",
+    description: 'End date (ISO string)',
   })
   @ApiQuery({
-    name: "eventTypes",
+    name: 'eventTypes',
     required: false,
-    description: "Comma-separated event types",
+    description: 'Comma-separated event types',
   })
   @ApiQuery({
-    name: "severities",
+    name: 'severities',
     required: false,
-    description: "Comma-separated severities",
+    description: 'Comma-separated severities',
   })
   @ApiQuery({
-    name: "statuses",
+    name: 'statuses',
     required: false,
-    description: "Comma-separated statuses",
+    description: 'Comma-separated statuses',
   })
   @ApiQuery({
-    name: "userIds",
+    name: 'userIds',
     required: false,
-    description: "Comma-separated user IDs",
+    description: 'Comma-separated user IDs',
   })
   @ApiQuery({
-    name: "services",
+    name: 'services',
     required: false,
-    description: "Comma-separated services",
+    description: 'Comma-separated services',
   })
   @ApiQuery({
-    name: "searchTerm",
+    name: 'searchTerm',
     required: false,
-    description: "Search term for message/description",
+    description: 'Search term for message/description',
   })
   @ApiQuery({
-    name: "limit",
+    name: 'limit',
     required: false,
-    description: "Number of results to return (default: 100)",
+    description: 'Number of results to return (default: 100)',
   })
   @ApiQuery({
-    name: "offset",
+    name: 'offset',
     required: false,
-    description: "Offset for pagination (default: 0)",
+    description: 'Offset for pagination (default: 0)',
   })
   @ApiQuery({
-    name: "sortBy",
+    name: 'sortBy',
     required: false,
-    description: "Sort field (timestamp, severity, eventType)",
+    description: 'Sort field (timestamp, severity, eventType)',
   })
   @ApiQuery({
-    name: "sortOrder",
+    name: 'sortOrder',
     required: false,
-    description: "Sort order (ASC, DESC)",
+    description: 'Sort order (ASC, DESC)',
   })
   @ApiResponse({
     status: 200,
-    description: "Audit logs retrieved successfully",
+    description: 'Audit logs retrieved successfully',
   })
   async queryLogs(@Query() query: AuditQueryDto) {
     const options: AuditQueryOptions = {
       startDate: query.startDate ? new Date(query.startDate) : undefined,
       endDate: query.endDate ? new Date(query.endDate) : undefined,
       eventTypes: query.eventTypes
-        ? query.eventTypes.split(",").map((t) => t.trim() as AuditEventType)
+        ? query.eventTypes.split(',').map((t) => t.trim() as AuditEventType)
         : undefined,
       severities: query.severities
-        ? query.severities.split(",").map((s) => s.trim() as AuditSeverity)
+        ? query.severities.split(',').map((s) => s.trim() as AuditSeverity)
         : undefined,
       statuses: query.statuses
-        ? query.statuses.split(",").map((s) => s.trim() as AuditStatus)
+        ? query.statuses.split(',').map((s) => s.trim() as AuditStatus)
         : undefined,
-      userIds: query.userIds
-        ? query.userIds.split(",").map((u) => u.trim())
-        : undefined,
-      services: query.services
-        ? query.services.split(",").map((s) => s.trim())
-        : undefined,
+      userIds: query.userIds ? query.userIds.split(',').map((u) => u.trim()) : undefined,
+      services: query.services ? query.services.split(',').map((s) => s.trim()) : undefined,
       searchTerm: query.searchTerm,
       limit: query.limit,
       offset: query.offset,
@@ -139,7 +128,7 @@ export class AuditLogController {
     const result = await this.auditLogService.queryLogs(options);
 
     return {
-      message: "Audit logs retrieved successfully",
+      message: 'Audit logs retrieved successfully',
       data: result.logs,
       pagination: {
         total: result.total,
@@ -151,90 +140,88 @@ export class AuditLogController {
     };
   }
 
-  @Get("statistics")
+  @Get('statistics')
   @RequireClubAdmin()
   @ApiOperation({
-    summary: "Get audit statistics",
-    description: "Retrieve comprehensive audit statistics and analytics",
+    summary: 'Get audit statistics',
+    description: 'Retrieve comprehensive audit statistics and analytics',
   })
   @ApiQuery({
-    name: "days",
+    name: 'days',
     required: false,
-    description: "Number of days to analyze (default: 30)",
+    description: 'Number of days to analyze (default: 30)',
   })
   @ApiResponse({
     status: 200,
-    description: "Audit statistics retrieved successfully",
+    description: 'Audit statistics retrieved successfully',
   })
-  async getStatistics(@Query("days") days?: string) {
+  async getStatistics(@Query('days') days?: string) {
     const analysisDays = days ? parseInt(days, 10) : 30;
     const statistics = await this.auditLogService.getStatistics(analysisDays);
 
     return {
-      message: "Audit statistics retrieved successfully",
+      message: 'Audit statistics retrieved successfully',
       statistics,
       period: `${analysisDays} days`,
       generatedAt: new Date().toISOString(),
     };
   }
 
-  @Get("alerts")
+  @Get('alerts')
   @RequireClubAdmin()
   @ApiOperation({
-    summary: "Get active security alerts",
-    description:
-      "Retrieve all active security alerts based on audit log analysis",
+    summary: 'Get active security alerts',
+    description: 'Retrieve all active security alerts based on audit log analysis',
   })
   @ApiResponse({
     status: 200,
-    description: "Security alerts retrieved successfully",
+    description: 'Security alerts retrieved successfully',
   })
   async getActiveAlerts() {
     const alerts = await this.auditLogService.getActiveAlerts();
 
     return {
-      message: "Security alerts retrieved successfully",
+      message: 'Security alerts retrieved successfully',
       alerts,
       alertCount: alerts.length,
       retrievedAt: new Date().toISOString(),
     };
   }
 
-  @Get("event-types")
+  @Get('event-types')
   @RequireClubAdmin()
   @ApiOperation({
-    summary: "Get available event types",
-    description: "Retrieve all available audit event types for filtering",
+    summary: 'Get available event types',
+    description: 'Retrieve all available audit event types for filtering',
   })
   @ApiResponse({
     status: 200,
-    description: "Event types retrieved successfully",
+    description: 'Event types retrieved successfully',
   })
   getEventTypes() {
     return {
-      message: "Audit event types retrieved successfully",
+      message: 'Audit event types retrieved successfully',
       eventTypes: Object.values(AuditEventType),
       severities: Object.values(AuditSeverity),
       statuses: Object.values(AuditStatus),
     };
   }
 
-  @Post("manual-log")
+  @Post('manual-log')
   @RequireClubAdmin()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
-    summary: "Create manual audit log entry",
-    description:
-      "Manually create an audit log entry for administrative purposes",
+    summary: 'Create manual audit log entry',
+    description: 'Manually create an audit log entry for administrative purposes',
   })
   @ApiResponse({
     status: 201,
-    description: "Manual audit log entry created successfully",
+    description: 'Manual audit log entry created successfully',
   })
   async createManualLog(
     @Body() logDto: ManualAuditLogDto,
-    @Query("userId") userId?: string,
-    @Query("clubId") clubId?: string
+    @Query('userId') userId?: string,
+    @Query('clubId') clubId?: string,
   ) {
     const entry = await this.auditLogService.logEvent({
       eventType: logDto.eventType,
@@ -245,16 +232,16 @@ export class AuditLogController {
       context: {
         userId,
         clubId,
-        service: "manual-entry",
-        endpoint: "/audit/manual-log",
-        method: "POST",
+        service: 'manual-entry',
+        endpoint: '/audit/manual-log',
+        method: 'POST',
       },
       resourceType: logDto.resourceType,
       resourceId: logDto.resourceId,
     });
 
     return {
-      message: "Manual audit log entry created successfully",
+      message: 'Manual audit log entry created successfully',
       entry: {
         id: entry.id,
         timestamp: entry.timestamp,
@@ -265,37 +252,36 @@ export class AuditLogController {
     };
   }
 
-  @Get("export")
+  @Get('export')
   @RequireClubAdmin()
   @ApiOperation({
-    summary: "Export audit logs",
-    description:
-      "Export audit logs in various formats for compliance and analysis",
+    summary: 'Export audit logs',
+    description: 'Export audit logs in various formats for compliance and analysis',
   })
   @ApiQuery({
-    name: "format",
+    name: 'format',
     required: false,
-    description: "Export format (json, csv)",
-    enum: ["json", "csv"],
+    description: 'Export format (json, csv)',
+    enum: ['json', 'csv'],
   })
   @ApiQuery({
-    name: "startDate",
+    name: 'startDate',
     required: false,
-    description: "Start date for export",
+    description: 'Start date for export',
   })
   @ApiQuery({
-    name: "endDate",
+    name: 'endDate',
     required: false,
-    description: "End date for export",
+    description: 'End date for export',
   })
   @ApiResponse({
     status: 200,
-    description: "Audit logs exported successfully",
+    description: 'Audit logs exported successfully',
   })
   async exportLogs(
-    @Query("format") format: "json" | "csv" = "json",
-    @Query("startDate") startDate?: string,
-    @Query("endDate") endDate?: string
+    @Query('format') format: 'json' | 'csv' = 'json',
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ) {
     const options: AuditQueryOptions = {
       startDate: startDate ? new Date(startDate) : undefined,
@@ -305,21 +291,21 @@ export class AuditLogController {
 
     const result = await this.auditLogService.queryLogs(options);
 
-    if (format === "csv") {
+    if (format === 'csv') {
       // Convert to CSV format
       const headers = [
-        "ID",
-        "Timestamp",
-        "Event Type",
-        "Severity",
-        "Status",
-        "Message",
-        "User ID",
-        "User Email",
-        "IP Address",
-        "Service",
-        "Resource Type",
-        "Resource ID",
+        'ID',
+        'Timestamp',
+        'Event Type',
+        'Severity',
+        'Status',
+        'Message',
+        'User ID',
+        'User Email',
+        'IP Address',
+        'Service',
+        'Resource Type',
+        'Resource ID',
       ];
 
       const csvRows = result.logs.map((log) => [
@@ -329,21 +315,21 @@ export class AuditLogController {
         log.severity,
         log.status,
         log.message.replace(/"/g, '""'), // Escape quotes
-        log.context.userId || "",
-        log.context.userEmail || "",
-        log.context.ipAddress || "",
-        log.context.service || "",
-        log.resourceType || "",
-        log.resourceId || "",
+        log.context.userId || '',
+        log.context.userEmail || '',
+        log.context.ipAddress || '',
+        log.context.service || '',
+        log.resourceType || '',
+        log.resourceId || '',
       ]);
 
       const csvContent = [headers, ...csvRows]
-        .map((row) => row.map((field) => `"${field}"`).join(","))
-        .join("\n");
+        .map((row) => row.map((field) => `"${field}"`).join(','))
+        .join('\n');
 
       return {
-        message: "Audit logs exported successfully",
-        format: "csv",
+        message: 'Audit logs exported successfully',
+        format: 'csv',
         content: csvContent,
         exportedAt: new Date().toISOString(),
         totalRecords: result.logs.length,
@@ -351,31 +337,30 @@ export class AuditLogController {
     }
 
     return {
-      message: "Audit logs exported successfully",
-      format: "json",
+      message: 'Audit logs exported successfully',
+      format: 'json',
       logs: result.logs,
       exportedAt: new Date().toISOString(),
       totalRecords: result.logs.length,
     };
   }
 
-  @Get("compliance-report")
+  @Get('compliance-report')
   @RequireClubAdmin()
   @ApiOperation({
-    summary: "Generate compliance report",
-    description:
-      "Generate a comprehensive compliance report based on audit logs",
+    summary: 'Generate compliance report',
+    description: 'Generate a comprehensive compliance report based on audit logs',
   })
   @ApiQuery({
-    name: "period",
+    name: 'period',
     required: false,
-    description: "Report period in days (default: 90)",
+    description: 'Report period in days (default: 90)',
   })
   @ApiResponse({
     status: 200,
-    description: "Compliance report generated successfully",
+    description: 'Compliance report generated successfully',
   })
-  async generateComplianceReport(@Query("period") period?: string) {
+  async generateComplianceReport(@Query('period') period?: string) {
     const reportPeriod = period ? parseInt(period, 10) : 90;
     const statistics = await this.auditLogService.getStatistics(reportPeriod);
     const alerts = await this.auditLogService.getActiveAlerts();
@@ -394,7 +379,7 @@ export class AuditLogController {
       statistics.eventsByType[AuditEventType.SUSPICIOUS_ACTIVITY];
 
     return {
-      message: "Compliance report generated successfully",
+      message: 'Compliance report generated successfully',
       report: {
         period: `${reportPeriod} days`,
         generatedAt: new Date().toISOString(),
@@ -407,9 +392,9 @@ export class AuditLogController {
         },
         compliance: {
           auditingEnabled: true,
-          eventRetention: "Configured per severity",
-          securityMonitoring: alerts.length === 0 ? "Clean" : "Alerts Present",
-          dataProtection: "Sensitive data redacted",
+          eventRetention: 'Configured per severity',
+          securityMonitoring: alerts.length === 0 ? 'Clean' : 'Alerts Present',
+          dataProtection: 'Sensitive data redacted',
         },
         statistics,
         alerts: alerts.slice(0, 10), // Top 10 recent alerts

@@ -129,19 +129,12 @@ class AuthService {
 
 ```typescript
 class PermissionService {
-  async hasPermission(
-    userId: string,
-    clubId: string,
-    permission: Permission
-  ): Promise<boolean>;
-  async getUserPermissions(
-    userId: string,
-    clubId: string
-  ): Promise<Permission[]>;
+  async hasPermission(userId: string, clubId: string, permission: Permission): Promise<boolean>;
+  async getUserPermissions(userId: string, clubId: string): Promise<Permission[]>;
   async checkBulkPermissions(
     userId: string,
     clubId: string,
-    permissions: Permission[]
+    permissions: Permission[],
   ): Promise<boolean[]>;
   async getUserRoles(userId: string, clubId: string): Promise<Role[]>;
   async invalidateUserCache(userId: string): Promise<void>;
@@ -158,16 +151,16 @@ class PermissionService {
 **Decorators Usage:**
 
 ```typescript
-@Controller("athletes")
+@Controller('athletes')
 @UseGuards(JWTAuthGuard, ClubAccessGuard)
 export class AthletesController {
   @Get()
-  @RequirePermission("athletes", "read")
+  @RequirePermission('athletes', 'read')
   async findAll(@CurrentUser() user: AuthUser, @CurrentClub() clubId: string) {}
 
   @Post()
-  @RequirePermission("athletes", "create")
-  @AuditLog("athlete_created")
+  @RequirePermission('athletes', 'create')
+  @AuditLog('athlete_created')
   async create(@Body() dto: CreateAthleteDto) {}
 }
 ```
@@ -175,7 +168,6 @@ export class AthletesController {
 AUDITORÍA Y COMPLIANCE:
 
 7. **Audit System**:
-
    - Automatic logging de authentication events
    - Permission changes tracking
    - Access to sensitive data (menores, finanzas)
@@ -192,7 +184,6 @@ AUDITORÍA Y COMPLIANCE:
 INTEGRATION EXAMPLES:
 
 9. **Identity Service Integration**:
-
    - Auth endpoints con Google OAuth
    - Session management endpoints
    - User profile management
@@ -293,28 +284,23 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
 ```typescript
 // libs/shared/auth/src/guards/permission.guard.ts
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-} from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
-import { PermissionService } from "../services/permission.service";
-import { PERMISSION_KEY } from "../decorators/require-permission.decorator";
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { PermissionService } from '../services/permission.service';
+import { PERMISSION_KEY } from '../decorators/require-permission.decorator';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private permissionService: PermissionService
+    private permissionService: PermissionService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPermission = this.reflector.getAllAndOverride(
-      PERMISSION_KEY,
-      [context.getHandler(), context.getClass()]
-    );
+    const requiredPermission = this.reflector.getAllAndOverride(PERMISSION_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     if (!requiredPermission) {
       return true; // No permission required
@@ -325,17 +311,17 @@ export class PermissionGuard implements CanActivate {
     const clubId = request.clubId || request.params.clubId;
 
     if (!user || !clubId) {
-      throw new ForbiddenException("User or club context missing");
+      throw new ForbiddenException('User or club context missing');
     }
 
     const hasPermission = await this.permissionService.hasPermission(
       user.id,
       clubId,
-      requiredPermission
+      requiredPermission,
     );
 
     if (!hasPermission) {
-      throw new ForbiddenException("Insufficient permissions");
+      throw new ForbiddenException('Insufficient permissions');
     }
 
     return true;
@@ -347,11 +333,11 @@ export class PermissionGuard implements CanActivate {
 
 ```typescript
 // libs/shared/auth/src/services/auth.service.ts
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import { PrismaService } from "@libs/shared/database";
-import { TokenService } from "./token.service";
-import { SessionService } from "./session.service";
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '@libs/shared/database';
+import { TokenService } from './token.service';
+import { SessionService } from './session.service';
 
 @Injectable()
 export class AuthService {
@@ -359,7 +345,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private tokenService: TokenService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
   ) {}
 
   async validateGoogleUser(profile: GoogleProfile): Promise<AuthResult> {
@@ -385,8 +371,8 @@ export class AuthService {
 
     // Create session and tokens
     const session = await this.sessionService.createSession(user.id, {
-      userAgent: "web", // Get from request
-      ipAddress: "0.0.0.0", // Get from request
+      userAgent: 'web', // Get from request
+      ipAddress: '0.0.0.0', // Get from request
     });
 
     const tokens = await this.tokenService.generateTokens(user.id, session.id);
@@ -416,9 +402,7 @@ export class AuthService {
     }
 
     // Verify session is still active
-    const session = await this.sessionService.validateSession(
-      payload.sessionId
-    );
+    const session = await this.sessionService.validateSession(payload.sessionId);
     if (!session) {
       return null;
     }
@@ -434,24 +418,16 @@ export class AuthService {
   }
 
   async refreshTokens(refreshToken: string): Promise<TokenPair> {
-    const session = await this.sessionService.validateRefreshToken(
-      refreshToken
-    );
+    const session = await this.sessionService.validateRefreshToken(refreshToken);
     if (!session) {
-      throw new UnauthorizedException("Invalid refresh token");
+      throw new UnauthorizedException('Invalid refresh token');
     }
 
     // Generate new token pair
-    const tokens = await this.tokenService.generateTokens(
-      session.userId,
-      session.id
-    );
+    const tokens = await this.tokenService.generateTokens(session.userId, session.id);
 
     // Update session with new refresh token
-    await this.sessionService.updateRefreshToken(
-      session.id,
-      tokens.refreshToken
-    );
+    await this.sessionService.updateRefreshToken(session.id, tokens.refreshToken);
 
     return tokens;
   }
@@ -470,20 +446,20 @@ export class AuthService {
 
 ```typescript
 // libs/shared/auth/src/decorators/require-permission.decorator.ts
-import { SetMetadata } from "@nestjs/common";
+import { SetMetadata } from '@nestjs/common';
 
-export const PERMISSION_KEY = "permission";
+export const PERMISSION_KEY = 'permission';
 
 export interface Permission {
   module: string;
   action: string;
-  scope?: "own" | "club" | "all";
+  scope?: 'own' | 'club' | 'all';
 }
 
 export const RequirePermission = (
   module: string,
   action: string,
-  scope: "own" | "club" | "all" = "club"
+  scope: 'own' | 'club' | 'all' = 'club',
 ) => SetMetadata(PERMISSION_KEY, { module, action, scope });
 
 // Usage example:
@@ -493,36 +469,27 @@ export const RequirePermission = (
 
 ```typescript
 // libs/shared/auth/src/decorators/current-user.decorator.ts
-import { createParamDecorator, ExecutionContext } from "@nestjs/common";
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
-export const CurrentUser = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
-    return request.user;
-  }
-);
+export const CurrentUser = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest();
+  return request.user;
+});
 
-export const CurrentClub = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
-    return request.clubId || request.params.clubId;
-  }
-);
+export const CurrentClub = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest();
+  return request.clubId || request.params.clubId;
+});
 ```
 
 ### Interceptor de Auditoría
 
 ```typescript
 // libs/shared/audit/src/audit.interceptor.ts
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from "@nestjs/common";
-import { Observable } from "rxjs";
-import { tap } from "rxjs/operators";
-import { AuditService } from "./audit.service";
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { AuditService } from './audit.service';
 
 @Injectable()
 export class AuditInterceptor implements NestInterceptor {
@@ -539,7 +506,7 @@ export class AuditInterceptor implements NestInterceptor {
       resourceId: params?.id,
       clubId: request.clubId || params?.clubId,
       ipAddress: request.ip,
-      userAgent: request.get("User-Agent"),
+      userAgent: request.get('User-Agent'),
       timestamp: new Date(),
     };
 
@@ -551,14 +518,14 @@ export class AuditInterceptor implements NestInterceptor {
         error: (error) => {
           this.auditService.logError(auditData, error);
         },
-      })
+      }),
     );
   }
 
   private extractResource(url: string): string {
     // Extract resource from URL pattern
     const matches = url.match(/\/api\/v1\/clubs\/[^\/]+\/([^\/\?]+)/);
-    return matches ? matches[1] : "unknown";
+    return matches ? matches[1] : 'unknown';
   }
 }
 ```

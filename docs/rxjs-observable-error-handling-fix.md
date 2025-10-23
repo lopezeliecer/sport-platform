@@ -21,7 +21,7 @@
 
 ```typescript
 // Added throwError import
-import { Observable, throwError } from "rxjs";
+import { Observable, throwError } from 'rxjs';
 ```
 
 ### 2. **Error Handler Refactoring**
@@ -45,15 +45,10 @@ catchError((error) => {
   const duration = endTime - startTime;
 
   // Log asynchronously without blocking
-  this.logFailedRequest(request, response, auditContext, duration, error).catch(
-    (logError) => {
-      // Handle audit logging errors gracefully
-      this.logger.error(
-        "Failed to log audit event for failed request:",
-        logError
-      );
-    }
-  );
+  this.logFailedRequest(request, response, auditContext, duration, error).catch((logError) => {
+    // Handle audit logging errors gracefully
+    this.logger.error('Failed to log audit event for failed request:', logError);
+  });
 
   // Return proper Observable
   return throwError(() => error);

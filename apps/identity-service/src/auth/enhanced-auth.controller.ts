@@ -12,81 +12,72 @@ import {
   Delete,
   Res,
   Query,
-} from "@nestjs/common";
-import { Response } from "express";
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from "@nestjs/swagger";
-import { AuthService } from "./auth.service";
-import { EnhancedSessionsService } from "../sessions/enhanced-sessions-v2.service";
-import { JwtAuthGuard } from "./guards/jwt-auth.guard";
-import { RbacGuard } from "./guards/rbac.guard";
-import { ClubContextMiddleware } from "./middleware/club-context.middleware";
-import {
-  CurrentUser,
-  CurrentClubId,
-  ClubContext,
-} from "./middleware/club-context.middleware";
+} from '@nestjs/common';
+import { Response } from 'express';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { AuthService } from './auth.service';
+import { EnhancedSessionsService } from '../sessions/enhanced-sessions-v2.service';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RbacGuard } from './guards/rbac.guard';
+import { ClubContextMiddleware } from './middleware/club-context.middleware';
+import { CurrentUser, CurrentClubId, ClubContext } from './middleware/club-context.middleware';
 import {
   RequireClubAdmin,
   RequireClubContext,
   CanManageAthletes,
-} from "./decorators/permissions.decorator";
-import { GoogleAuthDto, AuthResponseDto } from "./dto/auth.dto";
-import { JwtPayload } from "./strategies/jwt.strategy";
+} from './decorators/permissions.decorator';
+import { GoogleAuthDto, AuthResponseDto } from './dto/auth.dto';
+import { JwtPayload } from './strategies/jwt.strategy';
 import {
   ThrottleLogin,
   ThrottleAPI,
   ThrottleStrict,
   SkipThrottle,
-} from "../../../../libs/shared/common/src/security/throttle.decorators";
-import { AuditLogService } from "../../../../libs/shared/common/src/audit/audit-log.service";
+} from '../../../../libs/shared/common/src/security/throttle.decorators';
+import { AuditLogService } from '../../../../libs/shared/common/src/audit/audit-log.service';
 import {
   AuditEventType,
   AuditSeverity,
   AuditStatus,
-} from "../../../../libs/shared/common/src/audit/audit-log.interface";
-import { Public } from "./decorators/auth.decorators";
+} from '../../../../libs/shared/common/src/audit/audit-log.interface';
+import { Public } from './decorators/auth.decorators';
 import {
   RequireApiKey,
   ApiKeyPermissions,
   AllowedServices,
-} from "../../../../libs/shared/common/src/security/api-key.guard";
+} from '../../../../libs/shared/common/src/security/api-key.guard';
 
-@ApiTags("Authentication & Authorization")
-@Controller("auth")
+@ApiTags('Authentication & Authorization')
+@Controller('auth')
 export class EnhancedAuthController {
   private readonly logger = new Logger(EnhancedAuthController.name);
 
   constructor(
     private authService: AuthService,
     private sessionsService: EnhancedSessionsService,
-    private auditLogService: AuditLogService
+    private auditLogService: AuditLogService,
   ) {}
 
-  @Post("google")
+  @Post('google')
   @ThrottleLogin() // 3 requests per minute for auth
-  @ApiOperation({ summary: "Google OAuth authentication" })
+  @ApiOperation({ summary: 'Google OAuth authentication' })
   @ApiResponse({
     status: 200,
-    description: "Login successful",
+    description: 'Login successful',
     type: AuthResponseDto,
   })
   @HttpCode(HttpStatus.OK)
   async googleAuth(
     @Body() googleAuthDto: GoogleAuthDto,
-    @Request() req: any
+    @Request() req: any,
   ): Promise<AuthResponseDto> {
-    this.logger.log("Google OAuth authentication initiated");
+    this.logger.log('Google OAuth authentication initiated');
 
     // Extraer información del dispositivo
     const deviceInfo = {
-      userAgent: req.headers["user-agent"],
+      userAgent: req.headers['user-agent'],
       ip: req.ip || req.connection.remoteAddress,
-      deviceType: this.detectDeviceType(req.headers["user-agent"]),
+      deviceType: this.detectDeviceType(req.headers['user-agent']),
     };
 
     try {
@@ -95,9 +86,9 @@ export class EnhancedAuthController {
         eventType: AuditEventType.LOGIN_ATTEMPT,
         severity: AuditSeverity.LOW,
         status: AuditStatus.SUCCESS,
-        message: "Google OAuth login attempt",
+        message: 'Google OAuth login attempt',
         context: {
-          method: "google_oauth",
+          method: 'google_oauth',
           userAgent: deviceInfo.userAgent,
           ip: deviceInfo.ip,
           deviceType: deviceInfo.deviceType,
@@ -108,7 +99,7 @@ export class EnhancedAuthController {
       const authResult = await this.authService.googleAuth(
         googleAuthDto,
         deviceInfo.ip,
-        deviceInfo.userAgent
+        deviceInfo.userAgent,
       );
 
       // Crear sesión enhanced con el nuevo sistema
@@ -120,7 +111,7 @@ export class EnhancedAuthController {
 
       // Log successful authentication using helper method
       await this.auditLogService.logAuthenticationSuccess(authResult.user.id, {
-        method: "google_oauth",
+        method: 'google_oauth',
         email: authResult.user.email,
         userAgent: deviceInfo.userAgent,
         ip: deviceInfo.ip,
@@ -129,9 +120,7 @@ export class EnhancedAuthController {
         clubCount: authResult.clubs?.length || 0,
       });
 
-      this.logger.log(
-        `Usuario ${authResult.user.email} autenticado exitosamente`
-      );
+      this.logger.log(`Usuario ${authResult.user.email} autenticado exitosamente`);
 
       return {
         accessToken: sessionResult.accessToken,
@@ -140,32 +129,32 @@ export class EnhancedAuthController {
         clubs: authResult.clubs,
         defaultClubId: authResult.defaultClubId,
         expiresIn: 900, // 15 minutos
-        tokenType: "Bearer",
+        tokenType: 'Bearer',
       };
     } catch (error) {
       // Log failed authentication using helper method
       await this.auditLogService.logAuthenticationFailure(
-        "unknown_email_google_oauth",
+        'unknown_email_google_oauth',
         {
-          method: "google_oauth",
+          method: 'google_oauth',
           userAgent: deviceInfo.userAgent,
           ip: deviceInfo.ip,
           deviceType: deviceInfo.deviceType,
         },
-        error.message
+        error.message,
       );
 
       throw error;
     }
   }
 
-  @Post("refresh")
+  @Post('refresh')
   @ThrottleAPI() // 30 requests per minute for refresh
-  @ApiOperation({ summary: "Refresh access token" })
-  @ApiResponse({ status: 200, description: "Token refreshed successfully" })
+  @ApiOperation({ summary: 'Refresh access token' })
+  @ApiResponse({ status: 200, description: 'Token refreshed successfully' })
   @HttpCode(HttpStatus.OK)
   async refreshToken(
-    @Body("refreshToken") refreshToken: string
+    @Body('refreshToken') refreshToken: string,
   ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
     const tokens = await this.sessionsService.refreshTokens(refreshToken);
 
@@ -175,96 +164,90 @@ export class EnhancedAuthController {
     };
   }
 
-  @Post("switch-club/:clubId")
+  @Post('switch-club/:clubId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Switch club context without re-authentication" })
+  @ApiOperation({ summary: 'Switch club context without re-authentication' })
   @ApiResponse({
     status: 200,
-    description: "Club context switched successfully",
+    description: 'Club context switched successfully',
   })
   @HttpCode(HttpStatus.OK)
   async switchClub(
-    @Param("clubId") clubId: string,
-    @CurrentUser() user: JwtPayload
+    @Param('clubId') clubId: string,
+    @CurrentUser() user: JwtPayload,
   ): Promise<{ accessToken: string; clubId: string; message: string }> {
-    const accessToken = await this.sessionsService.switchClubContext(
-      user.sessionId,
-      clubId
-    );
+    const accessToken = await this.sessionsService.switchClubContext(user.sessionId, clubId);
 
     return {
       accessToken,
       clubId,
-      message: "Contexto de club cambiado exitosamente",
+      message: 'Contexto de club cambiado exitosamente',
     };
   }
 
-  @Get("sessions")
+  @Get('sessions')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Get user active sessions (multi-device)" })
+  @ApiOperation({ summary: 'Get user active sessions (multi-device)' })
   @ApiResponse({
     status: 200,
-    description: "User sessions retrieved successfully",
+    description: 'User sessions retrieved successfully',
   })
   async getUserSessions(@CurrentUser() user: JwtPayload) {
     const sessions = await this.sessionsService.getUserSessions(user.sub);
     return {
-      message: "Sesiones activas",
+      message: 'Sesiones activas',
       sessions,
       totalSessions: sessions.length,
     };
   }
 
-  @Delete("sessions/:sessionId")
+  @Delete('sessions/:sessionId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Revoke specific session" })
-  @ApiResponse({ status: 200, description: "Session revoked successfully" })
-  async revokeSession(
-    @Param("sessionId") sessionId: string,
-    @CurrentUser() user: JwtPayload
-  ) {
+  @ApiOperation({ summary: 'Revoke specific session' })
+  @ApiResponse({ status: 200, description: 'Session revoked successfully' })
+  async revokeSession(@Param('sessionId') sessionId: string, @CurrentUser() user: JwtPayload) {
     await this.sessionsService.revokeSession(sessionId, user.sub);
     return {
-      message: "Sesión revocada exitosamente",
+      message: 'Sesión revocada exitosamente',
       revokedSessionId: sessionId,
     };
   }
 
-  @Delete("sessions/all")
+  @Delete('sessions/all')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Revoke all sessions except current" })
+  @ApiOperation({ summary: 'Revoke all sessions except current' })
   @ApiResponse({
     status: 200,
-    description: "All sessions revoked successfully",
+    description: 'All sessions revoked successfully',
   })
   async revokeAllSessions(@CurrentUser() user: JwtPayload) {
     await this.sessionsService.revokeAllUserSessions(user.sub, user.sessionId);
     return {
-      message: "Todas las sesiones revocadas exitosamente (excepto la actual)",
+      message: 'Todas las sesiones revocadas exitosamente (excepto la actual)',
       currentSessionId: user.sessionId,
     };
   }
 
-  @Get("profile")
+  @Get('profile')
   @UseGuards(JwtAuthGuard, RbacGuard)
   @RequireClubContext()
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Get user profile with club context" })
+  @ApiOperation({ summary: 'Get user profile with club context' })
   @ApiResponse({
     status: 200,
-    description: "User profile retrieved successfully",
+    description: 'User profile retrieved successfully',
   })
   async getProfile(
     @CurrentUser() user: JwtPayload,
     @CurrentClubId() clubId: string,
-    @ClubContext() clubContext: any
+    @ClubContext() clubContext: any,
   ) {
     return {
-      message: "Perfil de usuario",
+      message: 'Perfil de usuario',
       user: {
         id: user.sub,
         email: user.email,
@@ -276,29 +259,29 @@ export class EnhancedAuthController {
     };
   }
 
-  @Get("permissions")
+  @Get('permissions')
   @UseGuards(JwtAuthGuard, RbacGuard)
   @RequireClubContext()
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Get user permissions in current club" })
+  @ApiOperation({ summary: 'Get user permissions in current club' })
   @ApiResponse({
     status: 200,
-    description: "User permissions retrieved successfully",
+    description: 'User permissions retrieved successfully',
   })
   async getPermissions(@ClubContext() clubContext: any) {
     return {
-      message: "Permisos del usuario en el club actual",
+      message: 'Permisos del usuario en el club actual',
       clubId: clubContext.clubId,
       roles: clubContext.userRoles,
       permissions: clubContext.permissions,
     };
   }
 
-  @Post("logout")
+  @Post('logout')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Logout from current session" })
-  @ApiResponse({ status: 200, description: "Logout successful" })
+  @ApiOperation({ summary: 'Logout from current session' })
+  @ApiResponse({ status: 200, description: 'Logout successful' })
   @HttpCode(HttpStatus.OK)
   async logout(@CurrentUser() user: JwtPayload) {
     await this.sessionsService.revokeSession(user.sessionId, user.sub);
@@ -306,32 +289,32 @@ export class EnhancedAuthController {
     this.logger.log(`Usuario ${user.email} cerró sesión`);
 
     return {
-      message: "Sesión cerrada exitosamente",
+      message: 'Sesión cerrada exitosamente',
       sessionId: user.sessionId,
     };
   }
 
-  @Get("health")
+  @Get('health')
   @SkipThrottle() // Skip throttling for health checks
-  @ApiOperation({ summary: "Health check endpoint" })
-  @ApiResponse({ status: 200, description: "Service is healthy" })
+  @ApiOperation({ summary: 'Health check endpoint' })
+  @ApiResponse({ status: 200, description: 'Service is healthy' })
   healthCheck(): { status: string; timestamp: string; service: string } {
     return {
-      status: "ok",
+      status: 'ok',
       timestamp: new Date().toISOString(),
-      service: "enhanced-auth-controller",
+      service: 'enhanced-auth-controller',
     };
   }
 
-  @Get("google")
+  @Get('google')
   @Public()
   @ApiOperation({
-    summary: "Initiate Google OAuth flow",
-    description: "Redirect to Google OAuth authorization page",
+    summary: 'Initiate Google OAuth flow',
+    description: 'Redirect to Google OAuth authorization page',
   })
   @ApiResponse({
     status: 302,
-    description: "Redirect to Google OAuth",
+    description: 'Redirect to Google OAuth',
   })
   googleAuthInit(@Res() res: Response) {
     // Check if Google OAuth is properly configured
@@ -339,33 +322,31 @@ export class EnhancedAuthController {
     const redirectUri =
       process.env.GOOGLE_REDIRECT_URI ||
       process.env.GOOGLE_CALLBACK_URL ||
-      "http://localhost:3001/api/v1/auth/google/callback";
+      'http://localhost:3001/api/v1/auth/google/callback';
 
     if (!clientId) {
       return res.status(500).json({
-        error: "Google OAuth not configured",
-        message: "GOOGLE_CLIENT_ID environment variable is missing",
+        error: 'Google OAuth not configured',
+        message: 'GOOGLE_CLIENT_ID environment variable is missing',
       });
     }
 
     // Real Google OAuth URL construction
-    const googleAuthUrl = new URL(
-      "https://accounts.google.com/o/oauth2/v2/auth"
-    );
-    googleAuthUrl.searchParams.set("client_id", clientId);
-    googleAuthUrl.searchParams.set("redirect_uri", redirectUri);
-    googleAuthUrl.searchParams.set("response_type", "code");
-    googleAuthUrl.searchParams.set("scope", "email profile openid");
-    googleAuthUrl.searchParams.set("access_type", "offline");
-    googleAuthUrl.searchParams.set("prompt", "consent");
+    const googleAuthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    googleAuthUrl.searchParams.set('client_id', clientId);
+    googleAuthUrl.searchParams.set('redirect_uri', redirectUri);
+    googleAuthUrl.searchParams.set('response_type', 'code');
+    googleAuthUrl.searchParams.set('scope', 'email profile openid');
+    googleAuthUrl.searchParams.set('access_type', 'offline');
+    googleAuthUrl.searchParams.set('prompt', 'consent');
 
     // For API testing, return the URL instead of redirecting
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === 'development') {
       return res.json({
-        message: "Google OAuth flow initiated",
+        message: 'Google OAuth flow initiated',
         authUrl: googleAuthUrl.toString(),
         redirectUri,
-        status: "ready_for_oauth",
+        status: 'ready_for_oauth',
       });
     }
 
@@ -373,102 +354,95 @@ export class EnhancedAuthController {
     return res.redirect(googleAuthUrl.toString());
   }
 
-  @Get("google/callback")
+  @Get('google/callback')
   @Public()
   @ApiOperation({
-    summary: "Handle Google OAuth callback",
-    description: "Process the authorization code from Google OAuth",
+    summary: 'Handle Google OAuth callback',
+    description: 'Process the authorization code from Google OAuth',
   })
   @ApiResponse({
     status: 200,
-    description: "User authenticated successfully",
+    description: 'User authenticated successfully',
   })
   @ApiResponse({
     status: 400,
-    description: "OAuth error",
+    description: 'OAuth error',
   })
   async googleCallback(
-    @Query("code") code: string,
-    @Query("error") error: string,
-    @Res() res: Response
+    @Query('code') code: string,
+    @Query('error') error: string,
+    @Res() res: Response,
   ) {
     if (error) {
       return res.status(400).json({
-        error: "OAuth error",
+        error: 'OAuth error',
         message: error,
-        status: "oauth_failed",
+        status: 'oauth_failed',
       });
     }
 
     if (!code) {
       return res.status(400).json({
-        error: "Missing authorization code",
-        message: "No authorization code received from Google",
-        status: "oauth_failed",
+        error: 'Missing authorization code',
+        message: 'No authorization code received from Google',
+        status: 'oauth_failed',
       });
     }
 
     try {
       // Exchange code for access token and authenticate user
-      const authResult =
-        await this.authService.authenticateWithGoogleCode(code);
+      const authResult = await this.authService.authenticateWithGoogleCode(code);
 
       return res.json({
-        message: "Authentication successful",
+        message: 'Authentication successful',
         user: authResult.user,
         accessToken: authResult.accessToken,
         refreshToken: authResult.refreshToken,
         expiresIn: authResult.expiresIn,
-        status: "authenticated",
+        status: 'authenticated',
       });
     } catch (error) {
-      console.error("Google OAuth callback error:", error);
+      console.error('Google OAuth callback error:', error);
       return res.status(500).json({
-        error: "Authentication failed",
-        message: "Failed to process Google OAuth callback",
-        status: "oauth_failed",
+        error: 'Authentication failed',
+        message: 'Failed to process Google OAuth callback',
+        status: 'oauth_failed',
       });
     }
   }
 
   // Service-to-Service API Key Protected Endpoints
 
-  @Get("service/verify-token")
+  @Get('service/verify-token')
   @RequireApiKey()
-  @ApiKeyPermissions("auth:verify")
-  @AllowedServices("api-gateway", "sports-service", "club-management")
+  @ApiKeyPermissions('auth:verify')
+  @AllowedServices('api-gateway', 'sports-service', 'club-management')
   @SkipThrottle() // Internal service calls don't need throttling
   @ApiOperation({
-    summary: "Verify JWT token (Service-to-Service)",
-    description:
-      "Validates a JWT token for other services. Requires API key authentication.",
+    summary: 'Verify JWT token (Service-to-Service)',
+    description: 'Validates a JWT token for other services. Requires API key authentication.',
   })
   @ApiResponse({
     status: 200,
-    description: "Token is valid",
+    description: 'Token is valid',
     schema: {
-      type: "object",
+      type: 'object',
       properties: {
-        valid: { type: "boolean" },
-        user: { type: "object" },
-        clubId: { type: "string" },
-        permissions: { type: "array" },
+        valid: { type: 'boolean' },
+        user: { type: 'object' },
+        clubId: { type: 'string' },
+        permissions: { type: 'array' },
       },
     },
   })
-  @ApiResponse({ status: 401, description: "Invalid token or API key" })
-  async verifyTokenForService(
-    @Query("token") token: string,
-    @Request() req: any
-  ) {
+  @ApiResponse({ status: 401, description: 'Invalid token or API key' })
+  async verifyTokenForService(@Query('token') token: string, @Request() req: any) {
     try {
       // Verify the JWT token
       const payload = await this.authService.verifyJwtToken(token);
 
       // Get session information
-      const session = await this.sessionsService.getSessionById(
-        payload.sessionId
-      );
+      const session = await this.sessionsService.getSessionById(payload.sessionId);
 
       return {
         valid: true,
@@ -492,19 +466,19 @@ export class EnhancedAuthController {
     }
   }
 
-  @Post("service/create-service-token")
+  @Post('service/create-service-token')
   @RequireApiKey()
-  @ApiKeyPermissions("user:write", "session:manage")
-  @AllowedServices("api-gateway", "identity-service")
+  @ApiKeyPermissions('user:write', 'session:manage')
+  @AllowedServices('api-gateway', 'identity-service')
   @ThrottleStrict() // Very limited for security
   @ApiOperation({
-    summary: "Create service token (Service-to-Service)",
+    summary: 'Create service token (Service-to-Service)',
     description:
-      "Creates a service-specific token for system operations. Requires high-level API key permissions.",
+      'Creates a service-specific token for system operations. Requires high-level API key permissions.',
   })
   @ApiResponse({
     status: 201,
-    description: "Service token created successfully",
+    description: 'Service token created successfully',
   })
   async createServiceToken(
     @Body()
@@ -513,17 +487,15 @@ export class EnhancedAuthController {
       permissions: string[];
       expiresInMinutes?: number;
     },
-    @Request() req: any
+    @Request() req: any,
   ) {
     const serviceToken = await this.authService.createServiceToken(
       createTokenDto.service,
       createTokenDto.permissions,
-      createTokenDto.expiresInMinutes || 60 // Default 1 hour
+      createTokenDto.expiresInMinutes || 60, // Default 1 hour
     );
 
-    this.logger.log(
-      `Service token created for ${createTokenDto.service} by ${req.service}`
-    );
+    this.logger.log(`Service token created for ${createTokenDto.service} by ${req.service}`);
 
     return {
       serviceToken,
@@ -533,24 +505,21 @@ export class EnhancedAuthController {
     };
   }
 
-  @Get("service/user/:userId/profile")
+  @Get('service/user/:userId/profile')
   @RequireApiKey()
-  @ApiKeyPermissions("user:read")
-  @AllowedServices("sports-service", "club-management", "communication")
+  @ApiKeyPermissions('user:read')
+  @AllowedServices('sports-service', 'club-management', 'communication')
   @SkipThrottle()
   @ApiOperation({
-    summary: "Get user profile (Service-to-Service)",
+    summary: 'Get user profile (Service-to-Service)',
     description:
-      "Retrieves user profile for other services. Requires API key with user:read permission.",
+      'Retrieves user profile for other services. Requires API key with user:read permission.',
   })
   @ApiResponse({
     status: 200,
-    description: "User profile retrieved successfully",
+    description: 'User profile retrieved successfully',
   })
-  async getUserProfileForService(
-    @Param("userId") userId: string,
-    @Request() req: any
-  ) {
+  async getUserProfileForService(@Param('userId') userId: string, @Request() req: any) {
     const user = await this.authService.getUserProfile(userId);
 
     return {
@@ -567,19 +536,18 @@ export class EnhancedAuthController {
     };
   }
 
-  @Get("service/sessions/active-count")
+  @Get('service/sessions/active-count')
   @RequireApiKey()
-  @ApiKeyPermissions("session:manage")
-  @AllowedServices("api-gateway", "identity-service")
+  @ApiKeyPermissions('session:manage')
+  @AllowedServices('api-gateway', 'identity-service')
   @SkipThrottle()
   @ApiOperation({
-    summary: "Get active sessions count (Service-to-Service)",
-    description:
-      "Returns the count of active sessions for monitoring purposes.",
+    summary: 'Get active sessions count (Service-to-Service)',
+    description: 'Returns the count of active sessions for monitoring purposes.',
   })
   @ApiResponse({
     status: 200,
-    description: "Active sessions count retrieved",
+    description: 'Active sessions count retrieved',
   })
   async getActiveSessionsCount(@Request() req: any) {
     const count = await this.sessionsService.getActiveSessionsCount();
@@ -593,25 +561,21 @@ export class EnhancedAuthController {
 
   // Métodos privados
 
-  private detectDeviceType(
-    userAgent?: string
-  ): "mobile" | "desktop" | "tablet" {
-    if (!userAgent) return "desktop";
+  private detectDeviceType(userAgent?: string): 'mobile' | 'desktop' | 'tablet' {
+    if (!userAgent) {
+      return 'desktop';
+    }
 
     const ua = userAgent.toLowerCase();
 
-    if (
-      ua.includes("mobile") ||
-      ua.includes("android") ||
-      ua.includes("iphone")
-    ) {
-      return "mobile";
+    if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
+      return 'mobile';
     }
 
-    if (ua.includes("tablet") || ua.includes("ipad")) {
-      return "tablet";
+    if (ua.includes('tablet') || ua.includes('ipad')) {
+      return 'tablet';
     }
 
-    return "desktop";
+    return 'desktop';
   }
 }

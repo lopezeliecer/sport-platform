@@ -1,27 +1,16 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from "@nestjs/common";
-import { Observable, throwError } from "rxjs";
-import { tap, catchError } from "rxjs/operators";
-import { Request, Response } from "express";
-import { SecurityMonitoringService } from "./security-monitoring.service";
-import {
-  SecurityEventType,
-  SecuritySeverity,
-} from "./interfaces/security-event.interface";
-import { randomUUID } from "crypto";
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
+import { Observable, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
+import { Request, Response } from 'express';
+import { SecurityMonitoringService } from './security-monitoring.service';
+import { SecurityEventType, SecuritySeverity } from './interfaces/security-event.interface';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class SecurityMonitoringInterceptor implements NestInterceptor {
   private readonly logger = new Logger(SecurityMonitoringInterceptor.name);
 
-  constructor(
-    private readonly securityMonitoringService: SecurityMonitoringService
-  ) {}
+  constructor(private readonly securityMonitoringService: SecurityMonitoringService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const startTime = Date.now();
@@ -30,7 +19,7 @@ export class SecurityMonitoringInterceptor implements NestInterceptor {
 
     const requestId = randomUUID();
     const sourceIp = this.extractIpAddress(request);
-    const userAgent = request.headers["user-agent"];
+    const userAgent = request.headers['user-agent'];
     const endpoint = request.url;
     const method = request.method;
 
@@ -98,7 +87,7 @@ export class SecurityMonitoringInterceptor implements NestInterceptor {
         }
 
         return throwError(() => error);
-      })
+      }),
     );
   }
 
@@ -106,16 +95,12 @@ export class SecurityMonitoringInterceptor implements NestInterceptor {
    * Extract IP address from request, considering proxies
    */
   private extractIpAddress(request: Request): string {
-    const forwarded = request.headers["x-forwarded-for"];
+    const forwarded = request.headers['x-forwarded-for'];
     if (forwarded) {
-      return Array.isArray(forwarded)
-        ? forwarded[0]
-        : forwarded.split(",")[0].trim();
+      return Array.isArray(forwarded) ? forwarded[0] : forwarded.split(',')[0].trim();
     }
     return (
-      (request.headers["x-real-ip"] as string) ||
-      request.connection.remoteAddress ||
-      "unknown"
+      (request.headers['x-real-ip'] as string) || request.connection.remoteAddress || 'unknown'
     );
   }
 
@@ -124,21 +109,18 @@ export class SecurityMonitoringInterceptor implements NestInterceptor {
    */
   private getEventTypeForSuccessfulRequest(
     endpoint: string,
-    method: string
+    method: string,
   ): SecurityEventType | null {
     // Only record security-relevant successful operations
-    if (endpoint.includes("/auth/login") && method === "POST") {
+    if (endpoint.includes('/auth/login') && method === 'POST') {
       return SecurityEventType.FAILED_LOGIN; // This will be overridden to success in a separate event
     }
 
-    if (endpoint.includes("/auth/logout") && method === "POST") {
+    if (endpoint.includes('/auth/logout') && method === 'POST') {
       return null; // Logout is not typically a security concern when successful
     }
 
-    if (
-      endpoint.includes("/security-monitoring") ||
-      endpoint.includes("/audit")
-    ) {
+    if (endpoint.includes('/security-monitoring') || endpoint.includes('/audit')) {
       return SecurityEventType.UNAUTHORIZED_ACCESS; // Administrative access
     }
 
@@ -152,13 +134,13 @@ export class SecurityMonitoringInterceptor implements NestInterceptor {
   private getEventTypeForError(
     error: any,
     endpoint: string,
-    method: string
+    method: string,
   ): SecurityEventType | null {
     const statusCode = error.status || 500;
 
     // Authentication failures
     if (statusCode === 401) {
-      if (endpoint.includes("/auth/login")) {
+      if (endpoint.includes('/auth/login')) {
         return SecurityEventType.FAILED_LOGIN;
       }
       return SecurityEventType.INVALID_TOKEN;
@@ -177,14 +159,10 @@ export class SecurityMonitoringInterceptor implements NestInterceptor {
     // Input validation errors (potential injection attempts)
     if (statusCode === 400 && error.message) {
       const message = error.message.toLowerCase();
-      if (
-        message.includes("script") ||
-        message.includes("select") ||
-        message.includes("union")
-      ) {
+      if (message.includes('script') || message.includes('select') || message.includes('union')) {
         return SecurityEventType.SQL_INJECTION_ATTEMPT;
       }
-      if (message.includes("<") || message.includes("javascript:")) {
+      if (message.includes('<') || message.includes('javascript:')) {
         return SecurityEventType.XSS_ATTEMPT;
       }
       return SecurityEventType.INVALID_INPUT;
@@ -201,10 +179,7 @@ export class SecurityMonitoringInterceptor implements NestInterceptor {
   /**
    * Determine severity based on error
    */
-  private getSeverityForError(
-    error: any,
-    statusCode: number
-  ): SecuritySeverity {
+  private getSeverityForError(error: any, statusCode: number): SecuritySeverity {
     if (statusCode === 401 || statusCode === 403) {
       return SecuritySeverity.MEDIUM;
     }
@@ -230,10 +205,7 @@ export class SecurityMonitoringInterceptor implements NestInterceptor {
       }
     } catch (error) {
       // Don't let security monitoring failures break the request
-      this.logger.error(
-        `Failed to record security event: ${error.message}`,
-        error.stack
-      );
+      this.logger.error(`Failed to record security event: ${error.message}`, error.stack);
     }
   }
 }

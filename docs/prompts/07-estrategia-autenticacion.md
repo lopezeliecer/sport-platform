@@ -199,36 +199,29 @@ CREATE TABLE user_sessions (
 ```typescript
 interface Permission {
   module:
-    | "athletes"
-    | "training"
-    | "performance"
-    | "competitions"
-    | "payments"
-    | "communications"
-    | "medical";
-  action:
-    | "create"
-    | "read"
-    | "update"
-    | "delete"
-    | "assign"
-    | "export"
-    | "manage";
-  scope?: "own" | "club" | "all"; // Alcance del permiso
+    | 'athletes'
+    | 'training'
+    | 'performance'
+    | 'competitions'
+    | 'payments'
+    | 'communications'
+    | 'medical';
+  action: 'create' | 'read' | 'update' | 'delete' | 'assign' | 'export' | 'manage';
+  scope?: 'own' | 'club' | 'all'; // Alcance del permiso
 }
 
 const ROLE_PERMISSIONS = {
-  club_admin: [{ module: "*", action: "*", scope: "club" }],
+  club_admin: [{ module: '*', action: '*', scope: 'club' }],
   coach: [
-    { module: "athletes", action: ["read", "update", "assign"], scope: "club" },
-    { module: "training", action: "*", scope: "club" },
-    { module: "performance", action: "*", scope: "club" },
-    { module: "communications", action: ["create", "read"], scope: "club" },
+    { module: 'athletes', action: ['read', 'update', 'assign'], scope: 'club' },
+    { module: 'training', action: '*', scope: 'club' },
+    { module: 'performance', action: '*', scope: 'club' },
+    { module: 'communications', action: ['create', 'read'], scope: 'club' },
   ],
   athlete: [
-    { module: "training", action: "read", scope: "own" },
-    { module: "performance", action: ["read", "create"], scope: "own" },
-    { module: "competitions", action: "read", scope: "own" },
+    { module: 'training', action: 'read', scope: 'own' },
+    { module: 'performance', action: ['read', 'create'], scope: 'own' },
+    { module: 'competitions', action: 'read', scope: 'own' },
   ],
   // ... otros roles
 };

@@ -32,43 +32,43 @@ export interface ClubContext {
 }
 
 export type UserRole =
-  | "CLUB_ADMIN"
-  | "COACH"
-  | "ATHLETE"
-  | "MEDICAL_STAFF"
-  | "PARENT"
-  | "CLUB_DIRECTOR";
+  | 'CLUB_ADMIN'
+  | 'COACH'
+  | 'ATHLETE'
+  | 'MEDICAL_STAFF'
+  | 'PARENT'
+  | 'CLUB_DIRECTOR';
 
 export type Module =
-  | "athletes"
-  | "training"
-  | "performance"
-  | "competitions"
-  | "payments"
-  | "communications"
-  | "medical"
-  | "club_management"
-  | "reports";
+  | 'athletes'
+  | 'training'
+  | 'performance'
+  | 'competitions'
+  | 'payments'
+  | 'communications'
+  | 'medical'
+  | 'club_management'
+  | 'reports';
 
 export type Action =
-  | "create"
-  | "read"
-  | "update"
-  | "delete"
-  | "assign"
-  | "export"
-  | "manage"
-  | "approve"
-  | "view_analytics"
-  | "send_notifications"
-  | "view_medical"
-  | "manage_restrictions";
+  | 'create'
+  | 'read'
+  | 'update'
+  | 'delete'
+  | 'assign'
+  | 'export'
+  | 'manage'
+  | 'approve'
+  | 'view_analytics'
+  | 'send_notifications'
+  | 'view_medical'
+  | 'manage_restrictions';
 
-export type Scope = "own" | "club" | "all";
+export type Scope = 'own' | 'club' | 'all';
 
 export interface Permission {
-  module: Module | "*";
-  action: Action | "*";
+  module: Module | '*';
+  action: Action | '*';
   scope?: Scope;
   conditions?: Record<string, any>;
 }

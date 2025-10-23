@@ -74,6 +74,7 @@
 ## Three Paths Explained
 
 ### Path 1: "I'm in a Hurry - Commit Anyway"
+
 ```
 ┌─ Developer Choose [1]
 ├─ "I'll fix issues later"
@@ -83,6 +84,7 @@
 ```
 
 ### Path 2: "Let Me Fix This Now"
+
 ```
 ┌─ Developer Choose [2]
 ├─ Commit cancelled
@@ -97,6 +99,7 @@
 ```
 
 ### Path 3: "Fix It Automatically"
+
 ```
 ┌─ Developer Choose [3]
 ├─ Script runs auto-fix:
@@ -115,7 +118,7 @@ Ready to commit?
     ↓
     └─→ Are you in a hurry?
             ├─→ YES (but issues exist)
-            │   ├─→ Run with --no-verify? 
+            │   ├─→ Run with --no-verify?
             │   │   ├─→ YES → Skip hook entirely
             │   │   └─→ NO → Choose [1] (Proceed anyway)
             │   └─→ Either way: Commit succeeds, CI may fail later
@@ -131,6 +134,7 @@ Ready to commit?
 ## Command Flow During Validation
 
 ### When Validation Runs:
+
 ```bash
 $ git commit -m "Add feature"
             ↓
@@ -146,6 +150,7 @@ $ git commit -m "Add feature"
 ```
 
 ### Fixing Flow (Choice 3):
+
 ```bash
 $ git commit -m "Add feature"
             ↓
@@ -169,6 +174,7 @@ $ git commit -m "Add feature"
 ## Time Comparison
 
 ### Path 1 (Quick Commit)
+
 ```
 Total time: ~2 seconds
   ├─ Validation: 1s
@@ -177,6 +183,7 @@ Total time: ~2 seconds
 ```
 
 ### Path 2 (Manual Fix)
+
 ```
 Total time: ~5-10 minutes
   ├─ Validation: 1s
@@ -188,6 +195,7 @@ Total time: ~5-10 minutes
 ```
 
 ### Path 3 (Auto-Fix)
+
 ```
 Total time: ~5-10 seconds
   ├─ Validation: 1s

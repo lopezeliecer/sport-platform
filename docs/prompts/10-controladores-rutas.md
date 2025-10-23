@@ -192,7 +192,7 @@ CARACTERÍSTICAS TÉCNICAS REQUERIDAS:
 // Ejemplo para CreateAthleteDto
 export class CreateAthleteDto {
   @ApiProperty({
-    description: "Athlete first name",
+    description: 'Athlete first name',
     minLength: 2,
     maxLength: 50,
   })
@@ -201,12 +201,12 @@ export class CreateAthleteDto {
   @MaxLength(50)
   firstName: string;
 
-  @ApiProperty({ description: "Date of birth", example: "2005-06-15" })
+  @ApiProperty({ description: 'Date of birth', example: '2005-06-15' })
   @IsDateString()
   @IsOptional()
   dateOfBirth?: string;
 
-  @ApiProperty({ description: "Performance metrics in JSONB format" })
+  @ApiProperty({ description: 'Performance metrics in JSONB format' })
   @IsObject()
   @ValidateNested()
   @Type(() => PerformanceMetricsDto)
@@ -253,13 +253,13 @@ export class PaginationDto {
 }
 
 export class AthleteFilterDto extends PaginationDto {
-  @ApiPropertyOptional({ description: "Filter by active status" })
+  @ApiPropertyOptional({ description: 'Filter by active status' })
   @IsBoolean()
-  @Transform(({ value }) => value === "true")
+  @Transform(({ value }) => value === 'true')
   @IsOptional()
   isActive?: boolean;
 
-  @ApiPropertyOptional({ description: "Search by name" })
+  @ApiPropertyOptional({ description: 'Search by name' })
   @IsString()
   @IsOptional()
   search?: string;
@@ -374,87 +374,79 @@ export class ProxyController {
 
 ```typescript
 // apps/sports-service/src/athletes/athletes.controller.ts
-@Controller("clubs/:clubId/athletes")
-@ApiTags("Athletes")
+@Controller('clubs/:clubId/athletes')
+@ApiTags('Athletes')
 @UseGuards(JWTAuthGuard, ClubAccessGuard)
 export class AthletesController {
   constructor(private readonly athletesService: AthletesService) {}
 
   @Get()
-  @ApiOperation({ summary: "List club athletes with filters and pagination" })
-  @ApiParam({ name: "clubId", description: "Club ID" })
-  @ApiQuery({ name: "page", required: false, type: Number })
-  @ApiQuery({ name: "limit", required: false, type: Number })
-  @ApiQuery({ name: "search", required: false, type: String })
-  @ApiQuery({ name: "isActive", required: false, type: Boolean })
-  @ApiResponse({ status: 200, description: "Athletes retrieved successfully" })
-  @RequirePermission("athletes", "read")
+  @ApiOperation({ summary: 'List club athletes with filters and pagination' })
+  @ApiParam({ name: 'clubId', description: 'Club ID' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'isActive', required: false, type: Boolean })
+  @ApiResponse({ status: 200, description: 'Athletes retrieved successfully' })
+  @RequirePermission('athletes', 'read')
   async findAll(
-    @Param("clubId") clubId: string,
+    @Param('clubId') clubId: string,
     @Query() filterDto: AthleteFilterDto,
-    @CurrentUser() user: AuthUser
+    @CurrentUser() user: AuthUser,
   ) {
     return this.athletesService.findAllByClub(clubId, filterDto);
   }
 
   @Post()
-  @ApiOperation({ summary: "Create new athlete in club" })
-  @ApiResponse({ status: 201, description: "Athlete created successfully" })
-  @ApiResponse({ status: 400, description: "Validation failed" })
-  @ApiResponse({ status: 403, description: "Insufficient permissions" })
-  @RequirePermission("athletes", "create")
-  @AuditLog("athlete_created")
+  @ApiOperation({ summary: 'Create new athlete in club' })
+  @ApiResponse({ status: 201, description: 'Athlete created successfully' })
+  @ApiResponse({ status: 400, description: 'Validation failed' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  @RequirePermission('athletes', 'create')
+  @AuditLog('athlete_created')
   async create(
-    @Param("clubId") clubId: string,
+    @Param('clubId') clubId: string,
     @Body() createAthleteDto: CreateAthleteDto,
-    @CurrentUser() user: AuthUser
+    @CurrentUser() user: AuthUser,
   ) {
     return this.athletesService.create(clubId, createAthleteDto, user.id);
   }
 
-  @Get(":athleteId")
-  @ApiOperation({ summary: "Get athlete details by ID" })
-  @ApiParam({ name: "athleteId", description: "Athlete ID" })
-  @ApiResponse({ status: 200, description: "Athlete found" })
-  @ApiResponse({ status: 404, description: "Athlete not found" })
-  @RequirePermission("athletes", "read")
-  async findOne(
-    @Param("clubId") clubId: string,
-    @Param("athleteId") athleteId: string
-  ) {
+  @Get(':athleteId')
+  @ApiOperation({ summary: 'Get athlete details by ID' })
+  @ApiParam({ name: 'athleteId', description: 'Athlete ID' })
+  @ApiResponse({ status: 200, description: 'Athlete found' })
+  @ApiResponse({ status: 404, description: 'Athlete not found' })
+  @RequirePermission('athletes', 'read')
+  async findOne(@Param('clubId') clubId: string, @Param('athleteId') athleteId: string) {
     return this.athletesService.findOne(athleteId, clubId);
   }
 
-  @Put(":athleteId")
-  @ApiOperation({ summary: "Update athlete information" })
-  @RequirePermission("athletes", "update")
-  @AuditLog("athlete_updated")
+  @Put(':athleteId')
+  @ApiOperation({ summary: 'Update athlete information' })
+  @RequirePermission('athletes', 'update')
+  @AuditLog('athlete_updated')
   async update(
-    @Param("clubId") clubId: string,
-    @Param("athleteId") athleteId: string,
+    @Param('clubId') clubId: string,
+    @Param('athleteId') athleteId: string,
     @Body() updateAthleteDto: UpdateAthleteDto,
-    @CurrentUser() user: AuthUser
+    @CurrentUser() user: AuthUser,
   ) {
-    return this.athletesService.update(
-      athleteId,
-      clubId,
-      updateAthleteDto,
-      user.id
-    );
+    return this.athletesService.update(athleteId, clubId, updateAthleteDto, user.id);
   }
 
-  @Delete(":athleteId")
-  @ApiOperation({ summary: "Soft delete athlete" })
-  @ApiResponse({ status: 204, description: "Athlete deleted successfully" })
-  @RequirePermission("athletes", "delete")
-  @AuditLog("athlete_deleted")
+  @Delete(':athleteId')
+  @ApiOperation({ summary: 'Soft delete athlete' })
+  @ApiResponse({ status: 204, description: 'Athlete deleted successfully' })
+  @RequirePermission('athletes', 'delete')
+  @AuditLog('athlete_deleted')
   async remove(
-    @Param("clubId") clubId: string,
-    @Param("athleteId") athleteId: string,
-    @CurrentUser() user: AuthUser
+    @Param('clubId') clubId: string,
+    @Param('athleteId') athleteId: string,
+    @CurrentUser() user: AuthUser,
   ) {
     await this.athletesService.remove(athleteId, clubId, user.id);
-    return { message: "Athlete deleted successfully" };
+    return { message: 'Athlete deleted successfully' };
   }
 }
 ```
@@ -465,10 +457,10 @@ export class AthletesController {
 // libs/shared/common/src/dto/create-athlete.dto.ts
 export class CreateAthleteDto {
   @ApiProperty({
-    description: "Athlete first name",
+    description: 'Athlete first name',
     minLength: 2,
     maxLength: 50,
-    example: "Juan",
+    example: 'Juan',
   })
   @IsString()
   @MinLength(2)
@@ -477,10 +469,10 @@ export class CreateAthleteDto {
   firstName: string;
 
   @ApiProperty({
-    description: "Athlete last name",
+    description: 'Athlete last name',
     minLength: 2,
     maxLength: 50,
-    example: "Pérez",
+    example: 'Pérez',
   })
   @IsString()
   @MinLength(2)
@@ -489,15 +481,15 @@ export class CreateAthleteDto {
   lastName: string;
 
   @ApiPropertyOptional({
-    description: "Date of birth",
-    example: "2005-06-15",
+    description: 'Date of birth',
+    example: '2005-06-15',
   })
   @IsDateString()
   @IsOptional()
   dateOfBirth?: string;
 
   @ApiPropertyOptional({
-    description: "Gender",
+    description: 'Gender',
     enum: Gender,
     example: Gender.MALE,
   })
@@ -506,7 +498,7 @@ export class CreateAthleteDto {
   gender?: Gender;
 
   @ApiPropertyOptional({
-    description: "Emergency contact information",
+    description: 'Emergency contact information',
     type: EmergencyContactDto,
   })
   @IsObject()
@@ -516,13 +508,13 @@ export class CreateAthleteDto {
   emergencyContact?: EmergencyContactDto;
 
   @ApiPropertyOptional({
-    description: "Unique athlete number within club",
-    example: "ATH001",
+    description: 'Unique athlete number within club',
+    example: 'ATH001',
   })
   @IsString()
   @IsOptional()
   @Matches(/^[A-Z0-9]{3,10}$/, {
-    message: "Athlete number must be 3-10 alphanumeric characters",
+    message: 'Athlete number must be 3-10 alphanumeric characters',
   })
   athleteNumber?: string;
 }
@@ -537,30 +529,28 @@ async function bootstrap() {
 
   // Swagger setup
   const config = new DocumentBuilder()
-    .setTitle("Sports Service API")
-    .setDescription(
-      "API for managing athletes, training sessions, and competitions"
-    )
-    .setVersion("1.0")
+    .setTitle('Sports Service API')
+    .setDescription('API for managing athletes, training sessions, and competitions')
+    .setVersion('1.0')
     .addBearerAuth(
       {
-        type: "http",
-        scheme: "bearer",
-        bearerFormat: "JWT",
-        name: "JWT",
-        description: "Enter JWT token",
-        in: "header",
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
       },
-      "JWT-auth"
+      'JWT-auth',
     )
-    .addTag("Athletes", "Athlete management endpoints")
-    .addTag("Training", "Training session management")
-    .addTag("Performance", "Performance tracking and analytics")
-    .addTag("Competitions", "Competition management")
+    .addTag('Athletes', 'Athlete management endpoints')
+    .addTag('Training', 'Training session management')
+    .addTag('Performance', 'Performance tracking and analytics')
+    .addTag('Competitions', 'Competition management')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api/docs", app, document, {
+  SwaggerModule.setup('api/docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
     },
@@ -591,14 +581,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
       method: request.method,
       message: exception.message,
       error: exception.name,
-      correlationId: request.headers["x-correlation-id"] || uuidv4(),
+      correlationId: request.headers['x-correlation-id'] || uuidv4(),
     };
 
     // Add validation details for bad request errors
     if (status === 400 && exception.getResponse() instanceof Object) {
       const response = exception.getResponse() as any;
       if (response.message && Array.isArray(response.message)) {
-        errorResponse["validationErrors"] = response.message;
+        errorResponse['validationErrors'] = response.message;
       }
     }
 

@@ -6,14 +6,6 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "dist",
-    "node_modules",
-    "prisma/generated",
-    "**/*.spec.ts",
-    "**/*.e2e-spec.ts"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["dist", "node_modules", "prisma/generated", "**/*.spec.ts", "**/*.e2e-spec.ts"]
 }

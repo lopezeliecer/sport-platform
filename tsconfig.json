@@ -19,27 +19,15 @@
     "noFallthroughCasesInSwitch": false,
     "useDefineForClassFields": false,
     "paths": {
-      "@sports-platform/shared/database": [
-        "libs/shared/database/dist"
-      ],
-      "@sports-platform/shared/database/*": [
-        "libs/shared/database/dist/*"
-      ],
+      "@sports-platform/shared/database": ["libs/shared/database/dist"],
+      "@sports-platform/shared/database/*": ["libs/shared/database/dist/*"],
       "@sports-platform/shared/database/prisma/generated/client": [
         "libs/shared/database/prisma/generated/client"
       ],
-      "@sports-platform/shared/common": [
-        "libs/shared/common/dist"
-      ],
-      "@sports-platform/shared/common/*": [
-        "libs/shared/common/dist/*"
-      ],
-      "@sports-platform/shared/auth": [
-        "libs/shared/auth/dist"
-      ],
-      "@sports-platform/shared/auth/*": [
-        "libs/shared/auth/dist/*"
-      ]
+      "@sports-platform/shared/common": ["libs/shared/common/dist"],
+      "@sports-platform/shared/common/*": ["libs/shared/common/dist/*"],
+      "@sports-platform/shared/auth": ["libs/shared/auth/dist"],
+      "@sports-platform/shared/auth/*": ["libs/shared/auth/dist/*"]
     }
   }
 }

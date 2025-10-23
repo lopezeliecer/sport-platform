@@ -1,21 +1,10 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from "@nestjs/common";
-import { Observable, throwError } from "rxjs";
-import { tap, catchError } from "rxjs/operators";
-import { Request, Response } from "express";
-import { randomUUID } from "crypto";
-import { AuditLogService } from "./audit-log.service";
-import {
-  AuditEventType,
-  AuditSeverity,
-  AuditStatus,
-  AuditContext,
-} from "./audit-log.interface";
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
+import { Observable, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
+import { Request, Response } from 'express';
+import { randomUUID } from 'crypto';
+import { AuditLogService } from './audit-log.service';
+import { AuditEventType, AuditSeverity, AuditStatus, AuditContext } from './audit-log.interface';
 
 @Injectable()
 export class AuditLogInterceptor implements NestInterceptor {
@@ -42,36 +31,23 @@ export class AuditLogInterceptor implements NestInterceptor {
         const duration = endTime - startTime;
 
         // Log successful request
-        await this.logSuccessfulRequest(
-          request,
-          response,
-          auditContext,
-          duration,
-          data
-        );
+        await this.logSuccessfulRequest(request, response, auditContext, duration, data);
       }),
       catchError((error) => {
         const endTime = Date.now();
         const duration = endTime - startTime;
 
         // Log failed request asynchronously and return error Observable
-        this.logFailedRequest(
-          request,
-          response,
-          auditContext,
-          duration,
-          error
-        ).catch((logError) => {
-          // Handle logging errors to prevent them from affecting the main request flow
-          this.logger.error(
-            "Failed to log audit event for failed request:",
-            logError
-          );
-        });
+        this.logFailedRequest(request, response, auditContext, duration, error).catch(
+          (logError) => {
+            // Handle logging errors to prevent them from affecting the main request flow
+            this.logger.error('Failed to log audit event for failed request:', logError);
+          },
+        );
 
         // Return error as Observable
         return throwError(() => error);
-      })
+      }),
     );
   }
 
@@ -84,15 +60,14 @@ export class AuditLogInterceptor implements NestInterceptor {
       userId: user?.sub || user?.id,
       userEmail: user?.email,
       sessionId: user?.sessionId,
-      clubId: user?.clubId || (request.headers["x-club-id"] as string),
+      clubId: user?.clubId || (request.headers['x-club-id'] as string),
       userRole: user?.role,
-      requestId:
-        (request.headers["x-request-id"] as string) || this.generateRequestId(),
+      requestId: (request.headers['x-request-id'] as string) || this.generateRequestId(),
       ipAddress: this.getClientIpAddress(request),
-      userAgent: request.headers["user-agent"],
+      userAgent: request.headers['user-agent'],
       endpoint: request.path,
       method: request.method,
-      service: apiKey?.service || "web-client",
+      service: apiKey?.service || 'web-client',
       apiKeyId: apiKey?.id,
     };
   }
@@ -102,17 +77,10 @@ export class AuditLogInterceptor implements NestInterceptor {
     response: Response,
     context: AuditContext,
     duration: number,
-    responseData: any
+    responseData: any,
   ): Promise<void> {
-    const eventType = this.determineEventType(
-      request.method,
-      request.path,
-      true
-    );
-    const severity = this.determineSeverity(
-      request.method,
-      response.statusCode
-    );
+    const eventType = this.determineEventType(request.method, request.path, true);
+    const severity = this.determineSeverity(request.method, response.statusCode);
 
     // Log data access events for specific endpoints
     if (this.isDataAccessEndpoint(request.path)) {
@@ -123,7 +91,7 @@ export class AuditLogInterceptor implements NestInterceptor {
         operation,
         resourceInfo.type,
         resourceInfo.id,
-        context
+        context,
       );
     }
 
@@ -141,7 +109,7 @@ export class AuditLogInterceptor implements NestInterceptor {
         requestBody: this.sanitizeRequestBody(request.body),
         queryParams: request.query,
       },
-      resourceType: "http_request",
+      resourceType: 'http_request',
       resourceId: context.requestId,
     });
   }
@@ -151,13 +119,9 @@ export class AuditLogInterceptor implements NestInterceptor {
     response: Response,
     context: AuditContext,
     duration: number,
-    error: any
+    error: any,
   ): Promise<void> {
-    const eventType = this.determineEventType(
-      request.method,
-      request.path,
-      false
-    );
+    const eventType = this.determineEventType(request.method, request.path, false);
     const severity = this.determineErrorSeverity(error);
     const statusCode = error.status || error.statusCode || 500;
 
@@ -174,9 +138,9 @@ export class AuditLogInterceptor implements NestInterceptor {
         requestBody: this.sanitizeRequestBody(request.body),
         queryParams: request.query,
       },
-      resourceType: "http_request",
+      resourceType: 'http_request',
       resourceId: context.requestId,
-      errorCode: error.code || "UNKNOWN_ERROR",
+      errorCode: error.code || 'UNKNOWN_ERROR',
       errorMessage: error.message,
       stackTrace: error.stack,
     });
@@ -184,9 +148,9 @@ export class AuditLogInterceptor implements NestInterceptor {
     // Log specific security events
     if (statusCode === 401) {
       await this.auditLogService.logAccessDenied(
-        context.userId || "anonymous",
+        context.userId || 'anonymous',
         `${request.method} ${request.path}`,
-        context
+        context,
       );
     } else if (statusCode === 429) {
       await this.auditLogService.logRateLimitExceeded(context);
@@ -194,48 +158,33 @@ export class AuditLogInterceptor implements NestInterceptor {
   }
 
   private shouldSkipLogging(path: string): boolean {
-    const skipPaths = [
-      "/health",
-      "/metrics",
-      "/favicon.ico",
-      "/api/docs",
-      "/api-docs",
-    ];
+    const skipPaths = ['/health', '/metrics', '/favicon.ico', '/api/docs', '/api-docs'];
 
     return skipPaths.some((skipPath) => path.includes(skipPath));
   }
 
-  private determineEventType(
-    method: string,
-    path: string,
-    success: boolean
-  ): AuditEventType {
+  private determineEventType(method: string, path: string, success: boolean): AuditEventType {
     // Authentication endpoints
-    if (path.includes("/auth/google") && success)
-      return AuditEventType.LOGIN_SUCCESS;
-    if (path.includes("/auth/google") && !success)
-      return AuditEventType.LOGIN_FAILED;
-    if (path.includes("/auth/logout")) return AuditEventType.LOGOUT;
-    if (path.includes("/auth/refresh")) return AuditEventType.TOKEN_REFRESH;
+    if (path.includes('/auth/google') && success) return AuditEventType.LOGIN_SUCCESS;
+    if (path.includes('/auth/google') && !success) return AuditEventType.LOGIN_FAILED;
+    if (path.includes('/auth/logout')) return AuditEventType.LOGOUT;
+    if (path.includes('/auth/refresh')) return AuditEventType.TOKEN_REFRESH;
 
     // API key endpoints
-    if (path.includes("/api-keys") && method === "POST")
-      return AuditEventType.API_KEY_CREATED;
-    if (path.includes("/api-keys") && method === "GET")
-      return AuditEventType.DATA_READ;
-    if (path.includes("/api-keys/rotate"))
-      return AuditEventType.API_KEY_ROTATED;
+    if (path.includes('/api-keys') && method === 'POST') return AuditEventType.API_KEY_CREATED;
+    if (path.includes('/api-keys') && method === 'GET') return AuditEventType.DATA_READ;
+    if (path.includes('/api-keys/rotate')) return AuditEventType.API_KEY_ROTATED;
 
     // Data operations
     switch (method) {
-      case "GET":
+      case 'GET':
         return AuditEventType.DATA_READ;
-      case "POST":
+      case 'POST':
         return AuditEventType.DATA_CREATED;
-      case "PUT":
-      case "PATCH":
+      case 'PUT':
+      case 'PATCH':
         return AuditEventType.DATA_UPDATED;
-      case "DELETE":
+      case 'DELETE':
         return AuditEventType.DATA_DELETED;
       default:
         return AuditEventType.DATA_READ;
@@ -245,7 +194,7 @@ export class AuditLogInterceptor implements NestInterceptor {
   private determineSeverity(method: string, statusCode: number): AuditSeverity {
     if (statusCode >= 500) return AuditSeverity.HIGH;
     if (statusCode >= 400) return AuditSeverity.MEDIUM;
-    if (method === "DELETE") return AuditSeverity.MEDIUM;
+    if (method === 'DELETE') return AuditSeverity.MEDIUM;
     return AuditSeverity.LOW;
   }
 
@@ -259,46 +208,33 @@ export class AuditLogInterceptor implements NestInterceptor {
   }
 
   private isDataAccessEndpoint(path: string): boolean {
-    const dataEndpoints = [
-      "/users",
-      "/athletes",
-      "/clubs",
-      "/trainings",
-      "/performances",
-    ];
+    const dataEndpoints = ['/users', '/athletes', '/clubs', '/trainings', '/performances'];
 
     return dataEndpoints.some((endpoint) => path.includes(endpoint));
   }
 
-  private getDataOperation(
-    method: string
-  ): "read" | "create" | "update" | "delete" {
+  private getDataOperation(method: string): 'read' | 'create' | 'update' | 'delete' {
     switch (method) {
-      case "GET":
-        return "read";
-      case "POST":
-        return "create";
-      case "PUT":
-      case "PATCH":
-        return "update";
-      case "DELETE":
-        return "delete";
+      case 'GET':
+        return 'read';
+      case 'POST':
+        return 'create';
+      case 'PUT':
+      case 'PATCH':
+        return 'update';
+      case 'DELETE':
+        return 'delete';
       default:
-        return "read";
+        return 'read';
     }
   }
 
-  private extractResourceInfo(
-    path: string,
-    responseData: any
-  ): { type: string; id: string } {
+  private extractResourceInfo(path: string, responseData: any): { type: string; id: string } {
     // Extract resource type and ID from path
-    const pathParts = path
-      .split("/")
-      .filter((part) => part && part !== "api" && part !== "v1");
+    const pathParts = path.split('/').filter((part) => part && part !== 'api' && part !== 'v1');
 
-    const resourceType = pathParts[0] || "unknown";
-    const resourceId = pathParts[1] || responseData?.id || "unknown";
+    const resourceType = pathParts[0] || 'unknown';
+    const resourceId = pathParts[1] || responseData?.id || 'unknown';
 
     return { type: resourceType, id: resourceId };
   }
@@ -308,19 +244,19 @@ export class AuditLogInterceptor implements NestInterceptor {
 
     // Remove sensitive fields from request body
     const sensitiveFields = [
-      "password",
-      "token",
-      "secret",
-      "key",
-      "credential",
-      "accessToken",
-      "refreshToken",
+      'password',
+      'token',
+      'secret',
+      'key',
+      'credential',
+      'accessToken',
+      'refreshToken',
     ];
 
     const sanitized = { ...body };
     sensitiveFields.forEach((field) => {
       if (sanitized[field]) {
-        sanitized[field] = "[REDACTED]";
+        sanitized[field] = '[REDACTED]';
       }
     });
 
@@ -329,12 +265,12 @@ export class AuditLogInterceptor implements NestInterceptor {
 
   private getClientIpAddress(request: Request): string {
     // Try to get real IP from various headers
-    const xForwardedFor = request.headers["x-forwarded-for"] as string;
-    const xRealIp = request.headers["x-real-ip"] as string;
-    const cfConnectingIp = request.headers["cf-connecting-ip"] as string;
+    const xForwardedFor = request.headers['x-forwarded-for'] as string;
+    const xRealIp = request.headers['x-real-ip'] as string;
+    const cfConnectingIp = request.headers['cf-connecting-ip'] as string;
 
     if (xForwardedFor) {
-      return xForwardedFor.split(",")[0].trim();
+      return xForwardedFor.split(',')[0].trim();
     }
 
     if (xRealIp) {
@@ -345,7 +281,7 @@ export class AuditLogInterceptor implements NestInterceptor {
       return cfConnectingIp;
     }
 
-    return request.ip || request.connection?.remoteAddress || "unknown";
+    return request.ip || request.connection?.remoteAddress || 'unknown';
   }
 
   private generateRequestId(): string {

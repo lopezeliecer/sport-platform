@@ -1,11 +1,13 @@
 # Prompt #12: Frontend Angular + PrimeNG + NgRx Setup
 
 ## Contexto del Sistema
+
 Eres un experto desarrollador Angular especializado en aplicaciones empresariales complejas. Necesitas configurar el frontend de una plataforma deportiva integral con arquitectura de microservicios.
 
 ## Especificaciones del Proyecto
 
 ### Stack Frontend Definido
+
 - **Framework**: Angular 18/19 con TypeScript
 - **UI Library**: PrimeNG para componentes ricos de datos
 - **State Management**: NgRx para manejo de estado complejo
@@ -14,6 +16,7 @@ Eres un experto desarrollador Angular especializado en aplicaciones empresariale
 - **Futuro**: Capacidades PWA
 
 ### Arquitectura de Módulos
+
 ```
 frontend/src/app/
 ├── core/                    # Servicios singleton y guards
@@ -31,6 +34,7 @@ frontend/src/app/
 ```
 
 ### Configuración NgRx State
+
 ```typescript
 // State Structure
 interface AppState {
@@ -46,6 +50,7 @@ interface AppState {
 ## Tareas a Realizar
 
 ### 1. Configuración Inicial del Proyecto Angular
+
 ```bash
 # Comandos a ejecutar
 ng new sports-platform-frontend --routing --style=scss --strict
@@ -55,18 +60,21 @@ npm install primeng primeicons
 ```
 
 ### 2. Configuración PrimeNG
+
 - Instalar y configurar PrimeNG con tema personalizable
 - Configurar módulos principales: Calendar, Table, Dialog, Charts
 - Implementar tema responsive con variables SCSS
 - Configurar iconos PrimeIcons
 
 ### 3. Configuración NgRx
+
 - Setup del store principal con feature stores
 - Configuración de efectos para llamadas HTTP
 - Implementación de selectors optimizados
 - DevTools para desarrollo
 
 ### 4. Estructura de Servicios
+
 ```typescript
 // Servicios principales
 @Injectable({ providedIn: 'root' })
@@ -86,6 +94,7 @@ export class TrainingService {
 ```
 
 ### 5. Guards y Interceptors
+
 - AuthGuard para rutas protegidas
 - RoleGuard para permisos granulares
 - JWT Interceptor para autenticación automática
@@ -94,6 +103,7 @@ export class TrainingService {
 ## Componente Central: TrainingCalendarPage
 
 ### Especificaciones del Calendario
+
 - **Vista principal**: Semanal (70% de la pantalla)
 - **Panel lateral**: Detalles de entrenamiento (30%)
 - **Interacción**: Click en día muestra entrenamientos
@@ -101,26 +111,29 @@ export class TrainingService {
 - **Datos**: Sincronización real-time con sports-service
 
 ### Estructura del Componente
+
 ```typescript
 @Component({
   selector: 'app-training-calendar',
   template: `
     <div class="training-calendar-container">
       <div class="calendar-main">
-        <p-calendar 
+        <p-calendar
           [view]="'week'"
           [events]="trainingEvents$ | async"
-          (onDaySelect)="onDaySelected($event)">
+          (onDaySelect)="onDaySelected($event)"
+        >
         </p-calendar>
       </div>
       <div class="details-panel">
-        <app-training-details 
+        <app-training-details
           [selectedDate]="selectedDate$ | async"
-          [trainings]="selectedTrainings$ | async">
+          [trainings]="selectedTrainings$ | async"
+        >
         </app-training-details>
       </div>
     </div>
-  `
+  `,
 })
 export class TrainingCalendarPageComponent {
   // Implementación con NgRx
@@ -130,30 +143,33 @@ export class TrainingCalendarPageComponent {
 ## Configuración de Rutas
 
 ### Routing Principal
+
 ```typescript
 const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
-  { 
-    path: 'auth', 
-    loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule) 
+  {
+    path: 'auth',
+    loadChildren: () => import('./features/auth/auth.module').then((m) => m.AuthModule),
   },
-  { 
-    path: 'dashboard', 
-    loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule),
-    canActivate: [AuthGuard]
+  {
+    path: 'dashboard',
+    loadChildren: () =>
+      import('./features/dashboard/dashboard.module').then((m) => m.DashboardModule),
+    canActivate: [AuthGuard],
   },
-  { 
-    path: 'training', 
-    loadChildren: () => import('./features/training/training.module').then(m => m.TrainingModule),
+  {
+    path: 'training',
+    loadChildren: () => import('./features/training/training.module').then((m) => m.TrainingModule),
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['COACH', 'ADMIN'] }
-  }
+    data: { roles: ['COACH', 'ADMIN'] },
+  },
 ];
 ```
 
 ## Integración con Backend
 
 ### Configuración de API Base URLs
+
 ```typescript
 export const environment = {
   production: false,
@@ -161,11 +177,12 @@ export const environment = {
   identityService: 'http://localhost:3001',
   sportsService: 'http://localhost:3002',
   clubService: 'http://localhost:3003',
-  communicationService: 'http://localhost:3004'
+  communicationService: 'http://localhost:3004',
 };
 ```
 
 ### HTTP Client Configuration
+
 - Interceptors para manejo de errores
 - Retry policies para requests fallidos
 - Loading states centralizados
@@ -174,18 +191,21 @@ export const environment = {
 ## Estándares de Desarrollo
 
 ### TypeScript Configuration
+
 - Strict mode habilitado
 - Path mapping para imports limpios
 - Interfaces tipadas para todas las entidades
 - Enums para constantes del dominio
 
 ### Componentes Guidelines
+
 - OnPush change detection strategy
 - Reactive forms para formularios complejos
 - Standalone components donde sea apropiado
 - Lazy loading para optimización
 
 ### Testing Setup
+
 - Karma + Jasmine para unit tests
 - Cypress para E2E testing
 - Testing utilities para NgRx
