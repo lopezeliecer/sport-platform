@@ -97,16 +97,16 @@ WebSocket◄─────────────────────Real-
 // Gateway routing configuration
 @Controller()
 export class GatewayController {
-  @Get("api/training/*")
+  @Get('api/training/*')
   @UseGuards(JwtAuthGuard)
   async forwardToSports(@Req() req, @Res() res) {
-    return this.httpService.forward(req, "sports-service:3002");
+    return this.httpService.forward(req, 'sports-service:3002');
   }
 
-  @Get("api/users/*")
+  @Get('api/users/*')
   @UseGuards(JwtAuthGuard)
   async forwardToIdentity(@Req() req, @Res() res) {
-    return this.httpService.forward(req, "identity-service:3001");
+    return this.httpService.forward(req, 'identity-service:3001');
   }
 }
 ```
@@ -137,19 +137,17 @@ export class GatewayController {
 **Core Features:**
 
 ```typescript
-@Controller("auth")
+@Controller('auth')
 export class AuthController {
-  @Post("google")
+  @Post('google')
   async googleAuth(@Body() googleTokenDto: GoogleTokenDto) {
-    const user = await this.authService.validateGoogleToken(
-      googleTokenDto.token
-    );
+    const user = await this.authService.validateGoogleToken(googleTokenDto.token);
     const session = await this.sessionService.createSession(user.id);
     const jwt = this.jwtService.generateToken(user, session);
     return { user, jwt, session };
   }
 
-  @Get("profile")
+  @Get('profile')
   @UseGuards(JwtAuthGuard)
   async getProfile(@CurrentUser() user: UserContext) {
     return this.userService.getProfile(user.id);
@@ -185,30 +183,27 @@ export class AuthController {
 **Core Features:**
 
 ```typescript
-@Controller("training")
+@Controller('training')
 export class TrainingController {
-  @Post("sessions")
+  @Post('sessions')
   @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermission("training:create")
+  @RequirePermission('training:create')
   async createSession(@Body() createSessionDto: CreateTrainingSessionDto) {
     const session = await this.trainingService.createSession(createSessionDto);
 
     // Notify assigned athletes
     await this.communicationService.notifyAthletes(
       session.assignedAthletes,
-      "training-session-created",
-      session
+      'training-session-created',
+      session,
     );
 
     return session;
   }
 
-  @Get("sessions/calendar")
+  @Get('sessions/calendar')
   @UseGuards(JwtAuthGuard)
-  async getCalendar(
-    @CurrentUser() user: UserContext,
-    @Query() filters: CalendarFiltersDto
-  ) {
+  async getCalendar(@CurrentUser() user: UserContext, @Query() filters: CalendarFiltersDto) {
     return this.trainingService.getCalendar(user.clubId, filters);
   }
 }
@@ -242,12 +237,12 @@ export class TrainingController {
 **Core Features:**
 
 ```typescript
-@Controller("clubs")
+@Controller('clubs')
 export class ClubController {
-  @Get(":clubId/dashboard")
+  @Get(':clubId/dashboard')
   @UseGuards(JwtAuthGuard, ClubAccessGuard)
-  @RequirePermission("club:view")
-  async getClubDashboard(@Param("clubId") clubId: string) {
+  @RequirePermission('club:view')
+  async getClubDashboard(@Param('clubId') clubId: string) {
     const [members, revenue, sessions, performance] = await Promise.all([
       this.membershipService.getMemberStats(clubId),
       this.financeService.getRevenueStats(clubId),
@@ -288,11 +283,11 @@ export class ClubController {
 **Core Features:**
 
 ```typescript
-@Controller("notifications")
+@Controller('notifications')
 export class NotificationController {
-  @Post("send")
+  @Post('send')
   @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermission("communication:send")
+  @RequirePermission('communication:send')
   async sendNotification(@Body() notificationDto: SendNotificationDto) {
     const notification = await this.notificationService.create(notificationDto);
 
@@ -332,9 +327,7 @@ export class NotificationController {
 // Sports Service calling Identity Service
 @Injectable()
 export class AthleteService {
-  constructor(
-    @Inject("IDENTITY_SERVICE") private identityService: ClientProxy
-  ) {}
+  constructor(@Inject('IDENTITY_SERVICE') private identityService: ClientProxy) {}
 
   async getAthleteWithUserInfo(athleteId: string) {
     const athlete = await this.prisma.athlete.findUnique({
@@ -343,7 +336,7 @@ export class AthleteService {
 
     // Synchronous HTTP call to Identity Service
     const userInfo = await this.identityService
-      .send({ cmd: "get_user" }, { userId: athlete.userId })
+      .send({ cmd: 'get_user' }, { userId: athlete.userId })
       .toPromise();
 
     return { ...athlete, userInfo };
@@ -356,14 +349,11 @@ export class AthleteService {
 ```typescript
 @Injectable()
 export class ServiceCommunication {
-  async callWithCircuitBreaker<T>(
-    serviceCall: () => Promise<T>,
-    fallback: () => T
-  ): Promise<T> {
+  async callWithCircuitBreaker<T>(serviceCall: () => Promise<T>, fallback: () => T): Promise<T> {
     try {
       return await timeout(serviceCall(), 5000); // 5s timeout
     } catch (error) {
-      console.error("Service call failed, using fallback:", error);
+      console.error('Service call failed, using fallback:', error);
       return fallback();
     }
   }
@@ -379,19 +369,17 @@ export class ServiceCommunication {
 const session = await this.trainingService.create(sessionData);
 
 // 2. Get affected athletes from Identity Service
-const athletes = await this.identityService.getAthletesByIds(
-  session.athleteIds
-);
+const athletes = await this.identityService.getAthletesByIds(session.athleteIds);
 
 // 3. Send notifications via Communication Service
 await this.communicationService.notifyAthletes(athletes, {
-  type: "training-session-created",
+  type: 'training-session-created',
   sessionId: session.id,
   message: `New training session: ${session.title}`,
 });
 
 // 4. Real-time update via WebSocket
-this.websocketGateway.emit("session-created", {
+this.websocketGateway.emit('session-created', {
   clubId: session.clubId,
   session,
 });
@@ -409,9 +397,7 @@ export class AthleteRegistrationSaga {
 
     try {
       // Step 1: Create user in Identity Service
-      const user = await this.identityService.createUser(
-        registrationData.userInfo
-      );
+      const user = await this.identityService.createUser(registrationData.userInfo);
 
       // Step 2: Create athlete in Sports Service
       const athlete = await this.sportsService.createAthlete({

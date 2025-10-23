@@ -123,9 +123,7 @@ if (isPublic) return true;
 
 // If no security config, DENY access (secure by default)
 if (!requiredPermission && !requiredRoles) {
-  throw new ForbiddenException(
-    "Endpoint requires explicit security configuration"
-  );
+  throw new ForbiddenException('Endpoint requires explicit security configuration');
 }
 ```
 
@@ -218,11 +216,11 @@ if (!requiredPermission && !requiredRoles) {
 ### **Using Throttle Decorators**:
 
 ```typescript
-@Controller("training")
+@Controller('training')
 export class TrainingController {
   @Post()
   @ThrottleTrainingData()
-  @RequirePermission("training", "create")
+  @RequirePermission('training', 'create')
   createTraining() {}
 
   @Get()

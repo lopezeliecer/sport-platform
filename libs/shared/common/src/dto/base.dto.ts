@@ -17,76 +17,76 @@ import {
   Matches,
   ValidateNested,
   IsNotEmpty,
-} from "class-validator";
-import { Type, Transform } from "class-transformer";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+} from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 // ============================================================================
 // ENUM DEFINITIONS (matching Prisma enums)
 // ============================================================================
 
 export enum UserRole {
-  COACH = "COACH",
-  ADMIN = "ADMIN",
-  ATHLETE = "ATHLETE",
-  PARENT = "PARENT",
-  MEDICAL = "MEDICAL",
-  DIRECTOR = "DIRECTOR",
+  COACH = 'COACH',
+  ADMIN = 'ADMIN',
+  ATHLETE = 'ATHLETE',
+  PARENT = 'PARENT',
+  MEDICAL = 'MEDICAL',
+  DIRECTOR = 'DIRECTOR',
 }
 
 export enum Gender {
-  MALE = "MALE",
-  FEMALE = "FEMALE",
-  OTHER = "OTHER",
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
 }
 
 export enum Sport {
-  SWIMMING = "SWIMMING",
-  TRACK_FIELD = "TRACK_FIELD",
-  SOCCER = "SOCCER",
-  BASKETBALL = "BASKETBALL",
-  TENNIS = "TENNIS",
+  SWIMMING = 'SWIMMING',
+  TRACK_FIELD = 'TRACK_FIELD',
+  SOCCER = 'SOCCER',
+  BASKETBALL = 'BASKETBALL',
+  TENNIS = 'TENNIS',
 }
 
 export enum AthleteLevel {
-  BEGINNER = "BEGINNER",
-  INTERMEDIATE = "INTERMEDIATE",
-  ADVANCED = "ADVANCED",
-  ELITE = "ELITE",
+  BEGINNER = 'BEGINNER',
+  INTERMEDIATE = 'INTERMEDIATE',
+  ADVANCED = 'ADVANCED',
+  ELITE = 'ELITE',
 }
 
 export enum SessionStatus {
-  SCHEDULED = "SCHEDULED",
-  IN_PROGRESS = "IN_PROGRESS",
-  COMPLETED = "COMPLETED",
-  CANCELLED = "CANCELLED",
-  POSTPONED = "POSTPONED",
+  SCHEDULED = 'SCHEDULED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  POSTPONED = 'POSTPONED',
 }
 
 export enum AttendanceStatus {
-  SCHEDULED = "SCHEDULED",
-  PRESENT = "PRESENT",
-  ABSENT = "ABSENT",
-  LATE = "LATE",
-  EARLY_DEPARTURE = "EARLY_DEPARTURE",
+  SCHEDULED = 'SCHEDULED',
+  PRESENT = 'PRESENT',
+  ABSENT = 'ABSENT',
+  LATE = 'LATE',
+  EARLY_DEPARTURE = 'EARLY_DEPARTURE',
 }
 
 export enum PaymentStatus {
-  PENDING = "PENDING",
-  PAID = "PAID",
-  OVERDUE = "OVERDUE",
-  CANCELLED = "CANCELLED",
-  REFUNDED = "REFUNDED",
-  PARTIAL = "PARTIAL",
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  OVERDUE = 'OVERDUE',
+  CANCELLED = 'CANCELLED',
+  REFUNDED = 'REFUNDED',
+  PARTIAL = 'PARTIAL',
 }
 
 export enum PaymentType {
-  MEMBERSHIP = "MEMBERSHIP",
-  TRAINING = "TRAINING",
-  COMPETITION = "COMPETITION",
-  EQUIPMENT = "EQUIPMENT",
-  FACILITY = "FACILITY",
-  OTHER = "OTHER",
+  MEMBERSHIP = 'MEMBERSHIP',
+  TRAINING = 'TRAINING',
+  COMPETITION = 'COMPETITION',
+  EQUIPMENT = 'EQUIPMENT',
+  FACILITY = 'FACILITY',
+  OTHER = 'OTHER',
 }
 
 // ============================================================================
@@ -94,7 +94,7 @@ export enum PaymentType {
 // ============================================================================
 
 export class PaginationDto {
-  @ApiPropertyOptional({ description: "Page number", minimum: 1, default: 1 })
+  @ApiPropertyOptional({ description: 'Page number', minimum: 1, default: 1 })
   @IsOptional()
   @IsInt()
   @Min(1)
@@ -102,7 +102,7 @@ export class PaginationDto {
   page?: number = 1;
 
   @ApiPropertyOptional({
-    description: "Items per page",
+    description: 'Items per page',
     minimum: 1,
     maximum: 100,
     default: 20,
@@ -114,73 +114,73 @@ export class PaginationDto {
   @Type(() => Number)
   limit?: number = 20;
 
-  @ApiPropertyOptional({ description: "Sort field", default: "createdAt" })
+  @ApiPropertyOptional({ description: 'Sort field', default: 'createdAt' })
   @IsOptional()
   @IsString()
-  sortBy?: string = "createdAt";
+  sortBy?: string = 'createdAt';
 
   @ApiPropertyOptional({
-    description: "Sort order",
-    enum: ["asc", "desc"],
-    default: "desc",
+    description: 'Sort order',
+    enum: ['asc', 'desc'],
+    default: 'desc',
   })
   @IsOptional()
-  @IsEnum(["asc", "desc"])
-  sortOrder?: "asc" | "desc" = "desc";
+  @IsEnum(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc' = 'desc';
 }
 
 export class SearchDto extends PaginationDto {
-  @ApiPropertyOptional({ description: "Search query" })
+  @ApiPropertyOptional({ description: 'Search query' })
   @IsOptional()
   @IsString()
   @Length(0, 255)
   query?: string;
 
-  @ApiPropertyOptional({ description: "Start date for date range filter" })
+  @ApiPropertyOptional({ description: 'Start date for date range filter' })
   @IsOptional()
   @IsDateString()
   from?: string;
 
-  @ApiPropertyOptional({ description: "End date for date range filter" })
+  @ApiPropertyOptional({ description: 'End date for date range filter' })
   @IsOptional()
   @IsDateString()
   to?: string;
 
-  @ApiPropertyOptional({ description: "Filter by active status" })
+  @ApiPropertyOptional({ description: 'Filter by active status' })
   @IsOptional()
   @IsBoolean()
-  @Transform(({ value }) => value === "true" || value === true)
+  @Transform(({ value }) => value === 'true' || value === true)
   isActive?: boolean;
 }
 
 export class ResponseMetaDto {
-  @ApiProperty({ description: "Request timestamp" })
+  @ApiProperty({ description: 'Request timestamp' })
   timestamp: string;
 
-  @ApiProperty({ description: "Request ID for tracking" })
+  @ApiProperty({ description: 'Request ID for tracking' })
   requestId: string;
 
-  @ApiProperty({ description: "API version" })
+  @ApiProperty({ description: 'API version' })
   version: string;
 }
 
 export class PaginationMetaDto {
-  @ApiProperty({ description: "Current page number" })
+  @ApiProperty({ description: 'Current page number' })
   page: number;
 
-  @ApiProperty({ description: "Items per page" })
+  @ApiProperty({ description: 'Items per page' })
   limit: number;
 
-  @ApiProperty({ description: "Total items" })
+  @ApiProperty({ description: 'Total items' })
   total: number;
 
-  @ApiProperty({ description: "Total pages" })
+  @ApiProperty({ description: 'Total pages' })
   totalPages: number;
 
-  @ApiProperty({ description: "Has next page" })
+  @ApiProperty({ description: 'Has next page' })
   hasNext: boolean;
 
-  @ApiProperty({ description: "Has previous page" })
+  @ApiProperty({ description: 'Has previous page' })
   hasPrev: boolean;
 }
 
@@ -189,34 +189,34 @@ export class PaginationMetaDto {
 // ============================================================================
 
 export class CreateUserDto {
-  @ApiProperty({ description: "User email address" })
+  @ApiProperty({ description: 'User email address' })
   @IsEmail()
   @IsNotEmpty()
   email: string;
 
-  @ApiPropertyOptional({ description: "Google OAuth ID" })
+  @ApiPropertyOptional({ description: 'Google OAuth ID' })
   @IsOptional()
   @IsString()
   googleId?: string;
 
-  @ApiProperty({ description: "Full name" })
+  @ApiProperty({ description: 'Full name' })
   @IsString()
   @IsNotEmpty()
   @Length(2, 200)
   name: string;
 
-  @ApiPropertyOptional({ description: "Profile picture URL" })
+  @ApiPropertyOptional({ description: 'Profile picture URL' })
   @IsOptional()
   @IsString()
   profilePicture?: string;
 
-  @ApiPropertyOptional({ description: "Phone number" })
+  @ApiPropertyOptional({ description: 'Phone number' })
   @IsOptional()
   @IsString()
-  @Matches(/^[\+]?[1-9][\d]{0,15}$/, { message: "Invalid phone number format" })
+  @Matches(/^[\+]?[1-9][\d]{0,15}$/, { message: 'Invalid phone number format' })
   phone?: string;
 
-  @ApiPropertyOptional({ description: "Emergency contact information" })
+  @ApiPropertyOptional({ description: 'Emergency contact information' })
   @IsOptional()
   @IsObject()
   emergencyContact?: {
@@ -225,37 +225,37 @@ export class CreateUserDto {
     relationship: string;
   };
 
-  @ApiPropertyOptional({ description: "Preferred language", default: "en" })
+  @ApiPropertyOptional({ description: 'Preferred language', default: 'en' })
   @IsOptional()
   @IsString()
   @Length(2, 10)
-  preferredLanguage?: string = "en";
+  preferredLanguage?: string = 'en';
 
-  @ApiPropertyOptional({ description: "Timezone", default: "UTC" })
+  @ApiPropertyOptional({ description: 'Timezone', default: 'UTC' })
   @IsOptional()
   @IsString()
-  timezone?: string = "UTC";
+  timezone?: string = 'UTC';
 }
 
 export class UpdateUserDto {
-  @ApiPropertyOptional({ description: "Full name" })
+  @ApiPropertyOptional({ description: 'Full name' })
   @IsOptional()
   @IsString()
   @Length(2, 200)
   name?: string;
 
-  @ApiPropertyOptional({ description: "Profile picture URL" })
+  @ApiPropertyOptional({ description: 'Profile picture URL' })
   @IsOptional()
   @IsString()
   profilePicture?: string;
 
-  @ApiPropertyOptional({ description: "Phone number" })
+  @ApiPropertyOptional({ description: 'Phone number' })
   @IsOptional()
   @IsString()
-  @Matches(/^[\+]?[1-9][\d]{0,15}$/, { message: "Invalid phone number format" })
+  @Matches(/^[\+]?[1-9][\d]{0,15}$/, { message: 'Invalid phone number format' })
   phone?: string;
 
-  @ApiPropertyOptional({ description: "Emergency contact information" })
+  @ApiPropertyOptional({ description: 'Emergency contact information' })
   @IsOptional()
   @IsObject()
   emergencyContact?: {
@@ -264,55 +264,55 @@ export class UpdateUserDto {
     relationship: string;
   };
 
-  @ApiPropertyOptional({ description: "Preferred language" })
+  @ApiPropertyOptional({ description: 'Preferred language' })
   @IsOptional()
   @IsString()
   @Length(2, 10)
   preferredLanguage?: string;
 
-  @ApiPropertyOptional({ description: "Timezone" })
+  @ApiPropertyOptional({ description: 'Timezone' })
   @IsOptional()
   @IsString()
   timezone?: string;
 
-  @ApiPropertyOptional({ description: "Active status" })
+  @ApiPropertyOptional({ description: 'Active status' })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 }
 
 export class UserResponseDto {
-  @ApiProperty({ description: "User ID" })
+  @ApiProperty({ description: 'User ID' })
   id: string;
 
-  @ApiProperty({ description: "Email address" })
+  @ApiProperty({ description: 'Email address' })
   email: string;
 
-  @ApiProperty({ description: "Full name" })
+  @ApiProperty({ description: 'Full name' })
   name: string;
 
-  @ApiPropertyOptional({ description: "Profile picture URL" })
+  @ApiPropertyOptional({ description: 'Profile picture URL' })
   profilePicture?: string;
 
-  @ApiPropertyOptional({ description: "Phone number" })
+  @ApiPropertyOptional({ description: 'Phone number' })
   phone?: string;
 
-  @ApiProperty({ description: "Preferred language" })
+  @ApiProperty({ description: 'Preferred language' })
   preferredLanguage: string;
 
-  @ApiProperty({ description: "Timezone" })
+  @ApiProperty({ description: 'Timezone' })
   timezone: string;
 
-  @ApiProperty({ description: "Active status" })
+  @ApiProperty({ description: 'Active status' })
   isActive: boolean;
 
-  @ApiProperty({ description: "Last login timestamp" })
+  @ApiProperty({ description: 'Last login timestamp' })
   lastLoginAt?: Date;
 
-  @ApiProperty({ description: "Created timestamp" })
+  @ApiProperty({ description: 'Created timestamp' })
   createdAt: Date;
 
-  @ApiProperty({ description: "Updated timestamp" })
+  @ApiProperty({ description: 'Updated timestamp' })
   updatedAt: Date;
 }
 
@@ -321,53 +321,53 @@ export class UserResponseDto {
 // ============================================================================
 
 export class CreateClubDto {
-  @ApiProperty({ description: "Club name" })
+  @ApiProperty({ description: 'Club name' })
   @IsString()
   @IsNotEmpty()
   @Length(2, 200)
   name: string;
 
-  @ApiProperty({ description: "Club slug (URL-friendly identifier)" })
+  @ApiProperty({ description: 'Club slug (URL-friendly identifier)' })
   @IsString()
   @IsNotEmpty()
   @Matches(/^[a-z0-9-]+$/, {
-    message: "Slug must contain only lowercase letters, numbers, and hyphens",
+    message: 'Slug must contain only lowercase letters, numbers, and hyphens',
   })
   @Length(2, 100)
   slug: string;
 
-  @ApiPropertyOptional({ description: "Club description" })
+  @ApiPropertyOptional({ description: 'Club description' })
   @IsOptional()
   @IsString()
   @Length(0, 1000)
   description?: string;
 
-  @ApiPropertyOptional({ description: "Club logo URL" })
+  @ApiPropertyOptional({ description: 'Club logo URL' })
   @IsOptional()
   @IsString()
   logo?: string;
 
-  @ApiPropertyOptional({ description: "Club address" })
+  @ApiPropertyOptional({ description: 'Club address' })
   @IsOptional()
   @IsString()
   address?: string;
 
-  @ApiPropertyOptional({ description: "Club phone number" })
+  @ApiPropertyOptional({ description: 'Club phone number' })
   @IsOptional()
   @IsString()
   phone?: string;
 
-  @ApiPropertyOptional({ description: "Club email" })
+  @ApiPropertyOptional({ description: 'Club email' })
   @IsOptional()
   @IsEmail()
   email?: string;
 
-  @ApiPropertyOptional({ description: "Club website" })
+  @ApiPropertyOptional({ description: 'Club website' })
   @IsOptional()
   @IsString()
   website?: string;
 
-  @ApiPropertyOptional({ description: "Founded year" })
+  @ApiPropertyOptional({ description: 'Founded year' })
   @IsOptional()
   @IsInt()
   @Min(1800)
@@ -375,7 +375,7 @@ export class CreateClubDto {
   foundedYear?: number;
 
   @ApiPropertyOptional({
-    description: "Supported sports",
+    description: 'Supported sports',
     enum: Sport,
     isArray: true,
   })
@@ -384,25 +384,25 @@ export class CreateClubDto {
   @IsEnum(Sport, { each: true })
   sports?: Sport[];
 
-  @ApiPropertyOptional({ description: "Timezone", default: "UTC" })
+  @ApiPropertyOptional({ description: 'Timezone', default: 'UTC' })
   @IsOptional()
   @IsString()
-  timezone?: string = "UTC";
+  timezone?: string = 'UTC';
 
-  @ApiPropertyOptional({ description: "Currency", default: "USD" })
+  @ApiPropertyOptional({ description: 'Currency', default: 'USD' })
   @IsOptional()
   @IsString()
   @Length(3, 3)
-  currency?: string = "USD";
+  currency?: string = 'USD';
 
-  @ApiPropertyOptional({ description: "Language", default: "en" })
+  @ApiPropertyOptional({ description: 'Language', default: 'en' })
   @IsOptional()
   @IsString()
   @Length(2, 10)
-  language?: string = "en";
+  language?: string = 'en';
 
   @ApiPropertyOptional({
-    description: "Maximum athletes allowed",
+    description: 'Maximum athletes allowed',
     default: 100,
   })
   @IsOptional()
@@ -412,44 +412,44 @@ export class CreateClubDto {
 }
 
 export class UpdateClubDto {
-  @ApiPropertyOptional({ description: "Club name" })
+  @ApiPropertyOptional({ description: 'Club name' })
   @IsOptional()
   @IsString()
   @Length(2, 200)
   name?: string;
 
-  @ApiPropertyOptional({ description: "Club description" })
+  @ApiPropertyOptional({ description: 'Club description' })
   @IsOptional()
   @IsString()
   @Length(0, 1000)
   description?: string;
 
-  @ApiPropertyOptional({ description: "Club logo URL" })
+  @ApiPropertyOptional({ description: 'Club logo URL' })
   @IsOptional()
   @IsString()
   logo?: string;
 
-  @ApiPropertyOptional({ description: "Club address" })
+  @ApiPropertyOptional({ description: 'Club address' })
   @IsOptional()
   @IsString()
   address?: string;
 
-  @ApiPropertyOptional({ description: "Club phone number" })
+  @ApiPropertyOptional({ description: 'Club phone number' })
   @IsOptional()
   @IsString()
   phone?: string;
 
-  @ApiPropertyOptional({ description: "Club email" })
+  @ApiPropertyOptional({ description: 'Club email' })
   @IsOptional()
   @IsEmail()
   email?: string;
 
-  @ApiPropertyOptional({ description: "Club website" })
+  @ApiPropertyOptional({ description: 'Club website' })
   @IsOptional()
   @IsString()
   website?: string;
 
-  @ApiPropertyOptional({ description: "Founded year" })
+  @ApiPropertyOptional({ description: 'Founded year' })
   @IsOptional()
   @IsInt()
   @Min(1800)
@@ -457,7 +457,7 @@ export class UpdateClubDto {
   foundedYear?: number;
 
   @ApiPropertyOptional({
-    description: "Supported sports",
+    description: 'Supported sports',
     enum: Sport,
     isArray: true,
   })
@@ -466,17 +466,17 @@ export class UpdateClubDto {
   @IsEnum(Sport, { each: true })
   sports?: Sport[];
 
-  @ApiPropertyOptional({ description: "Club settings" })
+  @ApiPropertyOptional({ description: 'Club settings' })
   @IsOptional()
   @IsObject()
   settings?: any;
 
-  @ApiPropertyOptional({ description: "Active status" })
+  @ApiPropertyOptional({ description: 'Active status' })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 
-  @ApiPropertyOptional({ description: "Maximum athletes allowed" })
+  @ApiPropertyOptional({ description: 'Maximum athletes allowed' })
   @IsOptional()
   @IsInt()
   @Min(1)
@@ -484,61 +484,61 @@ export class UpdateClubDto {
 }
 
 export class ClubResponseDto {
-  @ApiProperty({ description: "Club ID" })
+  @ApiProperty({ description: 'Club ID' })
   id: string;
 
-  @ApiProperty({ description: "Club name" })
+  @ApiProperty({ description: 'Club name' })
   name: string;
 
-  @ApiProperty({ description: "Club slug" })
+  @ApiProperty({ description: 'Club slug' })
   slug: string;
 
-  @ApiPropertyOptional({ description: "Club description" })
+  @ApiPropertyOptional({ description: 'Club description' })
   description?: string;
 
-  @ApiPropertyOptional({ description: "Club logo URL" })
+  @ApiPropertyOptional({ description: 'Club logo URL' })
   logo?: string;
 
-  @ApiPropertyOptional({ description: "Club address" })
+  @ApiPropertyOptional({ description: 'Club address' })
   address?: string;
 
-  @ApiPropertyOptional({ description: "Club phone" })
+  @ApiPropertyOptional({ description: 'Club phone' })
   phone?: string;
 
-  @ApiPropertyOptional({ description: "Club email" })
+  @ApiPropertyOptional({ description: 'Club email' })
   email?: string;
 
-  @ApiPropertyOptional({ description: "Club website" })
+  @ApiPropertyOptional({ description: 'Club website' })
   website?: string;
 
-  @ApiPropertyOptional({ description: "Founded year" })
+  @ApiPropertyOptional({ description: 'Founded year' })
   foundedYear?: number;
 
-  @ApiProperty({ description: "Supported sports", enum: Sport, isArray: true })
+  @ApiProperty({ description: 'Supported sports', enum: Sport, isArray: true })
   sports: Sport[];
 
-  @ApiProperty({ description: "Timezone" })
+  @ApiProperty({ description: 'Timezone' })
   timezone: string;
 
-  @ApiProperty({ description: "Currency" })
+  @ApiProperty({ description: 'Currency' })
   currency: string;
 
-  @ApiProperty({ description: "Language" })
+  @ApiProperty({ description: 'Language' })
   language: string;
 
-  @ApiProperty({ description: "Active status" })
+  @ApiProperty({ description: 'Active status' })
   isActive: boolean;
 
-  @ApiProperty({ description: "Subscription tier" })
+  @ApiProperty({ description: 'Subscription tier' })
   subscriptionTier: string;
 
-  @ApiProperty({ description: "Maximum athletes allowed" })
+  @ApiProperty({ description: 'Maximum athletes allowed' })
   maxAthletes: number;
 
-  @ApiProperty({ description: "Created timestamp" })
+  @ApiProperty({ description: 'Created timestamp' })
   createdAt: Date;
 
-  @ApiProperty({ description: "Updated timestamp" })
+  @ApiProperty({ description: 'Updated timestamp' })
   updatedAt: Date;
 }
 
@@ -547,57 +547,57 @@ export class ClubResponseDto {
 // ============================================================================
 
 export class CreateAthleteDto {
-  @ApiProperty({ description: "Club ID" })
+  @ApiProperty({ description: 'Club ID' })
   @IsUUID()
   @IsNotEmpty()
   clubId: string;
 
-  @ApiPropertyOptional({ description: "User ID if athlete has system access" })
+  @ApiPropertyOptional({ description: 'User ID if athlete has system access' })
   @IsOptional()
   @IsUUID()
   userId?: string;
 
-  @ApiPropertyOptional({ description: "Unique athlete number within club" })
+  @ApiPropertyOptional({ description: 'Unique athlete number within club' })
   @IsOptional()
   @IsString()
   @Length(1, 50)
   athleteNumber?: string;
 
-  @ApiProperty({ description: "First name" })
+  @ApiProperty({ description: 'First name' })
   @IsString()
   @IsNotEmpty()
   @Length(1, 100)
   firstName: string;
 
-  @ApiProperty({ description: "Last name" })
+  @ApiProperty({ description: 'Last name' })
   @IsString()
   @IsNotEmpty()
   @Length(1, 100)
   lastName: string;
 
-  @ApiPropertyOptional({ description: "Nickname" })
+  @ApiPropertyOptional({ description: 'Nickname' })
   @IsOptional()
   @IsString()
   @Length(1, 100)
   nickname?: string;
 
-  @ApiPropertyOptional({ description: "Date of birth" })
+  @ApiPropertyOptional({ description: 'Date of birth' })
   @IsOptional()
   @IsDateString()
   dateOfBirth?: string;
 
-  @ApiPropertyOptional({ description: "Gender", enum: Gender })
+  @ApiPropertyOptional({ description: 'Gender', enum: Gender })
   @IsOptional()
   @IsEnum(Gender)
   gender?: Gender;
 
-  @ApiPropertyOptional({ description: "Profile picture URL" })
+  @ApiPropertyOptional({ description: 'Profile picture URL' })
   @IsOptional()
   @IsString()
   profilePicture?: string;
 
   @ApiPropertyOptional({
-    description: "Primary sport",
+    description: 'Primary sport',
     enum: Sport,
     default: Sport.SWIMMING,
   })
@@ -605,14 +605,14 @@ export class CreateAthleteDto {
   @IsEnum(Sport)
   sport?: Sport = Sport.SWIMMING;
 
-  @ApiPropertyOptional({ description: "Category (e.g., age group)" })
+  @ApiPropertyOptional({ description: 'Category (e.g., age group)' })
   @IsOptional()
   @IsString()
   @Length(1, 100)
   category?: string;
 
   @ApiPropertyOptional({
-    description: "Athlete level",
+    description: 'Athlete level',
     enum: AthleteLevel,
     default: AthleteLevel.BEGINNER,
   })
@@ -620,178 +620,178 @@ export class CreateAthleteDto {
   @IsEnum(AthleteLevel)
   level?: AthleteLevel = AthleteLevel.BEGINNER;
 
-  @ApiPropertyOptional({ description: "Date joined the club" })
+  @ApiPropertyOptional({ description: 'Date joined the club' })
   @IsOptional()
   @IsDateString()
   joinedAt?: string;
 
-  @ApiPropertyOptional({ description: "Parent/guardian user ID" })
+  @ApiPropertyOptional({ description: 'Parent/guardian user ID' })
   @IsOptional()
   @IsUUID()
   parentId?: string;
 
-  @ApiPropertyOptional({ description: "Emergency contacts information" })
+  @ApiPropertyOptional({ description: 'Emergency contacts information' })
   @IsOptional()
   @IsObject()
   emergencyContacts?: any;
 
-  @ApiPropertyOptional({ description: "Personal bests records" })
+  @ApiPropertyOptional({ description: 'Personal bests records' })
   @IsOptional()
   @IsObject()
   personalBests?: any;
 
-  @ApiPropertyOptional({ description: "Training and competition goals" })
+  @ApiPropertyOptional({ description: 'Training and competition goals' })
   @IsOptional()
   @IsObject()
   goals?: any;
 
-  @ApiPropertyOptional({ description: "Additional notes" })
+  @ApiPropertyOptional({ description: 'Additional notes' })
   @IsOptional()
   @IsString()
   notes?: string;
 }
 
 export class UpdateAthleteDto {
-  @ApiPropertyOptional({ description: "Athlete number" })
+  @ApiPropertyOptional({ description: 'Athlete number' })
   @IsOptional()
   @IsString()
   @Length(1, 50)
   athleteNumber?: string;
 
-  @ApiPropertyOptional({ description: "First name" })
+  @ApiPropertyOptional({ description: 'First name' })
   @IsOptional()
   @IsString()
   @Length(1, 100)
   firstName?: string;
 
-  @ApiPropertyOptional({ description: "Last name" })
+  @ApiPropertyOptional({ description: 'Last name' })
   @IsOptional()
   @IsString()
   @Length(1, 100)
   lastName?: string;
 
-  @ApiPropertyOptional({ description: "Nickname" })
+  @ApiPropertyOptional({ description: 'Nickname' })
   @IsOptional()
   @IsString()
   @Length(1, 100)
   nickname?: string;
 
-  @ApiPropertyOptional({ description: "Date of birth" })
+  @ApiPropertyOptional({ description: 'Date of birth' })
   @IsOptional()
   @IsDateString()
   dateOfBirth?: string;
 
-  @ApiPropertyOptional({ description: "Gender", enum: Gender })
+  @ApiPropertyOptional({ description: 'Gender', enum: Gender })
   @IsOptional()
   @IsEnum(Gender)
   gender?: Gender;
 
-  @ApiPropertyOptional({ description: "Profile picture URL" })
+  @ApiPropertyOptional({ description: 'Profile picture URL' })
   @IsOptional()
   @IsString()
   profilePicture?: string;
 
-  @ApiPropertyOptional({ description: "Primary sport", enum: Sport })
+  @ApiPropertyOptional({ description: 'Primary sport', enum: Sport })
   @IsOptional()
   @IsEnum(Sport)
   sport?: Sport;
 
-  @ApiPropertyOptional({ description: "Category" })
+  @ApiPropertyOptional({ description: 'Category' })
   @IsOptional()
   @IsString()
   @Length(1, 100)
   category?: string;
 
-  @ApiPropertyOptional({ description: "Athlete level", enum: AthleteLevel })
+  @ApiPropertyOptional({ description: 'Athlete level', enum: AthleteLevel })
   @IsOptional()
   @IsEnum(AthleteLevel)
   level?: AthleteLevel;
 
-  @ApiPropertyOptional({ description: "Emergency contacts" })
+  @ApiPropertyOptional({ description: 'Emergency contacts' })
   @IsOptional()
   @IsObject()
   emergencyContacts?: any;
 
-  @ApiPropertyOptional({ description: "Personal bests" })
+  @ApiPropertyOptional({ description: 'Personal bests' })
   @IsOptional()
   @IsObject()
   personalBests?: any;
 
-  @ApiPropertyOptional({ description: "Goals" })
+  @ApiPropertyOptional({ description: 'Goals' })
   @IsOptional()
   @IsObject()
   goals?: any;
 
-  @ApiPropertyOptional({ description: "Notes" })
+  @ApiPropertyOptional({ description: 'Notes' })
   @IsOptional()
   @IsString()
   notes?: string;
 
-  @ApiPropertyOptional({ description: "Active status" })
+  @ApiPropertyOptional({ description: 'Active status' })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 }
 
 export class AthleteResponseDto {
-  @ApiProperty({ description: "Athlete ID" })
+  @ApiProperty({ description: 'Athlete ID' })
   id: string;
 
-  @ApiProperty({ description: "Club ID" })
+  @ApiProperty({ description: 'Club ID' })
   clubId: string;
 
-  @ApiPropertyOptional({ description: "User ID" })
+  @ApiPropertyOptional({ description: 'User ID' })
   userId?: string;
 
-  @ApiPropertyOptional({ description: "Athlete number" })
+  @ApiPropertyOptional({ description: 'Athlete number' })
   athleteNumber?: string;
 
-  @ApiProperty({ description: "First name" })
+  @ApiProperty({ description: 'First name' })
   firstName: string;
 
-  @ApiProperty({ description: "Last name" })
+  @ApiProperty({ description: 'Last name' })
   lastName: string;
 
-  @ApiPropertyOptional({ description: "Nickname" })
+  @ApiPropertyOptional({ description: 'Nickname' })
   nickname?: string;
 
-  @ApiPropertyOptional({ description: "Date of birth" })
+  @ApiPropertyOptional({ description: 'Date of birth' })
   dateOfBirth?: Date;
 
-  @ApiPropertyOptional({ description: "Gender", enum: Gender })
+  @ApiPropertyOptional({ description: 'Gender', enum: Gender })
   gender?: Gender;
 
-  @ApiPropertyOptional({ description: "Profile picture URL" })
+  @ApiPropertyOptional({ description: 'Profile picture URL' })
   profilePicture?: string;
 
-  @ApiProperty({ description: "Primary sport", enum: Sport })
+  @ApiProperty({ description: 'Primary sport', enum: Sport })
   sport: Sport;
 
-  @ApiPropertyOptional({ description: "Category" })
+  @ApiPropertyOptional({ description: 'Category' })
   category?: string;
 
-  @ApiProperty({ description: "Athlete level", enum: AthleteLevel })
+  @ApiProperty({ description: 'Athlete level', enum: AthleteLevel })
   level: AthleteLevel;
 
-  @ApiProperty({ description: "Date joined" })
+  @ApiProperty({ description: 'Date joined' })
   joinedAt: Date;
 
-  @ApiProperty({ description: "Active status" })
+  @ApiProperty({ description: 'Active status' })
   isActive: boolean;
 
-  @ApiProperty({ description: "Personal bests" })
+  @ApiProperty({ description: 'Personal bests' })
   personalBests: any;
 
-  @ApiProperty({ description: "Goals" })
+  @ApiProperty({ description: 'Goals' })
   goals: any;
 
-  @ApiPropertyOptional({ description: "Notes" })
+  @ApiPropertyOptional({ description: 'Notes' })
   notes?: string;
 
-  @ApiProperty({ description: "Created timestamp" })
+  @ApiProperty({ description: 'Created timestamp' })
   createdAt: Date;
 
-  @ApiProperty({ description: "Updated timestamp" })
+  @ApiProperty({ description: 'Updated timestamp' })
   updatedAt: Date;
 }
 
@@ -800,34 +800,34 @@ export class AthleteResponseDto {
 // ============================================================================
 
 export class AthleteSearchDto extends SearchDto {
-  @ApiPropertyOptional({ description: "Filter by sport", enum: Sport })
+  @ApiPropertyOptional({ description: 'Filter by sport', enum: Sport })
   @IsOptional()
   @IsEnum(Sport)
   sport?: Sport;
 
-  @ApiPropertyOptional({ description: "Filter by level", enum: AthleteLevel })
+  @ApiPropertyOptional({ description: 'Filter by level', enum: AthleteLevel })
   @IsOptional()
   @IsEnum(AthleteLevel)
   level?: AthleteLevel;
 
-  @ApiPropertyOptional({ description: "Filter by category" })
+  @ApiPropertyOptional({ description: 'Filter by category' })
   @IsOptional()
   @IsString()
   category?: string;
 
-  @ApiPropertyOptional({ description: "Filter by gender", enum: Gender })
+  @ApiPropertyOptional({ description: 'Filter by gender', enum: Gender })
   @IsOptional()
   @IsEnum(Gender)
   gender?: Gender;
 }
 
 export class ClubSearchDto extends SearchDto {
-  @ApiPropertyOptional({ description: "Filter by sport", enum: Sport })
+  @ApiPropertyOptional({ description: 'Filter by sport', enum: Sport })
   @IsOptional()
   @IsEnum(Sport)
   sport?: Sport;
 
-  @ApiPropertyOptional({ description: "Filter by subscription tier" })
+  @ApiPropertyOptional({ description: 'Filter by subscription tier' })
   @IsOptional()
   @IsString()
   subscriptionTier?: string;
@@ -838,27 +838,27 @@ export class ClubSearchDto extends SearchDto {
 // ============================================================================
 
 export class ApiResponseDto<T> {
-  @ApiProperty({ description: "Operation success status" })
+  @ApiProperty({ description: 'Operation success status' })
   success: boolean;
 
-  @ApiPropertyOptional({ description: "Response data" })
+  @ApiPropertyOptional({ description: 'Response data' })
   data?: T;
 
-  @ApiPropertyOptional({ description: "Error information" })
+  @ApiPropertyOptional({ description: 'Error information' })
   error?: {
     code: string;
     message: string;
     details?: any;
   };
 
-  @ApiPropertyOptional({ description: "Response metadata" })
+  @ApiPropertyOptional({ description: 'Response metadata' })
   meta?: ResponseMetaDto;
 }
 
 export class PaginatedResponseDto<T> {
-  @ApiProperty({ description: "Data array" })
+  @ApiProperty({ description: 'Data array' })
   data: T[];
 
-  @ApiProperty({ description: "Pagination metadata" })
+  @ApiProperty({ description: 'Pagination metadata' })
   pagination: PaginationMetaDto;
 }

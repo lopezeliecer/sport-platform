@@ -1,29 +1,33 @@
 # Prompt #15: Integración Frontend-Backend
 
 ## Contexto del Sistema
+
 Eres un experto desarrollador full-stack especializado en integración Angular-NestJS. Debes implementar la comunicación completa entre el frontend Angular y los microservicios NestJS de la plataforma deportiva, siguiendo las decisiones arquitectónicas establecidas.
 
 ## Arquitectura de Comunicación Definida
 
 ### API Gateway Centralizado
+
 ```
-Frontend Angular (4200) 
+Frontend Angular (4200)
     ↓ HTTP REST
-API Gateway (3000) 
+API Gateway (3000)
     ↓ Enrutamiento interno
 Microservicios:
 ├── identity-service (3001)
-├── sports-service (3002) 
+├── sports-service (3002)
 ├── club-management (3003)
 └── communication (3004)
 ```
 
 ### Estrategia de Error Handling: Híbrido
+
 - **Global Error Interceptor** para errores comunes (401, 500, red)
 - **Manejo específico** en componentes para errores de negocio
 - **PrimeNG Toast** para notificaciones de usuario
 
 ### Loading States: Pessimistic Updates
+
 - Mostrar loading states durante operaciones
 - Actualizar UI solo después de confirmación del servidor
 - No optimistic updates para mantener consistencia
@@ -37,29 +41,29 @@ Microservicios:
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly baseUrl = environment.apiGateway; // http://localhost:3000/api/v1
-  
+
   constructor(
     private http: HttpClient,
-    private store: Store<AppState>
+    private store: Store<AppState>,
   ) {}
 
   // Métodos base para comunicación con API Gateway
   get<T>(endpoint: string, options?: HttpOptions): Observable<T> {
-    return this.http.get<T>(`${this.baseUrl}${endpoint}`, {
-      ...this.getDefaultOptions(),
-      ...options
-    }).pipe(
-      catchError(this.handleError.bind(this))
-    );
+    return this.http
+      .get<T>(`${this.baseUrl}${endpoint}`, {
+        ...this.getDefaultOptions(),
+        ...options,
+      })
+      .pipe(catchError(this.handleError.bind(this)));
   }
 
   post<T>(endpoint: string, body: any, options?: HttpOptions): Observable<T> {
-    return this.http.post<T>(`${this.baseUrl}${endpoint}`, body, {
-      ...this.getDefaultOptions(),
-      ...options
-    }).pipe(
-      catchError(this.handleError.bind(this))
-    );
+    return this.http
+      .post<T>(`${this.baseUrl}${endpoint}`, body, {
+        ...this.getDefaultOptions(),
+        ...options,
+      })
+      .pipe(catchError(this.handleError.bind(this)));
   }
 
   private getDefaultOptions(): any {
@@ -67,7 +71,7 @@ export class ApiService {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
       }),
-      withCredentials: true // Para sessions
+      withCredentials: true, // Para sessions
     };
   }
 
@@ -83,11 +87,10 @@ export class ApiService {
 // src/app/core/interceptors/error.interceptor.ts
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-  
   constructor(
     private messageService: MessageService,
     private router: Router,
-    private store: Store<AppState>
+    private store: Store<AppState>,
   ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -112,9 +115,9 @@ export class ErrorInterceptor implements HttpInterceptor {
             // Errores específicos se manejan en componentes
             break;
         }
-        
+
         return throwError(() => error);
-      })
+      }),
     );
   }
 
@@ -122,7 +125,7 @@ export class ErrorInterceptor implements HttpInterceptor {
     this.messageService.add({
       severity: 'error',
       summary: 'Sesión Expirada',
-      detail: 'Por favor, inicia sesión nuevamente'
+      detail: 'Por favor, inicia sesión nuevamente',
     });
     this.store.dispatch(AuthActions.logout());
     this.router.navigate(['/auth/login']);
@@ -132,7 +135,7 @@ export class ErrorInterceptor implements HttpInterceptor {
     this.messageService.add({
       severity: 'error',
       summary: 'Error del Servidor',
-      detail: 'Ocurrió un error interno. Por favor, intenta más tarde.'
+      detail: 'Ocurrió un error interno. Por favor, intenta más tarde.',
     });
     console.error('Server Error:', error);
   }
@@ -145,12 +148,11 @@ export class ErrorInterceptor implements HttpInterceptor {
 // src/app/features/training/store/training.effects.ts
 @Injectable()
 export class TrainingEffects {
-  
   constructor(
     private actions$: Actions,
     private trainingService: TrainingService,
     private messageService: MessageService,
-    private store: Store<AppState>
+    private store: Store<AppState>,
   ) {}
 
   // Cargar entrenamientos
@@ -160,20 +162,22 @@ export class TrainingEffects {
       withLatestFrom(this.store.select(selectCurrentClubId)),
       switchMap(([action, clubId]) => {
         if (!clubId) {
-          return of(TrainingActions.loadTrainingsFailure({ 
-            error: 'No hay club seleccionado' 
-          }));
+          return of(
+            TrainingActions.loadTrainingsFailure({
+              error: 'No hay club seleccionado',
+            }),
+          );
         }
 
         return this.trainingService.getTrainings(clubId, action.filters).pipe(
-          map(trainings => TrainingActions.loadTrainingsSuccess({ trainings })),
-          catchError(error => {
+          map((trainings) => TrainingActions.loadTrainingsSuccess({ trainings })),
+          catchError((error) => {
             this.handleTrainingError('cargar entrenamientos', error);
             return of(TrainingActions.loadTrainingsFailure({ error: error.message }));
-          })
+          }),
         );
-      })
-    )
+      }),
+    ),
   );
 
   // Validación asíncrona de horarios
@@ -186,11 +190,13 @@ export class TrainingEffects {
         if (!clubId) return EMPTY;
 
         return this.trainingService.validateScheduleConflict(clubId, action.scheduleData).pipe(
-          map(result => TrainingActions.validateScheduleSuccess({ result })),
-          catchError(error => of(TrainingActions.validateScheduleFailure({ error: error.message })))
+          map((result) => TrainingActions.validateScheduleSuccess({ result })),
+          catchError((error) =>
+            of(TrainingActions.validateScheduleFailure({ error: error.message })),
+          ),
         );
-      })
-    )
+      }),
+    ),
   );
 
   private handleTrainingError(operation: string, error: any): void {
@@ -198,19 +204,19 @@ export class TrainingEffects {
       this.messageService.add({
         severity: 'warn',
         summary: 'Conflicto de Horario',
-        detail: 'Ya existe un entrenamiento en este horario'
+        detail: 'Ya existe un entrenamiento en este horario',
       });
     } else if (error.status === 422) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Datos Inválidos',
-        detail: error.error?.message || 'Verifica los datos ingresados'
+        detail: error.error?.message || 'Verifica los datos ingresados',
       });
     } else {
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: `No se pudo ${operation}. Intenta nuevamente.`
+        detail: `No se pudo ${operation}. Intenta nuevamente.`,
       });
     }
   }

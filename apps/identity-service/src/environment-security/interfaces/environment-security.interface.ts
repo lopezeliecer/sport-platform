@@ -105,13 +105,13 @@ export interface EnvironmentSecurityConfig {
   securityLevel: SecurityLevel;
   debugMode: boolean;
   maintenanceMode: boolean;
-  
+
   // Service Configuration
   port: number;
   host: string;
   baseUrl: string;
   apiVersion: string;
-  
+
   // Security Configurations
   database: DatabaseSecurityConfig;
   jwt: JwtSecurityConfig;
@@ -121,7 +121,7 @@ export interface EnvironmentSecurityConfig {
   headers: SecurityHeadersConfig;
   audit: AuditSecurityConfig;
   monitoring: MonitoringConfig;
-  
+
   // Feature Flags
   features: {
     apiKeyAuth: boolean;
@@ -132,7 +132,7 @@ export interface EnvironmentSecurityConfig {
     securityMonitoring: boolean;
     advancedThreatDetection: boolean;
   };
-  
+
   // External Service URLs
   services: {
     googleOAuth: {
@@ -153,7 +153,7 @@ export interface EnvironmentSecurityConfig {
       slackChannel?: string;
     };
   };
-  
+
   // Security Policies
   policies: {
     passwordPolicy: {
@@ -179,7 +179,7 @@ export interface EnvironmentSecurityConfig {
       geoRestrictions: string[]; // country codes
     };
   };
-  
+
   // Compliance Settings
   compliance: {
     gdprCompliant: boolean;
@@ -189,7 +189,7 @@ export interface EnvironmentSecurityConfig {
     consentManagement: boolean;
     privacyByDesign: boolean;
   };
-  
+
   // Development/Testing Settings
   development: {
     seedDatabase: boolean;

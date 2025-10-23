@@ -1,4 +1,4 @@
-import { PaginationOptions, PaginatedResponse } from "../types/common.types";
+import { PaginationOptions, PaginatedResponse } from '../types/common.types';
 
 /**
  * Pagination utilities for consistent handling of paginated queries
@@ -15,20 +15,18 @@ export class PaginationUtil {
   /**
    * Normalize pagination options with defaults and validation
    */
-  static normalizePaginationOptions(
-    options: PaginationOptions = {}
-  ): Required<PaginationOptions> {
+  static normalizePaginationOptions(options: PaginationOptions = {}): Required<PaginationOptions> {
     const page = Math.max(options.page || this.DEFAULT_PAGE, 1);
     const limit = Math.min(
       Math.max(options.limit || this.DEFAULT_LIMIT, this.MIN_LIMIT),
-      this.MAX_LIMIT
+      this.MAX_LIMIT,
     );
 
     return {
       page,
       limit,
-      sortBy: options.sortBy || "createdAt",
-      sortOrder: options.sortOrder || "desc",
+      sortBy: options.sortBy || 'createdAt',
+      sortOrder: options.sortOrder || 'desc',
     };
   }
 
@@ -52,8 +50,8 @@ export class PaginationUtil {
   static createPaginationMeta(
     page: number,
     limit: number,
-    total: number
-  ): PaginatedResponse<any>["pagination"] {
+    total: number,
+  ): PaginatedResponse<any>['pagination'] {
     const totalPages = this.calculateTotalPages(total, limit);
 
     return {
@@ -73,7 +71,7 @@ export class PaginationUtil {
     data: T[],
     page: number,
     limit: number,
-    total: number
+    total: number,
   ): PaginatedResponse<T> {
     return {
       data,
@@ -89,7 +87,7 @@ export class PaginationUtil {
 
     if (options.page !== undefined) {
       if (!Number.isInteger(options.page) || options.page < 1) {
-        errors.push("Page must be a positive integer");
+        errors.push('Page must be a positive integer');
       }
     }
 
@@ -103,7 +101,7 @@ export class PaginationUtil {
     }
 
     if (options.sortOrder !== undefined) {
-      if (!["asc", "desc"].includes(options.sortOrder)) {
+      if (!['asc', 'desc'].includes(options.sortOrder)) {
         errors.push('Sort order must be "asc" or "desc"');
       }
     }
@@ -116,21 +114,19 @@ export class PaginationUtil {
    */
   static createOrderByClause(
     sortBy: string,
-    sortOrder: "asc" | "desc",
-    allowedSortFields?: string[]
+    sortOrder: 'asc' | 'desc',
+    allowedSortFields?: string[],
   ): any {
     // Validate sort field if restrictions are provided
     if (allowedSortFields && !allowedSortFields.includes(sortBy)) {
       throw new Error(
-        `Invalid sort field: ${sortBy}. Allowed fields: ${allowedSortFields.join(
-          ", "
-        )}`
+        `Invalid sort field: ${sortBy}. Allowed fields: ${allowedSortFields.join(', ')}`,
       );
     }
 
     // Handle nested field sorting (e.g., "user.name")
-    if (sortBy.includes(".")) {
-      const parts = sortBy.split(".");
+    if (sortBy.includes('.')) {
+      const parts = sortBy.split('.');
       let orderBy: any = {};
       let current = orderBy;
 
@@ -151,12 +147,10 @@ export class PaginationUtil {
    * Create multiple sort clauses
    */
   static createMultipleOrderBy(
-    sorts: Array<{ field: string; order: "asc" | "desc" }>,
-    allowedSortFields?: string[]
+    sorts: Array<{ field: string; order: 'asc' | 'desc' }>,
+    allowedSortFields?: string[],
   ): any[] {
-    return sorts.map((sort) =>
-      this.createOrderByClause(sort.field, sort.order, allowedSortFields)
-    );
+    return sorts.map((sort) => this.createOrderByClause(sort.field, sort.order, allowedSortFields));
   }
 
   /**
@@ -167,7 +161,7 @@ export class PaginationUtil {
     page: number,
     limit: number,
     totalPages: number,
-    additionalParams?: Record<string, string>
+    additionalParams?: Record<string, string>,
   ): {
     first: string;
     prev: string | null;
@@ -175,10 +169,10 @@ export class PaginationUtil {
     last: string;
   } {
     const params = new URLSearchParams(additionalParams || {});
-    params.set("limit", limit.toString());
+    params.set('limit', limit.toString());
 
     const buildUrl = (targetPage: number) => {
-      params.set("page", targetPage.toString());
+      params.set('page', targetPage.toString());
       return `${baseUrl}?${params.toString()}`;
     };
 
@@ -196,7 +190,7 @@ export class PaginationUtil {
   static calculatePaginationWindow(
     currentPage: number,
     totalPages: number,
-    windowSize: number = 5
+    windowSize: number = 5,
   ): {
     pages: number[];
     showFirstEllipsis: boolean;
@@ -232,7 +226,7 @@ export class PaginationUtil {
    */
   static createCursorPagination<T extends { id: string; createdAt: Date }>(
     items: T[],
-    limit: number
+    limit: number,
   ): {
     data: T[];
     hasNext: boolean;
@@ -246,8 +240,8 @@ export class PaginationUtil {
             JSON.stringify({
               id: data[data.length - 1].id,
               createdAt: data[data.length - 1].createdAt.toISOString(),
-            })
-          ).toString("base64")
+            }),
+          ).toString('base64')
         : null;
 
     return {
@@ -262,7 +256,7 @@ export class PaginationUtil {
    */
   static parseCursor(cursor: string): { id: string; createdAt: string } | null {
     try {
-      const decoded = Buffer.from(cursor, "base64").toString("utf-8");
+      const decoded = Buffer.from(cursor, 'base64').toString('utf-8');
       return JSON.parse(decoded);
     } catch {
       return null;
@@ -272,16 +266,13 @@ export class PaginationUtil {
   /**
    * Create Prisma where clause for cursor-based pagination
    */
-  static createCursorWhereClause(
-    cursor: string,
-    orderBy: "asc" | "desc" = "desc"
-  ): any {
+  static createCursorWhereClause(cursor: string, orderBy: 'asc' | 'desc' = 'desc'): any {
     const parsed = this.parseCursor(cursor);
     if (!parsed) {
       return {};
     }
 
-    const operator = orderBy === "desc" ? "lt" : "gt";
+    const operator = orderBy === 'desc' ? 'lt' : 'gt';
 
     return {
       OR: [
@@ -303,10 +294,7 @@ export class PaginationUtil {
   /**
    * Estimate total count for large datasets (faster than exact count)
    */
-  static async estimateTotalCount(
-    prismaModel: any,
-    whereClause: any = {}
-  ): Promise<number> {
+  static async estimateTotalCount(prismaModel: any, whereClause: any = {}): Promise<number> {
     // For small datasets, use exact count
     const sampleSize = 1000;
     const sample = await prismaModel.findMany({
@@ -332,7 +320,7 @@ export class PaginationUtil {
   static createSearchPagination(
     searchQuery: string,
     filters: Record<string, any>,
-    options: PaginationOptions
+    options: PaginationOptions,
   ): {
     where: any;
     orderBy: any;
@@ -347,17 +335,14 @@ export class PaginationUtil {
     if (searchQuery.trim()) {
       // This would be customized based on the specific model and searchable fields
       where.OR = [
-        { name: { contains: searchQuery, mode: "insensitive" } },
-        { description: { contains: searchQuery, mode: "insensitive" } },
+        { name: { contains: searchQuery, mode: 'insensitive' } },
+        { description: { contains: searchQuery, mode: 'insensitive' } },
       ];
     }
 
     return {
       where,
-      orderBy: this.createOrderByClause(
-        normalizedOptions.sortBy,
-        normalizedOptions.sortOrder
-      ),
+      orderBy: this.createOrderByClause(normalizedOptions.sortBy, normalizedOptions.sortOrder),
       skip: this.calculateSkip(normalizedOptions.page, normalizedOptions.limit),
       take: normalizedOptions.limit,
     };
@@ -369,27 +354,19 @@ export class PaginationUtil {
   static mergePaginatedResponses<T>(
     responses: PaginatedResponse<T>[],
     globalPage: number,
-    globalLimit: number
+    globalLimit: number,
   ): PaginatedResponse<T> {
     // Combine all data
     const allData = responses.flatMap((response) => response.data);
 
     // Calculate global totals
-    const totalItems = responses.reduce(
-      (sum, response) => sum + response.pagination.total,
-      0
-    );
+    const totalItems = responses.reduce((sum, response) => sum + response.pagination.total, 0);
 
     // Apply global pagination to combined data
     const startIndex = (globalPage - 1) * globalLimit;
     const endIndex = startIndex + globalLimit;
     const paginatedData = allData.slice(startIndex, endIndex);
 
-    return this.createPaginatedResponse(
-      paginatedData,
-      globalPage,
-      globalLimit,
-      totalItems
-    );
+    return this.createPaginatedResponse(paginatedData, globalPage, globalLimit, totalItems);
   }
 }

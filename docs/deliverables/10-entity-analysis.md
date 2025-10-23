@@ -151,12 +151,12 @@ interface UserClubRole {
 }
 
 enum UserRole {
-  COACH = "COACH",
-  ADMIN = "ADMIN",
-  ATHLETE = "ATHLETE",
-  PARENT = "PARENT",
-  MEDICAL = "MEDICAL",
-  DIRECTOR = "DIRECTOR",
+  COACH = 'COACH',
+  ADMIN = 'ADMIN',
+  ATHLETE = 'ATHLETE',
+  PARENT = 'PARENT',
+  MEDICAL = 'MEDICAL',
+  DIRECTOR = 'DIRECTOR',
 }
 ```
 
@@ -194,11 +194,11 @@ interface Club {
 }
 
 enum Sport {
-  SWIMMING = "SWIMMING",
-  TRACK_FIELD = "TRACK_FIELD",
-  SOCCER = "SOCCER",
-  BASKETBALL = "BASKETBALL",
-  TENNIS = "TENNIS",
+  SWIMMING = 'SWIMMING',
+  TRACK_FIELD = 'TRACK_FIELD',
+  SOCCER = 'SOCCER',
+  BASKETBALL = 'BASKETBALL',
+  TENNIS = 'TENNIS',
 }
 ```
 
@@ -241,16 +241,16 @@ interface Athlete {
 }
 
 enum Gender {
-  MALE = "MALE",
-  FEMALE = "FEMALE",
-  OTHER = "OTHER",
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
 }
 
 enum AthleteLevel {
-  BEGINNER = "BEGINNER",
-  INTERMEDIATE = "INTERMEDIATE",
-  ADVANCED = "ADVANCED",
-  ELITE = "ELITE",
+  BEGINNER = 'BEGINNER',
+  INTERMEDIATE = 'INTERMEDIATE',
+  ADVANCED = 'ADVANCED',
+  ELITE = 'ELITE',
 }
 ```
 
@@ -323,11 +323,11 @@ interface TrainingSession {
 }
 
 enum SessionStatus {
-  SCHEDULED = "SCHEDULED",
-  IN_PROGRESS = "IN_PROGRESS",
-  COMPLETED = "COMPLETED",
-  CANCELLED = "CANCELLED",
-  POSTPONED = "POSTPONED",
+  SCHEDULED = 'SCHEDULED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  POSTPONED = 'POSTPONED',
 }
 ```
 
@@ -360,18 +360,18 @@ interface TrainingAssignment {
 }
 
 enum AssignmentStatus {
-  ASSIGNED = "ASSIGNED",
-  CONFIRMED = "CONFIRMED",
-  DECLINED = "DECLINED",
-  CANCELLED = "CANCELLED",
+  ASSIGNED = 'ASSIGNED',
+  CONFIRMED = 'CONFIRMED',
+  DECLINED = 'DECLINED',
+  CANCELLED = 'CANCELLED',
 }
 
 enum AttendanceStatus {
-  SCHEDULED = "SCHEDULED",
-  PRESENT = "PRESENT",
-  ABSENT = "ABSENT",
-  LATE = "LATE",
-  EARLY_DEPARTURE = "EARLY_DEPARTURE",
+  SCHEDULED = 'SCHEDULED',
+  PRESENT = 'PRESENT',
+  ABSENT = 'ABSENT',
+  LATE = 'LATE',
+  EARLY_DEPARTURE = 'EARLY_DEPARTURE',
 }
 ```
 
@@ -415,7 +415,7 @@ interface PerformanceData {
 interface SwimmingMetrics {
   time: number; // Time in seconds
   distance: number; // Distance in meters
-  stroke: "freestyle" | "backstroke" | "breaststroke" | "butterfly" | "medley";
+  stroke: 'freestyle' | 'backstroke' | 'breaststroke' | 'butterfly' | 'medley';
   strokeCount?: number; // Strokes per length
   strokeRate?: number; // Strokes per minute
   splits: number[]; // Split times
@@ -471,28 +471,28 @@ interface Competition {
 }
 
 enum CompetitionType {
-  INTERNAL = "INTERNAL", // Club internal competition
-  REGIONAL = "REGIONAL", // Regional level
-  NATIONAL = "NATIONAL", // National level
-  INTERNATIONAL = "INTERNATIONAL", // International level
+  INTERNAL = 'INTERNAL', // Club internal competition
+  REGIONAL = 'REGIONAL', // Regional level
+  NATIONAL = 'NATIONAL', // National level
+  INTERNATIONAL = 'INTERNATIONAL', // International level
 }
 
 enum CompetitionLevel {
-  RECREATIONAL = "RECREATIONAL",
-  CLUB = "CLUB",
-  REGIONAL = "REGIONAL",
-  STATE = "STATE",
-  NATIONAL = "NATIONAL",
-  INTERNATIONAL = "INTERNATIONAL",
+  RECREATIONAL = 'RECREATIONAL',
+  CLUB = 'CLUB',
+  REGIONAL = 'REGIONAL',
+  STATE = 'STATE',
+  NATIONAL = 'NATIONAL',
+  INTERNATIONAL = 'INTERNATIONAL',
 }
 
 enum CompetitionStatus {
-  UPCOMING = "UPCOMING",
-  REGISTRATION_OPEN = "REGISTRATION_OPEN",
-  REGISTRATION_CLOSED = "REGISTRATION_CLOSED",
-  IN_PROGRESS = "IN_PROGRESS",
-  COMPLETED = "COMPLETED",
-  CANCELLED = "CANCELLED",
+  UPCOMING = 'UPCOMING',
+  REGISTRATION_OPEN = 'REGISTRATION_OPEN',
+  REGISTRATION_CLOSED = 'REGISTRATION_CLOSED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
 }
 ```
 
@@ -526,10 +526,10 @@ interface CompetitionEntry {
 }
 
 enum EntryStatus {
-  PENDING = "PENDING",
-  CONFIRMED = "CONFIRMED",
-  WITHDRAWN = "WITHDRAWN",
-  DISQUALIFIED = "DISQUALIFIED",
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  WITHDRAWN = 'WITHDRAWN',
+  DISQUALIFIED = 'DISQUALIFIED',
 }
 ```
 
@@ -607,41 +607,41 @@ interface Payment {
 }
 
 enum PaymentType {
-  MEMBERSHIP = "MEMBERSHIP",
-  TRAINING = "TRAINING",
-  COMPETITION = "COMPETITION",
-  EQUIPMENT = "EQUIPMENT",
-  FACILITY = "FACILITY",
-  OTHER = "OTHER",
+  MEMBERSHIP = 'MEMBERSHIP',
+  TRAINING = 'TRAINING',
+  COMPETITION = 'COMPETITION',
+  EQUIPMENT = 'EQUIPMENT',
+  FACILITY = 'FACILITY',
+  OTHER = 'OTHER',
 }
 
 enum PaymentCategory {
-  MONTHLY_FEE = "MONTHLY_FEE",
-  ANNUAL_FEE = "ANNUAL_FEE",
-  REGISTRATION = "REGISTRATION",
-  COMPETITION_ENTRY = "COMPETITION_ENTRY",
-  EQUIPMENT_PURCHASE = "EQUIPMENT_PURCHASE",
-  FACILITY_RENTAL = "FACILITY_RENTAL",
-  COACHING_FEE = "COACHING_FEE",
-  LATE_FEE = "LATE_FEE",
+  MONTHLY_FEE = 'MONTHLY_FEE',
+  ANNUAL_FEE = 'ANNUAL_FEE',
+  REGISTRATION = 'REGISTRATION',
+  COMPETITION_ENTRY = 'COMPETITION_ENTRY',
+  EQUIPMENT_PURCHASE = 'EQUIPMENT_PURCHASE',
+  FACILITY_RENTAL = 'FACILITY_RENTAL',
+  COACHING_FEE = 'COACHING_FEE',
+  LATE_FEE = 'LATE_FEE',
 }
 
 enum PaymentStatus {
-  PENDING = "PENDING",
-  PAID = "PAID",
-  OVERDUE = "OVERDUE",
-  CANCELLED = "CANCELLED",
-  REFUNDED = "REFUNDED",
-  PARTIAL = "PARTIAL",
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  OVERDUE = 'OVERDUE',
+  CANCELLED = 'CANCELLED',
+  REFUNDED = 'REFUNDED',
+  PARTIAL = 'PARTIAL',
 }
 
 enum PaymentMethod {
-  CASH = "CASH",
-  CHECK = "CHECK",
-  BANK_TRANSFER = "BANK_TRANSFER",
-  CREDIT_CARD = "CREDIT_CARD",
-  PAYPAL = "PAYPAL",
-  OTHER = "OTHER",
+  CASH = 'CASH',
+  CHECK = 'CHECK',
+  BANK_TRANSFER = 'BANK_TRANSFER',
+  CREDIT_CARD = 'CREDIT_CARD',
+  PAYPAL = 'PAYPAL',
+  OTHER = 'OTHER',
 }
 ```
 
@@ -676,35 +676,35 @@ interface Communication {
 }
 
 enum CommunicationType {
-  ANNOUNCEMENT = "ANNOUNCEMENT",
-  REMINDER = "REMINDER",
-  ALERT = "ALERT",
-  NEWSLETTER = "NEWSLETTER",
-  PERSONAL_MESSAGE = "PERSONAL_MESSAGE",
-  EMERGENCY = "EMERGENCY",
+  ANNOUNCEMENT = 'ANNOUNCEMENT',
+  REMINDER = 'REMINDER',
+  ALERT = 'ALERT',
+  NEWSLETTER = 'NEWSLETTER',
+  PERSONAL_MESSAGE = 'PERSONAL_MESSAGE',
+  EMERGENCY = 'EMERGENCY',
 }
 
 enum CommunicationChannel {
-  IN_APP = "IN_APP",
-  EMAIL = "EMAIL",
-  SMS = "SMS",
-  PUSH_NOTIFICATION = "PUSH_NOTIFICATION",
-  ALL_CHANNELS = "ALL_CHANNELS",
+  IN_APP = 'IN_APP',
+  EMAIL = 'EMAIL',
+  SMS = 'SMS',
+  PUSH_NOTIFICATION = 'PUSH_NOTIFICATION',
+  ALL_CHANNELS = 'ALL_CHANNELS',
 }
 
 enum CommunicationStatus {
-  DRAFT = "DRAFT",
-  SCHEDULED = "SCHEDULED",
-  SENDING = "SENDING",
-  SENT = "SENT",
-  FAILED = "FAILED",
+  DRAFT = 'DRAFT',
+  SCHEDULED = 'SCHEDULED',
+  SENDING = 'SENDING',
+  SENT = 'SENT',
+  FAILED = 'FAILED',
 }
 
 enum MessagePriority {
-  LOW = "LOW",
-  NORMAL = "NORMAL",
-  HIGH = "HIGH",
-  URGENT = "URGENT",
+  LOW = 'LOW',
+  NORMAL = 'NORMAL',
+  HIGH = 'HIGH',
+  URGENT = 'URGENT',
 }
 ```
 
@@ -741,20 +741,20 @@ interface MedicalRecord {
 }
 
 enum MedicalRecordType {
-  PHYSICAL_EXAM = "PHYSICAL_EXAM",
-  MEDICAL_CLEARANCE = "MEDICAL_CLEARANCE",
-  INJURY_REPORT = "INJURY_REPORT",
-  ALLERGY_INFO = "ALLERGY_INFO",
-  MEDICATION = "MEDICATION",
-  NUTRITION_PLAN = "NUTRITION_PLAN",
-  FITNESS_ASSESSMENT = "FITNESS_ASSESSMENT",
-  EMERGENCY_INFO = "EMERGENCY_INFO",
+  PHYSICAL_EXAM = 'PHYSICAL_EXAM',
+  MEDICAL_CLEARANCE = 'MEDICAL_CLEARANCE',
+  INJURY_REPORT = 'INJURY_REPORT',
+  ALLERGY_INFO = 'ALLERGY_INFO',
+  MEDICATION = 'MEDICATION',
+  NUTRITION_PLAN = 'NUTRITION_PLAN',
+  FITNESS_ASSESSMENT = 'FITNESS_ASSESSMENT',
+  EMERGENCY_INFO = 'EMERGENCY_INFO',
 }
 
 enum ConfidentialityLevel {
-  PUBLIC = "PUBLIC", // Visible to coaches
-  RESTRICTED = "RESTRICTED", // Medical staff only
-  CONFIDENTIAL = "CONFIDENTIAL", // Doctor only
+  PUBLIC = 'PUBLIC', // Visible to coaches
+  RESTRICTED = 'RESTRICTED', // Medical staff only
+  CONFIDENTIAL = 'CONFIDENTIAL', // Doctor only
 }
 ```
 
@@ -789,14 +789,14 @@ interface File {
 }
 
 enum FileCategory {
-  PROFILE_PICTURE = "PROFILE_PICTURE",
-  MEDICAL_DOCUMENT = "MEDICAL_DOCUMENT",
-  TRAINING_VIDEO = "TRAINING_VIDEO",
-  COMPETITION_PHOTO = "COMPETITION_PHOTO",
-  CERTIFICATE = "CERTIFICATE",
-  INVOICE = "INVOICE",
-  REPORT = "REPORT",
-  OTHER = "OTHER",
+  PROFILE_PICTURE = 'PROFILE_PICTURE',
+  MEDICAL_DOCUMENT = 'MEDICAL_DOCUMENT',
+  TRAINING_VIDEO = 'TRAINING_VIDEO',
+  COMPETITION_PHOTO = 'COMPETITION_PHOTO',
+  CERTIFICATE = 'CERTIFICATE',
+  INVOICE = 'INVOICE',
+  REPORT = 'REPORT',
+  OTHER = 'OTHER',
 }
 ```
 
@@ -871,14 +871,14 @@ prisma.$use(async (params, next) => {
   const clubId = params.args?.clubFilter?.clubId;
 
   if (clubId && TENANT_ENTITIES.includes(params.model)) {
-    if (params.action === "findMany" || params.action === "findFirst") {
+    if (params.action === 'findMany' || params.action === 'findFirst') {
       params.args.where = {
         ...params.args.where,
         clubId: clubId,
       };
     }
 
-    if (params.action === "create" || params.action === "createMany") {
+    if (params.action === 'create' || params.action === 'createMany') {
       if (params.args.data) {
         params.args.data.clubId = clubId;
       }
@@ -889,17 +889,17 @@ prisma.$use(async (params, next) => {
 });
 
 const TENANT_ENTITIES = [
-  "Athlete",
-  "TrainingSession",
-  "TrainingAssignment",
-  "PerformanceData",
-  "Competition",
-  "CompetitionEntry",
-  "Payment",
-  "Communication",
-  "MedicalRecord",
-  "File",
-  "AuditLog",
+  'Athlete',
+  'TrainingSession',
+  'TrainingAssignment',
+  'PerformanceData',
+  'Competition',
+  'CompetitionEntry',
+  'Payment',
+  'Communication',
+  'MedicalRecord',
+  'File',
+  'AuditLog',
 ];
 ```
 
@@ -929,7 +929,7 @@ ALTER TABLE performance_data ENABLE ROW LEVEL SECURITY;
 interface SwimmingPerformance {
   time: number; // Time in seconds (e.g., 58.23)
   distance: number; // Distance in meters (e.g., 100)
-  stroke: "freestyle" | "backstroke" | "breaststroke" | "butterfly" | "medley";
+  stroke: 'freestyle' | 'backstroke' | 'breaststroke' | 'butterfly' | 'medley';
   strokeCount?: number; // Total strokes
   strokeRate?: number; // Strokes per minute
   splits?: number[]; // 25m, 50m, 75m splits
@@ -959,7 +959,7 @@ interface SwimmingPerformance {
   pool?: {
     length: number; // Pool length (25m, 50m)
     temperature: number; // Water temperature
-    type: "outdoor" | "indoor";
+    type: 'outdoor' | 'indoor';
   };
   conditions?: {
     weather?: string;

@@ -43,7 +43,7 @@ export class AuditLogService implements OnDestroy {
       () => {
         // Cleanup logic
       },
-      60 * 60 * 1000
+      60 * 60 * 1000,
     );
   }
 }

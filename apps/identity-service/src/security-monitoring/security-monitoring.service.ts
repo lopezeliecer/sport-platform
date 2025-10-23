@@ -1,5 +1,5 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { Cron, CronExpression } from "@nestjs/schedule";
+import { Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import {
   SecurityEvent,
   SecurityAlert,
@@ -8,14 +8,14 @@ import {
   SecurityActionType,
   ThreatPattern,
   SecurityMetrics,
-} from "./interfaces/security-event.interface";
-import { AuditLogService } from "../../../../libs/shared/common/src/audit/audit-log.service";
+} from './interfaces/security-event.interface';
+import { AuditLogService } from '../../../../libs/shared/common/src/audit/audit-log.service';
 import {
   AuditEventType,
   AuditSeverity,
   AuditStatus,
-} from "../../../../libs/shared/common/src/audit/audit-log.interface";
-import { randomUUID } from "crypto";
+} from '../../../../libs/shared/common/src/audit/audit-log.interface';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class SecurityMonitoringService {
@@ -23,20 +23,14 @@ export class SecurityMonitoringService {
   private readonly events: Map<string, SecurityEvent> = new Map();
   private readonly alerts: Map<string, SecurityAlert> = new Map();
   private readonly blockedIps: Set<string> = new Set();
-  private readonly suspiciousIps: Map<
-    string,
-    { count: number; lastSeen: Date }
-  > = new Map();
-  private readonly userFailureCount: Map<
-    string,
-    { count: number; lastAttempt: Date }
-  > = new Map();
+  private readonly suspiciousIps: Map<string, { count: number; lastSeen: Date }> = new Map();
+  private readonly userFailureCount: Map<string, { count: number; lastAttempt: Date }> = new Map();
 
   // Threat detection patterns
   private readonly threatPatterns: ThreatPattern[] = [
     {
-      name: "Brute Force Attack",
-      description: "Multiple failed login attempts from same IP",
+      name: 'Brute Force Attack',
+      description: 'Multiple failed login attempts from same IP',
       eventTypes: [SecurityEventType.FAILED_LOGIN],
       conditions: {
         timeWindow: 5, // 5 minutes
@@ -51,8 +45,8 @@ export class SecurityMonitoringService {
       ],
     },
     {
-      name: "Account Takeover Attempt",
-      description: "Multiple failed logins for same user from different IPs",
+      name: 'Account Takeover Attempt',
+      description: 'Multiple failed logins for same user from different IPs',
       eventTypes: [SecurityEventType.FAILED_LOGIN],
       conditions: {
         timeWindow: 10, // 10 minutes
@@ -67,8 +61,8 @@ export class SecurityMonitoringService {
       ],
     },
     {
-      name: "Rate Limit Abuse",
-      description: "Excessive rate limit violations",
+      name: 'Rate Limit Abuse',
+      description: 'Excessive rate limit violations',
       eventTypes: [SecurityEventType.RATE_LIMIT_EXCEEDED],
       conditions: {
         timeWindow: 5, // 5 minutes
@@ -79,12 +73,9 @@ export class SecurityMonitoringService {
       actions: [SecurityActionType.BLOCK_IP, SecurityActionType.ALERT],
     },
     {
-      name: "Injection Attack Pattern",
-      description: "Multiple injection attempts detected",
-      eventTypes: [
-        SecurityEventType.SQL_INJECTION_ATTEMPT,
-        SecurityEventType.XSS_ATTEMPT,
-      ],
+      name: 'Injection Attack Pattern',
+      description: 'Multiple injection attempts detected',
+      eventTypes: [SecurityEventType.SQL_INJECTION_ATTEMPT, SecurityEventType.XSS_ATTEMPT],
       conditions: {
         timeWindow: 15, // 15 minutes
         threshold: 3,
@@ -100,15 +91,13 @@ export class SecurityMonitoringService {
   ];
 
   constructor(private readonly auditLogService: AuditLogService) {
-    this.logger.log("Security Monitoring Service initialized");
+    this.logger.log('Security Monitoring Service initialized');
   }
 
   /**
    * Record a security event and analyze for threats
    */
-  async recordSecurityEvent(
-    event: Omit<SecurityEvent, "id" | "timestamp">
-  ): Promise<void> {
+  async recordSecurityEvent(event: Omit<SecurityEvent, 'id' | 'timestamp'>): Promise<void> {
     const securityEvent: SecurityEvent = {
       ...event,
       id: randomUUID(),
@@ -130,7 +119,7 @@ export class SecurityMonitoringService {
         ipAddress: securityEvent.sourceIp,
         userAgent: securityEvent.userAgent,
       },
-      resourceType: "security_event",
+      resourceType: 'security_event',
       resourceId: securityEvent.id,
       newValue: {
         securityEventType: securityEvent.type,
@@ -144,10 +133,7 @@ export class SecurityMonitoringService {
     this.updateIpReputation(securityEvent.sourceIp);
 
     // Track user failure patterns
-    if (
-      securityEvent.type === SecurityEventType.FAILED_LOGIN &&
-      securityEvent.userId
-    ) {
+    if (securityEvent.type === SecurityEventType.FAILED_LOGIN && securityEvent.userId) {
       this.updateUserFailureCount(securityEvent.userId);
     }
 
@@ -155,7 +141,7 @@ export class SecurityMonitoringService {
     await this.analyzeThreatPatterns(securityEvent);
 
     this.logger.debug(
-      `Security event recorded: ${securityEvent.type} from ${securityEvent.sourceIp}`
+      `Security event recorded: ${securityEvent.type} from ${securityEvent.sourceIp}`,
     );
   }
 
@@ -179,32 +165,30 @@ export class SecurityMonitoringService {
    */
   private async findMatchingEvents(
     pattern: ThreatPattern,
-    currentEvent: SecurityEvent
+    currentEvent: SecurityEvent,
   ): Promise<SecurityEvent[]> {
-    const timeThreshold = new Date(
-      Date.now() - pattern.conditions.timeWindow * 60 * 1000
-    );
+    const timeThreshold = new Date(Date.now() - pattern.conditions.timeWindow * 60 * 1000);
 
     const matchingEvents = Array.from(this.events.values()).filter((event) => {
       // Check time window
-      if (event.timestamp < timeThreshold) return false;
+      if (event.timestamp < timeThreshold) {
+        return false;
+      }
 
       // Check event type
-      if (!pattern.eventTypes.includes(event.type)) return false;
+      if (!pattern.eventTypes.includes(event.type)) {
+        return false;
+      }
 
       // Check IP condition
-      if (
-        pattern.conditions.requireSameIp &&
-        event.sourceIp !== currentEvent.sourceIp
-      )
+      if (pattern.conditions.requireSameIp && event.sourceIp !== currentEvent.sourceIp) {
         return false;
+      }
 
       // Check user condition
-      if (
-        pattern.conditions.requireSameUser &&
-        event.userId !== currentEvent.userId
-      )
+      if (pattern.conditions.requireSameUser && event.userId !== currentEvent.userId) {
         return false;
+      }
 
       return true;
     });
@@ -218,7 +202,7 @@ export class SecurityMonitoringService {
   private async triggerThreatAlert(
     pattern: ThreatPattern,
     triggerEvent: SecurityEvent,
-    relatedEvents: SecurityEvent[]
+    relatedEvents: SecurityEvent[],
   ): Promise<void> {
     const alert: SecurityAlert = {
       id: randomUUID(),
@@ -252,7 +236,7 @@ export class SecurityMonitoringService {
         clubId: alert.clubId,
         ipAddress: alert.sourceIp,
       },
-      resourceType: "security_alert",
+      resourceType: 'security_alert',
       resourceId: alert.id,
       newValue: {
         alertId: alert.id,
@@ -262,9 +246,7 @@ export class SecurityMonitoringService {
       },
     });
 
-    this.logger.warn(
-      `Security alert triggered: ${alert.message} (Alert ID: ${alert.id})`
-    );
+    this.logger.warn(`Security alert triggered: ${alert.message} (Alert ID: ${alert.id})`);
   }
 
   /**
@@ -273,7 +255,7 @@ export class SecurityMonitoringService {
   private async executeSecurityAction(
     action: SecurityActionType,
     alert: SecurityAlert,
-    event: SecurityEvent
+    event: SecurityEvent,
   ): Promise<void> {
     switch (action) {
       case SecurityActionType.BLOCK_IP:
@@ -284,30 +266,24 @@ export class SecurityMonitoringService {
       case SecurityActionType.LOCK_ACCOUNT:
         if (event.userId) {
           // Account locking would be implemented here
-          this.logger.warn(
-            `Account lock requested for user: ${event.userId} (Alert: ${alert.id})`
-          );
+          this.logger.warn(`Account lock requested for user: ${event.userId} (Alert: ${alert.id})`);
         }
         break;
 
       case SecurityActionType.NOTIFY_ADMIN:
         // Admin notification would be implemented here
-        this.logger.error(
-          `Admin notification: ${alert.message} (Alert: ${alert.id})`
-        );
+        this.logger.error(`Admin notification: ${alert.message} (Alert: ${alert.id})`);
         break;
 
       case SecurityActionType.ALERT:
         // Alert system notification
-        this.logger.warn(
-          `Security alert: ${alert.message} (Alert: ${alert.id})`
-        );
+        this.logger.warn(`Security alert: ${alert.message} (Alert: ${alert.id})`);
         break;
 
       case SecurityActionType.RATE_LIMIT:
         // Enhanced rate limiting would be implemented here
         this.logger.warn(
-          `Enhanced rate limiting applied to IP: ${event.sourceIp} (Alert: ${alert.id})`
+          `Enhanced rate limiting applied to IP: ${event.sourceIp} (Alert: ${alert.id})`,
         );
         break;
 
@@ -361,7 +337,7 @@ export class SecurityMonitoringService {
     const end = timeRange?.end || now;
 
     const eventsInRange = Array.from(this.events.values()).filter(
-      (event) => event.timestamp >= start && event.timestamp <= end
+      (event) => event.timestamp >= start && event.timestamp <= end,
     );
 
     const eventsByType = eventsInRange.reduce(
@@ -369,7 +345,7 @@ export class SecurityMonitoringService {
         acc[event.type] = (acc[event.type] || 0) + 1;
         return acc;
       },
-      {} as Record<SecurityEventType, number>
+      {} as Record<SecurityEventType, number>,
     );
 
     const eventsBySeverity = eventsInRange.reduce(
@@ -377,11 +353,11 @@ export class SecurityMonitoringService {
         acc[event.severity] = (acc[event.severity] || 0) + 1;
         return acc;
       },
-      {} as Record<SecuritySeverity, number>
+      {} as Record<SecuritySeverity, number>,
     );
 
     const alertsInRange = Array.from(this.alerts.values()).filter(
-      (alert) => alert.timestamp >= start && alert.timestamp <= end
+      (alert) => alert.timestamp >= start && alert.timestamp <= end,
     );
 
     return {
@@ -394,10 +370,8 @@ export class SecurityMonitoringService {
       alertsResolved: alertsInRange.filter((a) => a.resolved).length,
       averageResponseTime:
         eventsInRange.length > 0
-          ? eventsInRange.reduce(
-              (sum, e) => sum + (e.metadata.responseTime || 0),
-              0
-            ) / eventsInRange.length
+          ? eventsInRange.reduce((sum, e) => sum + (e.metadata.responseTime || 0), 0) /
+            eventsInRange.length
           : 0,
       timeRange: { start, end },
     };
@@ -415,11 +389,7 @@ export class SecurityMonitoringService {
   /**
    * Resolve security alert
    */
-  async resolveAlert(
-    alertId: string,
-    resolvedBy: string,
-    notes?: string
-  ): Promise<void> {
+  async resolveAlert(alertId: string, resolvedBy: string, notes?: string): Promise<void> {
     const alert = this.alerts.get(alertId);
     if (!alert) {
       throw new Error(`Alert not found: ${alertId}`);
@@ -438,7 +408,7 @@ export class SecurityMonitoringService {
       context: {
         userId: resolvedBy,
       },
-      resourceType: "security_alert",
+      resourceType: 'security_alert',
       resourceId: alertId,
       newValue: {
         alertId,
@@ -460,7 +430,7 @@ export class SecurityMonitoringService {
 
     // Cleanup old events
     const eventsToDelete = Array.from(this.events.entries()).filter(
-      ([, event]) => event.timestamp < threshold
+      ([, event]) => event.timestamp < threshold,
     );
 
     for (const [id] of eventsToDelete) {
@@ -469,7 +439,7 @@ export class SecurityMonitoringService {
 
     // Cleanup old IP reputation data
     const ipsToClean = Array.from(this.suspiciousIps.entries()).filter(
-      ([, data]) => data.lastSeen < threshold
+      ([, data]) => data.lastSeen < threshold,
     );
 
     for (const [ip] of ipsToClean) {
@@ -478,20 +448,16 @@ export class SecurityMonitoringService {
 
     // Cleanup old user failure data
     const usersToClean = Array.from(this.userFailureCount.entries()).filter(
-      ([, data]) => data.lastAttempt < threshold
+      ([, data]) => data.lastAttempt < threshold,
     );
 
     for (const [userId] of usersToClean) {
       this.userFailureCount.delete(userId);
     }
 
-    if (
-      eventsToDelete.length > 0 ||
-      ipsToClean.length > 0 ||
-      usersToClean.length > 0
-    ) {
+    if (eventsToDelete.length > 0 || ipsToClean.length > 0 || usersToClean.length > 0) {
       this.logger.log(
-        `Cleaned up ${eventsToDelete.length} old events, ${ipsToClean.length} IP entries, ${usersToClean.length} user entries`
+        `Cleaned up ${eventsToDelete.length} old events, ${ipsToClean.length} IP entries, ${usersToClean.length} user entries`,
       );
     }
   }
@@ -500,21 +466,21 @@ export class SecurityMonitoringService {
    * Get system health status
    */
   getHealthStatus(): {
-    status: "healthy" | "warning" | "critical";
+    status: 'healthy' | 'warning' | 'critical';
     details: any;
   } {
     const metrics = this.getSecurityMetrics();
     const recentAlerts = this.getRecentAlerts(10);
     const criticalAlerts = recentAlerts.filter(
-      (a) => a.severity === SecuritySeverity.CRITICAL && !a.resolved
+      (a) => a.severity === SecuritySeverity.CRITICAL && !a.resolved,
     );
 
-    let status: "healthy" | "warning" | "critical" = "healthy";
+    let status: 'healthy' | 'warning' | 'critical' = 'healthy';
 
     if (criticalAlerts.length > 0) {
-      status = "critical";
+      status = 'critical';
     } else if (this.blockedIps.size > 10 || recentAlerts.length > 20) {
-      status = "warning";
+      status = 'warning';
     }
 
     return {

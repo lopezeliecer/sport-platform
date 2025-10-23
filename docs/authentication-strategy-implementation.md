@@ -171,14 +171,11 @@ GET  /api/v1/auth/health          # Health check
 
 ```typescript
 // Import authentication guards
-import {
-  JwtAuthGuard,
-  RequirePermissions,
-} from "@sports-platform/identity-service";
+import { JwtAuthGuard, RequirePermissions } from '@sports-platform/identity-service';
 
 // Protect controller
 @UseGuards(JwtAuthGuard)
-@Controller("athletes")
+@Controller('athletes')
 export class AthletesController {
   @RequirePermissions(Permission.ATHLETES_CREATE)
   @Post()

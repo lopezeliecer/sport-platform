@@ -181,7 +181,7 @@ class SwimmingTime extends ValueObject {
     private readonly seconds: number,
     private readonly milliseconds: number,
     private readonly distance: Distance,
-    private readonly stroke: SwimmingStroke
+    private readonly stroke: SwimmingStroke,
   ) {
     this.validate();
   }
@@ -192,7 +192,7 @@ class SwimmingTime extends ValueObject {
 
   compareWith(other: SwimmingTime): TimeComparison {
     if (!this.isSameDistance(other)) {
-      throw new Error("Cannot compare times for different distances");
+      throw new Error('Cannot compare times for different distances');
     }
     // Comparison logic
   }
@@ -211,7 +211,7 @@ export class PerformanceAnalysisService {
   calculateTrend(
     athlete: Athlete,
     metric: PerformanceMetric,
-    period: TimePeriod
+    period: TimePeriod,
   ): PerformanceTrend {
     const records = athlete.getPerformanceRecords(period);
 
@@ -242,22 +242,17 @@ export class PerformanceAnalysisService {
 ```typescript
 // Command Handler
 @CommandHandler(RecordPerformanceCommand)
-export class RecordPerformanceHandler
-  implements ICommandHandler<RecordPerformanceCommand>
-{
+export class RecordPerformanceHandler implements ICommandHandler<RecordPerformanceCommand> {
   constructor(
     private athleteRepository: AthleteRepository,
     private performanceAnalysisService: PerformanceAnalysisService,
-    private eventBus: EventBus
+    private eventBus: EventBus,
   ) {}
 
   async execute(command: RecordPerformanceCommand): Promise<void> {
     const athlete = await this.athleteRepository.findById(command.athleteId);
 
-    const performanceRecord = athlete.recordPerformance(
-      command.metrics,
-      command.trainingSessionId
-    );
+    const performanceRecord = athlete.recordPerformance(command.metrics, command.trainingSessionId);
 
     await this.athleteRepository.save(athlete);
 
@@ -270,22 +265,18 @@ export class RecordPerformanceHandler
 
 // Query Handler
 @QueryHandler(GetPerformanceTrendsQuery)
-export class GetPerformanceTrendsHandler
-  implements IQueryHandler<GetPerformanceTrendsQuery>
-{
+export class GetPerformanceTrendsHandler implements IQueryHandler<GetPerformanceTrendsQuery> {
   constructor(
     private performanceAnalysisService: PerformanceAnalysisService,
-    private athleteRepository: AthleteRepository
+    private athleteRepository: AthleteRepository,
   ) {}
 
-  async execute(
-    query: GetPerformanceTrendsQuery
-  ): Promise<PerformanceTrendsDto> {
+  async execute(query: GetPerformanceTrendsQuery): Promise<PerformanceTrendsDto> {
     const athlete = await this.athleteRepository.findById(query.athleteId);
     const trends = await this.performanceAnalysisService.calculateTrends(
       athlete,
       query.metrics,
-      query.period
+      query.period,
     );
 
     return PerformanceTrendsDto.fromDomain(trends);
@@ -464,7 +455,7 @@ export class SwimmingTime extends ValueObject {
     private readonly totalMilliseconds: number,
     private readonly distance: Distance,
     private readonly stroke: SwimmingStroke,
-    private readonly poolLength: PoolLength
+    private readonly poolLength: PoolLength,
   ) {
     super();
     this.validate();
@@ -476,7 +467,7 @@ export class SwimmingTime extends ValueObject {
     milliseconds: number,
     distance: Distance,
     stroke: SwimmingStroke,
-    poolLength: PoolLength = PoolLength.LONG_COURSE
+    poolLength: PoolLength = PoolLength.LONG_COURSE,
   ): SwimmingTime {
     const totalMs = minutes * 60 * 1000 + seconds * 1000 + milliseconds;
     return new SwimmingTime(totalMs, distance, stroke, poolLength);
@@ -488,8 +479,7 @@ export class SwimmingTime extends ValueObject {
   }
 
   calculatePace(): Pace {
-    const pacePerLap =
-      this.totalMilliseconds / this.distance.laps(this.poolLength);
+    const pacePerLap = this.totalMilliseconds / this.distance.laps(this.poolLength);
     return new Pace(pacePerLap, this.poolLength);
   }
 
@@ -498,14 +488,8 @@ export class SwimmingTime extends ValueObject {
       throw new InvalidSplitError(splitDistance, this.distance);
     }
 
-    const splitMs =
-      (this.totalMilliseconds * splitDistance.meters) / this.distance.meters;
-    return new SwimmingTime(
-      splitMs,
-      splitDistance,
-      this.stroke,
-      this.poolLength
-    );
+    const splitMs = (this.totalMilliseconds * splitDistance.meters) / this.distance.meters;
+    return new SwimmingTime(splitMs, splitDistance, this.stroke, this.poolLength);
   }
 
   toDisplayString(): string {
@@ -514,11 +498,9 @@ export class SwimmingTime extends ValueObject {
     const ms = this.totalMilliseconds % 1000;
 
     if (minutes > 0) {
-      return `${minutes}:${seconds.toString().padStart(2, "0")}.${ms
-        .toString()
-        .padStart(3, "0")}`;
+      return `${minutes}:${seconds.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
     }
-    return `${seconds}.${ms.toString().padStart(3, "0")}`;
+    return `${seconds}.${ms.toString().padStart(3, '0')}`;
   }
 
   private ensureComparable(other: SwimmingTime): void {
@@ -542,7 +524,7 @@ export class PerformanceAnalysisService {
   calculateComprehensiveTrend(
     athlete: Athlete,
     metric: PerformanceMetric,
-    period: TimePeriod
+    period: TimePeriod,
   ): PerformanceTrend {
     const records = athlete.getPerformanceRecordsForPeriod(period);
 
@@ -580,10 +562,7 @@ export class PerformanceAnalysisService {
     return TrainingRecommendations.create({
       priorityAreas: strengthsAndWeaknesses.weaknesses,
       maintenanceAreas: strengthsAndWeaknesses.strengths,
-      recommendedIntensity: this.calculateOptimalIntensity(
-        currentForm,
-        trainingLoad
-      ),
+      recommendedIntensity: this.calculateOptimalIntensity(currentForm, trainingLoad),
       recoveryDays: recoveryNeeds.recommendedDays,
       specificExercises: this.suggestSpecificExercises(strengthsAndWeaknesses),
       periodizationPhase: this.determinePeriodizationPhase(athlete),
@@ -615,33 +594,21 @@ export class PerformanceAnalysisService {
     return PerformanceAnomalies.create(anomalies);
   }
 
-  compareWithPeers(
-    athlete: Athlete,
-    comparisonGroup: ComparisonGroup
-  ): PeerComparison {
+  compareWithPeers(athlete: Athlete, comparisonGroup: ComparisonGroup): PeerComparison {
     const athleteStats = this.calculateAthleteStatistics(athlete);
     const groupStats = this.calculateGroupStatistics(comparisonGroup);
 
     return PeerComparison.create({
       percentileRanking: this.calculatePercentile(athleteStats, groupStats),
-      strengthsRelativeToPeers: this.identifyRelativeStrengths(
-        athleteStats,
-        groupStats
-      ),
-      improvementAreas: this.identifyImprovementAreasVsPeers(
-        athleteStats,
-        groupStats
-      ),
-      motivationalInsights: this.generateMotivationalInsights(
-        athleteStats,
-        groupStats
-      ),
+      strengthsRelativeToPeers: this.identifyRelativeStrengths(athleteStats, groupStats),
+      improvementAreas: this.identifyImprovementAreasVsPeers(athleteStats, groupStats),
+      motivationalInsights: this.generateMotivationalInsights(athleteStats, groupStats),
     });
   }
 
   private calculateLinearRegression(
     records: PerformanceRecord[],
-    metric: PerformanceMetric
+    metric: PerformanceMetric,
   ): number {
     // Implementation of linear regression algorithm
     const points = records.map((record, index) => ({
@@ -665,20 +632,16 @@ export class PerformanceAnalysisService {
 ```typescript
 // application/handlers/commands/record-performance.handler.ts
 @CommandHandler(RecordPerformanceCommand)
-export class RecordPerformanceHandler
-  implements ICommandHandler<RecordPerformanceCommand>
-{
+export class RecordPerformanceHandler implements ICommandHandler<RecordPerformanceCommand> {
   constructor(
     private readonly athleteRepository: AthleteRepository,
     private readonly trainingSessionRepository: TrainingSessionRepository,
     private readonly performanceAnalysisService: PerformanceAnalysisService,
     private readonly eventBus: EventBus,
-    private readonly logger: Logger
+    private readonly logger: Logger,
   ) {}
 
-  async execute(
-    command: RecordPerformanceCommand
-  ): Promise<PerformanceRecordId> {
+  async execute(command: RecordPerformanceCommand): Promise<PerformanceRecordId> {
     this.logger.log(`Recording performance for athlete ${command.athleteId}`);
 
     // Load aggregates
@@ -688,7 +651,7 @@ export class RecordPerformanceHandler
     }
 
     const trainingSession = await this.trainingSessionRepository.findById(
-      command.trainingSessionId
+      command.trainingSessionId,
     );
     if (!trainingSession) {
       throw new TrainingSessionNotFoundError(command.trainingSessionId);
@@ -702,7 +665,7 @@ export class RecordPerformanceHandler
     // Execute domain logic
     const performanceRecord = athlete.recordPerformance(
       TrainingMetrics.fromDto(command.metrics),
-      command.trainingSessionId
+      command.trainingSessionId,
     );
 
     // Persist changes
@@ -714,31 +677,22 @@ export class RecordPerformanceHandler
     athlete.markEventsAsCommitted();
 
     // Trigger analysis (async)
-    this.performanceAnalysisService.analyzePerformanceAsync(
-      athlete.id,
-      performanceRecord.id
-    );
+    this.performanceAnalysisService.analyzePerformanceAsync(athlete.id, performanceRecord.id);
 
-    this.logger.log(
-      `Performance recorded successfully: ${performanceRecord.id}`
-    );
+    this.logger.log(`Performance recorded successfully: ${performanceRecord.id}`);
     return performanceRecord.id;
   }
 }
 
 // application/handlers/queries/get-performance-trends.handler.ts
 @QueryHandler(GetPerformanceTrendsQuery)
-export class GetPerformanceTrendsHandler
-  implements IQueryHandler<GetPerformanceTrendsQuery>
-{
+export class GetPerformanceTrendsHandler implements IQueryHandler<GetPerformanceTrendsQuery> {
   constructor(
     private readonly athleteRepository: AthleteRepository,
-    private readonly performanceAnalysisService: PerformanceAnalysisService
+    private readonly performanceAnalysisService: PerformanceAnalysisService,
   ) {}
 
-  async execute(
-    query: GetPerformanceTrendsQuery
-  ): Promise<PerformanceTrendsResponseDto> {
+  async execute(query: GetPerformanceTrendsQuery): Promise<PerformanceTrendsResponseDto> {
     const athlete = await this.athleteRepository.findById(query.athleteId);
     if (!athlete) {
       throw new AthleteNotFoundError(query.athleteId);
@@ -746,23 +700,18 @@ export class GetPerformanceTrendsHandler
 
     const trends = await Promise.all(
       query.metrics.map(async (metric) => {
-        const trend =
-          await this.performanceAnalysisService.calculateComprehensiveTrend(
-            athlete,
-            metric,
-            TimePeriod.fromDto(query.period)
-          );
+        const trend = await this.performanceAnalysisService.calculateComprehensiveTrend(
+          athlete,
+          metric,
+          TimePeriod.fromDto(query.period),
+        );
 
         return {
           metric: metric.toString(),
           trend: PerformanceTrendDto.fromDomain(trend),
-          recommendations: await this.generateMetricSpecificRecommendations(
-            athlete,
-            metric,
-            trend
-          ),
+          recommendations: await this.generateMetricSpecificRecommendations(athlete, metric, trend),
         };
-      })
+      }),
     );
 
     return PerformanceTrendsResponseDto.create({
@@ -777,14 +726,10 @@ export class GetPerformanceTrendsHandler
   private async generateMetricSpecificRecommendations(
     athlete: Athlete,
     metric: PerformanceMetric,
-    trend: PerformanceTrend
+    trend: PerformanceTrend,
   ): Promise<MetricRecommendationDto[]> {
     // Generate specific recommendations based on metric and trend
-    return this.performanceAnalysisService.generateMetricRecommendations(
-      athlete,
-      metric,
-      trend
-    );
+    return this.performanceAnalysisService.generateMetricRecommendations(athlete, metric, trend);
   }
 }
 ```

@@ -1,7 +1,7 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { Cron, CronExpression } from "@nestjs/schedule";
-import { randomUUID } from "crypto";
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { randomUUID } from 'crypto';
 import {
   AuditLogEntry,
   AuditEventType,
@@ -11,7 +11,7 @@ import {
   AuditQueryOptions,
   AuditStatistics,
   AuditAlert,
-} from "./audit-log.interface";
+} from './audit-log.interface';
 
 @Injectable()
 export class AuditLogService {
@@ -22,10 +22,7 @@ export class AuditLogService {
   private readonly alertThresholds: Map<string, number> = new Map();
 
   constructor(private readonly configService: ConfigService) {
-    this.maxLogEntries = this.configService.get<number>(
-      "AUDIT_MAX_ENTRIES",
-      50000
-    );
+    this.maxLogEntries = this.configService.get<number>('AUDIT_MAX_ENTRIES', 50000);
     this.initializeAlertThresholds();
 
     // Log service initialization
@@ -33,9 +30,9 @@ export class AuditLogService {
       eventType: AuditEventType.SERVICE_STARTED,
       severity: AuditSeverity.LOW,
       status: AuditStatus.SUCCESS,
-      message: "Audit logging service started",
+      message: 'Audit logging service started',
       context: {
-        service: "audit-log-service",
+        service: 'audit-log-service',
         maxLogEntries: this.maxLogEntries,
       },
     });
@@ -75,10 +72,7 @@ export class AuditLogService {
       errorCode: params.errorCode,
       errorMessage: params.errorMessage,
       stackTrace: params.stackTrace,
-      retentionPolicy: this.determineRetentionPolicy(
-        params.eventType,
-        params.severity
-      ),
+      retentionPolicy: this.determineRetentionPolicy(params.eventType, params.severity),
       sensitiveData: this.containsSensitiveData(params),
       complianceFlags: this.determineComplianceFlags(params.eventType),
     };
@@ -95,26 +89,21 @@ export class AuditLogService {
     // Cleanup old entries if needed
     this.cleanupOldEntries();
 
-    this.logger.debug(
-      `Audit event logged: ${entry.eventType} - ${entry.message}`
-    );
+    this.logger.debug(`Audit event logged: ${entry.eventType} - ${entry.message}`);
     return entry;
   }
 
   /**
    * Authentication event logging helpers
    */
-  async logAuthenticationSuccess(
-    userId: string,
-    context: AuditContext
-  ): Promise<void> {
+  async logAuthenticationSuccess(userId: string, context: AuditContext): Promise<void> {
     await this.logEvent({
       eventType: AuditEventType.LOGIN_SUCCESS,
       severity: AuditSeverity.LOW,
       status: AuditStatus.SUCCESS,
       message: `User ${context.userEmail || userId} successfully authenticated`,
       context: { ...context, userId },
-      resourceType: "user",
+      resourceType: 'user',
       resourceId: userId,
     });
   }
@@ -122,7 +111,7 @@ export class AuditLogService {
   async logAuthenticationFailure(
     email: string,
     context: AuditContext,
-    reason: string
+    reason: string,
   ): Promise<void> {
     await this.logEvent({
       eventType: AuditEventType.LOGIN_FAILED,
@@ -131,7 +120,7 @@ export class AuditLogService {
       message: `Authentication failed for user ${email}`,
       description: reason,
       context: { ...context, userEmail: email },
-      resourceType: "user",
+      resourceType: 'user',
       errorMessage: reason,
     });
   }
@@ -143,7 +132,7 @@ export class AuditLogService {
       status: AuditStatus.SUCCESS,
       message: `User ${context.userEmail || userId} logged out`,
       context: { ...context, userId },
-      resourceType: "session",
+      resourceType: 'session',
       resourceId: context.sessionId,
     });
   }
@@ -151,18 +140,14 @@ export class AuditLogService {
   /**
    * Authorization event logging helpers
    */
-  async logAccessDenied(
-    userId: string,
-    resource: string,
-    context: AuditContext
-  ): Promise<void> {
+  async logAccessDenied(userId: string, resource: string, context: AuditContext): Promise<void> {
     await this.logEvent({
       eventType: AuditEventType.ACCESS_DENIED,
       severity: AuditSeverity.MEDIUM,
       status: AuditStatus.FAILURE,
       message: `Access denied for user ${context.userEmail || userId} to ${resource}`,
       context: { ...context, userId },
-      resourceType: "endpoint",
+      resourceType: 'endpoint',
       resourceId: resource,
     });
   }
@@ -171,15 +156,15 @@ export class AuditLogService {
     userId: string,
     permission: string,
     granted: boolean,
-    context: AuditContext
+    context: AuditContext,
   ): Promise<void> {
     await this.logEvent({
       eventType: AuditEventType.PERMISSION_CHECK,
       severity: AuditSeverity.LOW,
       status: granted ? AuditStatus.SUCCESS : AuditStatus.FAILURE,
-      message: `Permission check for ${permission}: ${granted ? "granted" : "denied"}`,
+      message: `Permission check for ${permission}: ${granted ? 'granted' : 'denied'}`,
       context: { ...context, userId },
-      resourceType: "permission",
+      resourceType: 'permission',
       resourceId: permission,
     });
   }
@@ -194,33 +179,27 @@ export class AuditLogService {
       status: AuditStatus.WARNING,
       message: `Rate limit exceeded from IP ${context.ipAddress}`,
       context,
-      resourceType: "rate_limit",
+      resourceType: 'rate_limit',
     });
   }
 
-  async logSuspiciousActivity(
-    description: string,
-    context: AuditContext
-  ): Promise<void> {
+  async logSuspiciousActivity(description: string, context: AuditContext): Promise<void> {
     await this.logEvent({
       eventType: AuditEventType.SUSPICIOUS_ACTIVITY,
       severity: AuditSeverity.HIGH,
       status: AuditStatus.WARNING,
-      message: "Suspicious activity detected",
+      message: 'Suspicious activity detected',
       description,
       context,
     });
   }
 
-  async logSecurityViolation(
-    violation: string,
-    context: AuditContext
-  ): Promise<void> {
+  async logSecurityViolation(violation: string, context: AuditContext): Promise<void> {
     await this.logEvent({
       eventType: AuditEventType.SECURITY_VIOLATION,
       severity: AuditSeverity.CRITICAL,
       status: AuditStatus.ERROR,
-      message: "Security violation detected",
+      message: 'Security violation detected',
       description: violation,
       context,
     });
@@ -236,23 +215,19 @@ export class AuditLogService {
       status: AuditStatus.SUCCESS,
       message: `API key used by service ${context.service}`,
       context: { ...context, apiKeyId: keyId },
-      resourceType: "api_key",
+      resourceType: 'api_key',
       resourceId: keyId,
     });
   }
 
-  async logApiKeyCreated(
-    keyId: string,
-    service: string,
-    context: AuditContext
-  ): Promise<void> {
+  async logApiKeyCreated(keyId: string, service: string, context: AuditContext): Promise<void> {
     await this.logEvent({
       eventType: AuditEventType.API_KEY_CREATED,
       severity: AuditSeverity.MEDIUM,
       status: AuditStatus.SUCCESS,
       message: `API key created for service ${service}`,
       context: { ...context, service, apiKeyId: keyId },
-      resourceType: "api_key",
+      resourceType: 'api_key',
       resourceId: keyId,
     });
   }
@@ -261,10 +236,10 @@ export class AuditLogService {
    * Data access logging helpers
    */
   async logDataAccess(
-    operation: "read" | "create" | "update" | "delete",
+    operation: 'read' | 'create' | 'update' | 'delete',
     resourceType: string,
     resourceId: string,
-    context: AuditContext
+    context: AuditContext,
   ): Promise<void> {
     const eventTypeMap = {
       read: AuditEventType.DATA_READ,
@@ -275,8 +250,7 @@ export class AuditLogService {
 
     await this.logEvent({
       eventType: eventTypeMap[operation],
-      severity:
-        operation === "delete" ? AuditSeverity.MEDIUM : AuditSeverity.LOW,
+      severity: operation === 'delete' ? AuditSeverity.MEDIUM : AuditSeverity.LOW,
       status: AuditStatus.SUCCESS,
       message: `${operation.toUpperCase()} operation on ${resourceType}`,
       context,
@@ -297,38 +271,28 @@ export class AuditLogService {
 
     // Apply filters
     if (options.startDate) {
-      filteredLogs = filteredLogs.filter(
-        (log) => log.timestamp >= options.startDate!
-      );
+      filteredLogs = filteredLogs.filter((log) => log.timestamp >= options.startDate!);
     }
     if (options.endDate) {
-      filteredLogs = filteredLogs.filter(
-        (log) => log.timestamp <= options.endDate!
-      );
+      filteredLogs = filteredLogs.filter((log) => log.timestamp <= options.endDate!);
     }
     if (options.eventTypes?.length) {
-      filteredLogs = filteredLogs.filter((log) =>
-        options.eventTypes!.includes(log.eventType)
-      );
+      filteredLogs = filteredLogs.filter((log) => options.eventTypes!.includes(log.eventType));
     }
     if (options.severities?.length) {
-      filteredLogs = filteredLogs.filter((log) =>
-        options.severities!.includes(log.severity)
-      );
+      filteredLogs = filteredLogs.filter((log) => options.severities!.includes(log.severity));
     }
     if (options.statuses?.length) {
-      filteredLogs = filteredLogs.filter((log) =>
-        options.statuses!.includes(log.status)
-      );
+      filteredLogs = filteredLogs.filter((log) => options.statuses!.includes(log.status));
     }
     if (options.userIds?.length) {
       filteredLogs = filteredLogs.filter((log) =>
-        options.userIds!.includes(log.context.userId || "")
+        options.userIds!.includes(log.context.userId || ''),
       );
     }
     if (options.services?.length) {
       filteredLogs = filteredLogs.filter((log) =>
-        options.services!.includes(log.context.service || "")
+        options.services!.includes(log.context.service || ''),
       );
     }
     if (options.searchTerm) {
@@ -337,26 +301,26 @@ export class AuditLogService {
         (log) =>
           log.message.toLowerCase().includes(term) ||
           log.description?.toLowerCase().includes(term) ||
-          log.context.userEmail?.toLowerCase().includes(term)
+          log.context.userEmail?.toLowerCase().includes(term),
       );
     }
 
     // Sort logs
-    const sortBy = options.sortBy || "timestamp";
-    const sortOrder = options.sortOrder || "DESC";
+    const sortBy = options.sortBy || 'timestamp';
+    const sortOrder = options.sortOrder || 'DESC';
     filteredLogs.sort((a, b) => {
       let aValue, bValue;
       switch (sortBy) {
-        case "timestamp":
+        case 'timestamp':
           aValue = a.timestamp.getTime();
           bValue = b.timestamp.getTime();
           break;
-        case "severity":
+        case 'severity':
           const severityOrder = { LOW: 1, MEDIUM: 2, HIGH: 3, CRITICAL: 4 };
           aValue = severityOrder[a.severity];
           bValue = severityOrder[b.severity];
           break;
-        case "eventType":
+        case 'eventType':
           aValue = a.eventType;
           bValue = b.eventType;
           break;
@@ -365,7 +329,7 @@ export class AuditLogService {
           bValue = b.timestamp.getTime();
       }
 
-      if (sortOrder === "ASC") {
+      if (sortOrder === 'ASC') {
         return aValue > bValue ? 1 : -1;
       } else {
         return aValue < bValue ? 1 : -1;
@@ -394,7 +358,7 @@ export class AuditLogService {
     startDate.setDate(startDate.getDate() - days);
 
     const recentLogs = Array.from(this.auditLogs.values()).filter(
-      (log) => log.timestamp >= startDate
+      (log) => log.timestamp >= startDate,
     );
 
     // Count events by type
@@ -429,10 +393,10 @@ export class AuditLogService {
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split("T")[0];
+      const dateStr = date.toISOString().split('T')[0];
 
       const count = recentLogs.filter(
-        (log) => log.timestamp.toISOString().split("T")[0] === dateStr
+        (log) => log.timestamp.toISOString().split('T')[0] === dateStr,
       ).length;
 
       eventsOverTime.push({ date: dateStr, count });
@@ -443,7 +407,7 @@ export class AuditLogService {
     recentLogs.forEach((log) => {
       if (log.context.userId) {
         const existing = userCounts.get(log.context.userId) || {
-          email: log.context.userEmail || "Unknown",
+          email: log.context.userEmail || 'Unknown',
           count: 0,
         };
         existing.count++;
@@ -463,10 +427,7 @@ export class AuditLogService {
     const serviceCounts = new Map<string, number>();
     recentLogs.forEach((log) => {
       if (log.context.service) {
-        serviceCounts.set(
-          log.context.service,
-          (serviceCounts.get(log.context.service) || 0) + 1
-        );
+        serviceCounts.set(log.context.service, (serviceCounts.get(log.context.service) || 0) + 1);
       }
     });
     const topServices = Array.from(serviceCounts.entries())
@@ -490,9 +451,7 @@ export class AuditLogService {
           count: events.length,
           lastOccurrence:
             events.length > 0
-              ? events.sort(
-                  (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
-                )[0].timestamp
+              ? events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0].timestamp
               : new Date(0),
         };
       })
@@ -539,7 +498,7 @@ export class AuditLogService {
         log.eventType === entry.eventType &&
         log.timestamp.getTime() > Date.now() - 300000 && // Last 5 minutes
         (log.context.ipAddress === entry.context.ipAddress ||
-          log.context.userId === entry.context.userId)
+          log.context.userId === entry.context.userId),
     );
 
     if (recentEvents.length >= threshold) {
@@ -559,26 +518,16 @@ export class AuditLogService {
     }
   }
 
-  private determineRetentionPolicy(
-    eventType: AuditEventType,
-    severity: AuditSeverity
-  ): string {
-    if (severity === AuditSeverity.CRITICAL) return "7_YEARS";
-    if (severity === AuditSeverity.HIGH) return "3_YEARS";
-    if (eventType.includes("LOGIN") || eventType.includes("ACCESS"))
-      return "1_YEAR";
-    return "6_MONTHS";
+  private determineRetentionPolicy(eventType: AuditEventType, severity: AuditSeverity): string {
+    if (severity === AuditSeverity.CRITICAL) return '7_YEARS';
+    if (severity === AuditSeverity.HIGH) return '3_YEARS';
+    if (eventType.includes('LOGIN') || eventType.includes('ACCESS')) return '1_YEAR';
+    return '6_MONTHS';
   }
 
   private containsSensitiveData(params: any): boolean {
     // Check if the event contains sensitive data that needs special handling
-    const sensitiveFields = [
-      "password",
-      "token",
-      "secret",
-      "key",
-      "credential",
-    ];
+    const sensitiveFields = ['password', 'token', 'secret', 'key', 'credential'];
     const dataStr = JSON.stringify(params).toLowerCase();
     return sensitiveFields.some((field) => dataStr.includes(field));
   }
@@ -587,18 +536,18 @@ export class AuditLogService {
     const flags = [];
 
     // GDPR compliance
-    if (eventType.includes("USER") || eventType.includes("DATA")) {
-      flags.push("GDPR");
+    if (eventType.includes('USER') || eventType.includes('DATA')) {
+      flags.push('GDPR');
     }
 
     // SOX compliance for financial data
-    if (eventType.includes("PAYMENT") || eventType.includes("BILLING")) {
-      flags.push("SOX");
+    if (eventType.includes('PAYMENT') || eventType.includes('BILLING')) {
+      flags.push('SOX');
     }
 
     // HIPAA for medical data
-    if (eventType.includes("MEDICAL")) {
-      flags.push("HIPAA");
+    if (eventType.includes('MEDICAL')) {
+      flags.push('HIPAA');
     }
 
     return flags;
@@ -608,25 +557,23 @@ export class AuditLogService {
     const level = this.getSeverityLogLevel(entry.severity);
     const contextStr = entry.context.userId
       ? `[User: ${entry.context.userEmail || entry.context.userId}]`
-      : "[System]";
+      : '[System]';
 
     this.logger[level](`${contextStr} ${entry.eventType}: ${entry.message}`);
   }
 
-  private getSeverityLogLevel(
-    severity: AuditSeverity
-  ): "log" | "warn" | "error" {
+  private getSeverityLogLevel(severity: AuditSeverity): 'log' | 'warn' | 'error' {
     switch (severity) {
       case AuditSeverity.LOW:
-        return "log";
+        return 'log';
       case AuditSeverity.MEDIUM:
-        return "log";
+        return 'log';
       case AuditSeverity.HIGH:
-        return "warn";
+        return 'warn';
       case AuditSeverity.CRITICAL:
-        return "error";
+        return 'error';
       default:
-        return "log";
+        return 'log';
     }
   }
 
@@ -635,7 +582,7 @@ export class AuditLogService {
 
     // Remove oldest entries when limit is exceeded
     const entries = Array.from(this.auditLogs.entries()).sort(
-      ([, a], [, b]) => a.timestamp.getTime() - b.timestamp.getTime()
+      ([, a], [, b]) => a.timestamp.getTime() - b.timestamp.getTime(),
     );
 
     const toRemove = entries.slice(0, entries.length - this.maxLogEntries);
@@ -655,7 +602,7 @@ export class AuditLogService {
       const initialAlertCount = this.alerts.size;
 
       const activeAlerts = Array.from(this.alerts.entries()).filter(
-        ([, alert]) => alert.timestamp > oneDayAgo
+        ([, alert]) => alert.timestamp > oneDayAgo,
       );
 
       this.alerts.clear();
@@ -663,12 +610,10 @@ export class AuditLogService {
 
       const cleanedCount = initialAlertCount - activeAlerts.length;
       if (cleanedCount > 0) {
-        this.logger.debug(
-          `Scheduled cleanup: removed ${cleanedCount} old alerts`
-        );
+        this.logger.debug(`Scheduled cleanup: removed ${cleanedCount} old alerts`);
       }
     } catch (error) {
-      this.logger.error("Error during scheduled alert cleanup:", error);
+      this.logger.error('Error during scheduled alert cleanup:', error);
     }
   }
 }

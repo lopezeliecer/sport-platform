@@ -26,17 +26,13 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/auth.decorators';
 import { EnvironmentSecurityService } from './environment-security.service';
 import { SecretsManagementService } from './secrets-management.service';
-import { 
-  EnvironmentSecurityConfig, 
+import {
+  EnvironmentSecurityConfig,
   SecurityViolation,
   SecurityLevel,
-  EnvironmentType 
+  EnvironmentType,
 } from './interfaces/environment-security.interface';
-import { 
-  SecretMetadata, 
-  SecretType, 
-  SecretAccessLog 
-} from './interfaces/secrets.interface';
+import { SecretMetadata, SecretType, SecretAccessLog } from './interfaces/secrets.interface';
 
 @ApiTags('environment-security')
 @Controller('environment-security')
@@ -64,7 +60,7 @@ export class EnvironmentSecurityController {
   })
   async getSecurityConfig(): Promise<Partial<EnvironmentSecurityConfig>> {
     const config = this.environmentSecurity.getSecurityConfig();
-    
+
     // Redact sensitive information
     return {
       environment: config.environment,
@@ -229,9 +225,7 @@ export class EnvironmentSecurityController {
     status: 204,
     description: 'Security violations cleared successfully',
   })
-  async clearResolvedViolations(
-    @Body() violationIds: { violationIds: string[] }
-  ): Promise<void> {
+  async clearResolvedViolations(@Body() violationIds: { violationIds: string[] }): Promise<void> {
     this.environmentSecurity.clearResolvedViolations(violationIds.violationIds);
   }
 
@@ -260,10 +254,10 @@ export class EnvironmentSecurityController {
       maintenanceMode: config.maintenanceMode,
       securityViolations: {
         total: violations.length,
-        critical: violations.filter(v => v.severity === 'CRITICAL').length,
-        high: violations.filter(v => v.severity === 'HIGH').length,
-        medium: violations.filter(v => v.severity === 'MEDIUM').length,
-        low: violations.filter(v => v.severity === 'LOW').length,
+        critical: violations.filter((v) => v.severity === 'CRITICAL').length,
+        high: violations.filter((v) => v.severity === 'HIGH').length,
+        medium: violations.filter((v) => v.severity === 'MEDIUM').length,
+        low: violations.filter((v) => v.severity === 'LOW').length,
       },
       secrets: secretsHealth,
       features: {
@@ -296,14 +290,14 @@ export class EnvironmentSecurityController {
     description: 'Secrets metadata retrieved successfully',
     type: [Object],
   })
-  @ApiQuery({ 
-    name: 'includeDeprecated', 
-    required: false, 
+  @ApiQuery({
+    name: 'includeDeprecated',
+    required: false,
     description: 'Include deprecated secrets in the list',
     type: Boolean,
   })
   async listSecrets(
-    @Query('includeDeprecated') includeDeprecated: boolean = false
+    @Query('includeDeprecated') includeDeprecated: boolean = false,
   ): Promise<SecretMetadata[]> {
     return this.secretsManagement.listSecrets(includeDeprecated);
   }
@@ -397,7 +391,7 @@ export class EnvironmentSecurityController {
   })
   async rotateSecret(
     @Param('name') name: string,
-    @Body() body: { newValue?: string } = {}
+    @Body() body: { newValue?: string } = {},
   ): Promise<{ secretId: string; message: string }> {
     const secretId = await this.secretsManagement.rotateSecret(name, body.newValue);
     return {
@@ -446,20 +440,20 @@ export class EnvironmentSecurityController {
     description: 'Secret access logs retrieved successfully',
     type: [Object],
   })
-  @ApiQuery({ 
-    name: 'secretName', 
-    required: false, 
+  @ApiQuery({
+    name: 'secretName',
+    required: false,
     description: 'Filter logs by secret name',
   })
-  @ApiQuery({ 
-    name: 'limit', 
-    required: false, 
+  @ApiQuery({
+    name: 'limit',
+    required: false,
     description: 'Maximum number of logs to return',
     type: Number,
   })
   async getSecretAccessLogs(
     @Query('secretName') secretName?: string,
-    @Query('limit') limit: number = 100
+    @Query('limit') limit: number = 100,
   ): Promise<SecretAccessLog[]> {
     return this.secretsManagement.getAccessLogs(secretName, limit);
   }
@@ -505,7 +499,9 @@ export class EnvironmentSecurityController {
     name: 'feature',
     description: 'Name of the security feature to check',
   })
-  async checkFeatureStatus(@Param('feature') feature: string): Promise<{ feature: string; enabled: boolean }> {
+  async checkFeatureStatus(
+    @Param('feature') feature: string,
+  ): Promise<{ feature: string; enabled: boolean }> {
     const config = this.environmentSecurity.getSecurityConfig();
     const enabled = config.features[feature as keyof typeof config.features] || false;
     return { feature, enabled };
@@ -548,8 +544,12 @@ export class EnvironmentSecurityController {
         recentActivity: recentLogs,
       },
       features: {
-        enabled: Object.entries(config.features).filter(([, enabled]) => enabled).map(([name]) => name),
-        disabled: Object.entries(config.features).filter(([, enabled]) => !enabled).map(([name]) => name),
+        enabled: Object.entries(config.features)
+          .filter(([, enabled]) => enabled)
+          .map(([name]) => name),
+        disabled: Object.entries(config.features)
+          .filter(([, enabled]) => !enabled)
+          .map(([name]) => name),
       },
       services: {
         googleOAuth: config.services.googleOAuth.enabled,
@@ -570,19 +570,25 @@ export class EnvironmentSecurityController {
    * Group violations by type
    */
   private groupViolationsByType(violations: SecurityViolation[]): Record<string, number> {
-    return violations.reduce((acc, violation) => {
-      acc[violation.type] = (acc[violation.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    return violations.reduce(
+      (acc, violation) => {
+        acc[violation.type] = (acc[violation.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
   }
 
   /**
    * Group violations by severity
    */
   private groupViolationsBySeverity(violations: SecurityViolation[]): Record<string, number> {
-    return violations.reduce((acc, violation) => {
-      acc[violation.severity] = (acc[violation.severity] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    return violations.reduce(
+      (acc, violation) => {
+        acc[violation.severity] = (acc[violation.severity] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
   }
 }

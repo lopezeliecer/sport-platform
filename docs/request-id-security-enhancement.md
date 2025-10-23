@@ -28,7 +28,7 @@
 
 ```typescript
 // Added crypto import
-import { randomUUID } from "crypto";
+import { randomUUID } from 'crypto';
 ```
 
 ### 2. **Method Replacement**

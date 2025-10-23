@@ -84,11 +84,11 @@ Based on the project requirements for a sports management platform with ~100 MVP
 
 ```typescript
 // Initial REST APIs with auto-documentation
-@ApiTags("training")
-@Controller("training")
+@ApiTags('training')
+@Controller('training')
 export class TrainingController {
-  @Post("sessions")
-  @ApiOperation({ summary: "Create training session" })
+  @Post('sessions')
+  @ApiOperation({ summary: 'Create training session' })
   @ApiResponse({ status: 201, type: TrainingSessionDto })
   async createSession(@Body() createSessionDto: CreateTrainingSessionDto) {
     // Implementation
@@ -287,7 +287,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
       - name: Install dependencies
         run: npm ci
       - name: Run tests
@@ -335,14 +335,14 @@ jobs:
   cors: { origin: process.env.FRONTEND_URL },
 })
 export class TrainingGateway {
-  @SubscribeMessage("joinClub")
+  @SubscribeMessage('joinClub')
   handleJoinClub(client: Socket, clubId: string) {
     client.join(`club_${clubId}`);
   }
 
-  @SubscribeMessage("sessionUpdated")
+  @SubscribeMessage('sessionUpdated')
   handleSessionUpdate(session: TrainingSession) {
-    this.server.to(`club_${session.clubId}`).emit("sessionUpdated", session);
+    this.server.to(`club_${session.clubId}`).emit('sessionUpdated', session);
   }
 }
 ```
@@ -390,14 +390,12 @@ export class CalendarService {
 // Lazy loading for large modules
 const routes: Routes = [
   {
-    path: "training",
-    loadChildren: () =>
-      import("./training/training.module").then((m) => m.TrainingModule),
+    path: 'training',
+    loadChildren: () => import('./training/training.module').then((m) => m.TrainingModule),
   },
   {
-    path: "athletes",
-    loadChildren: () =>
-      import("./athletes/athletes.module").then((m) => m.AthletesModule),
+    path: 'athletes',
+    loadChildren: () => import('./athletes/athletes.module').then((m) => m.AthletesModule),
   },
 ];
 ```

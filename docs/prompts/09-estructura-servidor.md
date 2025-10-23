@@ -279,20 +279,13 @@ export class ProxyService {
   private readonly httpService = new HttpService();
 
   private readonly serviceMap = {
-    identity: process.env.IDENTITY_SERVICE_URL || "http://localhost:3001",
-    sports: process.env.SPORTS_SERVICE_URL || "http://localhost:3002",
-    clubs: process.env.CLUB_SERVICE_URL || "http://localhost:3003",
-    communication:
-      process.env.COMMUNICATION_SERVICE_URL || "http://localhost:3004",
+    identity: process.env.IDENTITY_SERVICE_URL || 'http://localhost:3001',
+    sports: process.env.SPORTS_SERVICE_URL || 'http://localhost:3002',
+    clubs: process.env.CLUB_SERVICE_URL || 'http://localhost:3003',
+    communication: process.env.COMMUNICATION_SERVICE_URL || 'http://localhost:3004',
   };
 
-  async proxyRequest(
-    serviceName: string,
-    path: string,
-    method: string,
-    data?: any,
-    headers?: any
-  ) {
+  async proxyRequest(serviceName: string, path: string, method: string, data?: any, headers?: any) {
     const serviceUrl = this.serviceMap[serviceName];
     if (!serviceUrl) {
       throw new BadRequestException(`Service ${serviceName} not found`);
@@ -305,7 +298,7 @@ export class ProxyService {
         data,
         headers: {
           ...headers,
-          "X-Forwarded-For": "api-gateway",
+          'X-Forwarded-For': 'api-gateway',
         },
       });
 
@@ -321,7 +314,7 @@ export class ProxyService {
 
 ```yaml
 # docker-compose.yml
-version: "3.8"
+version: '3.8'
 
 services:
   postgres:
@@ -331,14 +324,14 @@ services:
       POSTGRES_USER: dev_user
       POSTGRES_PASSWORD: dev_password
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   api-gateway:
     build: ./apps/api-gateway
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://dev_user:dev_password@postgres:5432/sports_platform
@@ -351,7 +344,7 @@ services:
   identity-service:
     build: ./apps/identity-service
     ports:
-      - "3001:3001"
+      - '3001:3001'
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://dev_user:dev_password@postgres:5432/sports_platform
@@ -364,7 +357,7 @@ services:
   sports-service:
     build: ./apps/sports-service
     ports:
-      - "3002:3002"
+      - '3002:3002'
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://dev_user:dev_password@postgres:5432/sports_platform

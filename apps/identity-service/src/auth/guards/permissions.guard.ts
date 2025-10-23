@@ -1,12 +1,7 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-} from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
-import { Permission, PermissionChecker } from "../../permissions/permissions";
-import { JwtAuthGuard } from "./jwt-auth.guard";
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { Permission, PermissionChecker } from '../../permissions/permissions';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 export interface RequiredPermission {
   permission: Permission;
@@ -17,7 +12,7 @@ export interface RequiredPermission {
 export class PermissionsGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private jwtAuthGuard: JwtAuthGuard
+    private jwtAuthGuard: JwtAuthGuard,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -27,9 +22,10 @@ export class PermissionsGuard implements CanActivate {
       return false;
     }
 
-    const requiredPermissions = this.reflector.getAllAndOverride<
-      RequiredPermission[]
-    >("permissions", [context.getHandler(), context.getClass()]);
+    const requiredPermissions = this.reflector.getAllAndOverride<RequiredPermission[]>(
+      'permissions',
+      [context.getHandler(), context.getClass()],
+    );
 
     if (!requiredPermissions || requiredPermissions.length === 0) {
       return true;
@@ -37,10 +33,10 @@ export class PermissionsGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    const clubId = request.headers["x-club-id"] || user.currentClubId;
+    const clubId = request.headers['x-club-id'] || user.currentClubId;
 
     if (!clubId) {
-      throw new ForbiddenException("Club context is required");
+      throw new ForbiddenException('Club context is required');
     }
 
     // Check each required permission
@@ -49,10 +45,7 @@ export class PermissionsGuard implements CanActivate {
 
       // Extract resource owner ID if specified
       if (reqPerm.resourceOwnerIdField) {
-        resourceOwnerId = this.extractResourceOwnerId(
-          request,
-          reqPerm.resourceOwnerIdField
-        );
+        resourceOwnerId = this.extractResourceOwnerId(request, reqPerm.resourceOwnerIdField);
       }
 
       const hasPermission = PermissionChecker.hasPermission(
@@ -60,13 +53,11 @@ export class PermissionsGuard implements CanActivate {
         reqPerm.permission,
         clubId,
         resourceOwnerId,
-        user.userId
+        user.userId,
       );
 
       if (!hasPermission) {
-        throw new ForbiddenException(
-          `Access denied. Missing permission: ${reqPerm.permission}`
-        );
+        throw new ForbiddenException(`Access denied. Missing permission: ${reqPerm.permission}`);
       }
     }
 
@@ -76,22 +67,19 @@ export class PermissionsGuard implements CanActivate {
     return true;
   }
 
-  private extractResourceOwnerId(
-    request: any,
-    fieldName: string
-  ): string | undefined {
+  private extractResourceOwnerId(request: any, fieldName: string): string | undefined {
     // Try to get from URL params first
-    if (request.params && request.params[fieldName]) {
+    if (request.params?.[fieldName]) {
       return request.params[fieldName];
     }
 
     // Try to get from request body
-    if (request.body && request.body[fieldName]) {
+    if (request.body?.[fieldName]) {
       return request.body[fieldName];
     }
 
     // Try to get from query params
-    if (request.query && request.query[fieldName]) {
+    if (request.query?.[fieldName]) {
       return request.query[fieldName];
     }
 

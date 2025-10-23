@@ -1,6 +1,6 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { JwtPayload } from "../types/auth.types";
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtPayload } from '../types/auth.types';
 
 @Injectable()
 export class AuthValidationService {
@@ -9,8 +9,8 @@ export class AuthValidationService {
 
   constructor(private configService: ConfigService) {
     this.identityServiceUrl = this.configService.get<string>(
-      "IDENTITY_SERVICE_URL",
-      "http://localhost:3001"
+      'IDENTITY_SERVICE_URL',
+      'http://localhost:3001',
     );
   }
 
@@ -30,11 +30,8 @@ export class AuthValidationService {
     userId: string,
     action: string,
     resource: string,
-    metadata?: any
+    metadata?: any,
   ): Promise<void> {
-    this.logger.log(
-      `Usuario ${userId} realizó acción ${action} en ${resource}`,
-      metadata
-    );
+    this.logger.log(`Usuario ${userId} realizó acción ${action} en ${resource}`, metadata);
   }
 }

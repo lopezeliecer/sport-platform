@@ -1,4 +1,4 @@
-import { ThrottlerModuleOptions } from "@nestjs/throttler";
+import { ThrottlerModuleOptions } from '@nestjs/throttler';
 
 // Simplified: Just use default throttling, decorators will override
 export function createThrottlerOptions(): ThrottlerModuleOptions {
