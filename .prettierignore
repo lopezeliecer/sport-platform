@@ -1,0 +1,33 @@
+# Prettier ignore file
+node_modules/
+dist/
+coverage/
+build/
+.next/
+*.log
+*.lock
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build artifacts
+**/*.d.ts
+**/tsconfig.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Generated files
+prisma/client
