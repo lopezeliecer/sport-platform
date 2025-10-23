@@ -1,11 +1,13 @@
 # Prompt #14: Angular Main Pages Implementation
 
 ## Contexto del Sistema
+
 Eres un experto desarrollador Angular especializado en aplicaciones empresariales complejas. Debes implementar las páginas principales de la plataforma deportiva, empezando por la TrainingCalendarPage como componente central del sistema.
 
 ## Páginas Principales Requeridas
 
 ### 1. TrainingCalendarPage (PRIORITARIO)
+
 **Ruta**: `/training/calendar`
 **Propósito**: Página central del sistema para gestión visual completa de entrenamientos
 
@@ -18,17 +20,19 @@ Eres un experto desarrollador Angular especializado en aplicaciones empresariale
       <div class="page-header">
         <p-breadcrumb [model]="breadcrumbItems" [home]="homeItem"></p-breadcrumb>
         <div class="header-actions">
-          <p-button 
-            label="Exportar Calendario" 
+          <p-button
+            label="Exportar Calendario"
             icon="pi pi-download"
             styleClass="p-button-outlined"
-            (onClick)="exportCalendar()">
+            (onClick)="exportCalendar()"
+          >
           </p-button>
-          <p-button 
-            label="Configurar Vista" 
+          <p-button
+            label="Configurar Vista"
             icon="pi pi-cog"
             styleClass="p-button-outlined"
-            (onClick)="openViewSettings()">
+            (onClick)="openViewSettings()"
+          >
           </p-button>
         </div>
       </div>
@@ -38,59 +42,64 @@ Eres un experto desarrollador Angular especializado en aplicaciones empresariale
         <div class="filters-section">
           <div class="filter-group">
             <label>Club:</label>
-            <p-dropdown 
+            <p-dropdown
               [options]="clubs$ | async"
               [(ngModel)]="selectedClub"
               optionLabel="name"
               optionValue="id"
               placeholder="Seleccionar club"
-              (onChange)="onClubChange($event)">
+              (onChange)="onClubChange($event)"
+            >
             </p-dropdown>
           </div>
 
           <div class="filter-group">
             <label>Categorías:</label>
-            <p-multiSelect 
+            <p-multiSelect
               [options]="categories$ | async"
               [(ngModel)]="selectedCategories"
               optionLabel="name"
               optionValue="id"
               placeholder="Todas las categorías"
               [filter]="true"
-              (onChange)="onCategoriesChange($event)">
+              (onChange)="onCategoriesChange($event)"
+            >
             </p-multiSelect>
           </div>
 
           <div class="filter-group">
             <label>Entrenadores:</label>
-            <p-multiSelect 
+            <p-multiSelect
               [options]="coaches$ | async"
               [(ngModel)]="selectedCoaches"
               optionLabel="fullName"
               optionValue="id"
               placeholder="Todos los entrenadores"
               [filter]="true"
-              (onChange)="onCoachesChange($event)">
+              (onChange)="onCoachesChange($event)"
+            >
             </p-multiSelect>
           </div>
 
           <div class="filter-group">
-            <p-button 
-              label="Limpiar Filtros" 
+            <p-button
+              label="Limpiar Filtros"
               icon="pi pi-filter-slash"
               styleClass="p-button-text"
-              (onClick)="clearFilters()">
+              (onClick)="clearFilters()"
+            >
             </p-button>
           </div>
         </div>
 
         <div class="view-controls">
-          <p-selectButton 
+          <p-selectButton
             [options]="viewOptions"
             [(ngModel)]="currentView"
             optionLabel="label"
             optionValue="value"
-            (onChange)="onViewChange($event)">
+            (onChange)="onViewChange($event)"
+          >
           </p-selectButton>
         </div>
       </div>
@@ -105,7 +114,8 @@ Eres un experto desarrollador Angular especializado en aplicaciones empresariale
           (eventClick)="onEventClick($event)"
           (dateClick)="onDateClick($event)"
           (eventDrop)="onEventDrop($event)"
-          (eventResize)="onEventResize($event)">
+          (eventResize)="onEventResize($event)"
+        >
         </app-training-calendar>
       </div>
 
@@ -116,78 +126,69 @@ Eres un experto desarrollador Angular especializado en aplicaciones empresariale
         [availableAthletes]="availableAthletes$ | async"
         [saving]="savingTraining$ | async"
         (trainingSubmit)="onTrainingCreate($event)"
-        (trainingUpdate)="onTrainingUpdate($event)">
+        (trainingUpdate)="onTrainingUpdate($event)"
+      >
       </app-training-form>
 
-      <p-dialog 
+      <p-dialog
         [(visible)]="showViewSettings"
         header="Configurar Vista del Calendario"
         [modal]="true"
         [closable]="true"
-        [style]="{width: '30vw'}">
-        
+        [style]="{ width: '30vw' }"
+      >
         <div class="view-settings">
           <div class="setting-group">
             <label>Horario de trabajo:</label>
             <div class="time-range">
-              <p-calendar 
-                [(ngModel)]="workingHours.start"
-                [timeOnly]="true"
-                hourFormat="24">
+              <p-calendar [(ngModel)]="workingHours.start" [timeOnly]="true" hourFormat="24">
               </p-calendar>
               <span>hasta</span>
-              <p-calendar 
-                [(ngModel)]="workingHours.end"
-                [timeOnly]="true"
-                hourFormat="24">
+              <p-calendar [(ngModel)]="workingHours.end" [timeOnly]="true" hourFormat="24">
               </p-calendar>
             </div>
           </div>
 
           <div class="setting-group">
             <label>Duración de slots:</label>
-            <p-dropdown 
+            <p-dropdown
               [(ngModel)]="slotDuration"
               [options]="slotDurationOptions"
               optionLabel="label"
-              optionValue="value">
+              optionValue="value"
+            >
             </p-dropdown>
           </div>
 
           <div class="setting-group">
-            <p-checkbox 
-              [(ngModel)]="showWeekends"
-              binary="true"
-              label="Mostrar fines de semana">
+            <p-checkbox [(ngModel)]="showWeekends" binary="true" label="Mostrar fines de semana">
             </p-checkbox>
           </div>
 
           <div class="setting-group">
-            <p-checkbox 
+            <p-checkbox
               [(ngModel)]="showConflicts"
               binary="true"
-              label="Resaltar conflictos de horario">
+              label="Resaltar conflictos de horario"
+            >
             </p-checkbox>
           </div>
         </div>
 
         <ng-template pTemplate="footer">
-          <p-button 
-            label="Cancelar" 
+          <p-button
+            label="Cancelar"
             icon="pi pi-times"
             styleClass="p-button-text"
-            (onClick)="showViewSettings = false">
+            (onClick)="showViewSettings = false"
+          >
           </p-button>
-          <p-button 
-            label="Aplicar" 
-            icon="pi pi-check"
-            (onClick)="applyViewSettings()">
-          </p-button>
+          <p-button label="Aplicar" icon="pi pi-check" (onClick)="applyViewSettings()"> </p-button>
         </ng-template>
       </p-dialog>
     </div>
   `,
-  styleUrls: ['./training-calendar-page.component.scss']
+  styleUrls: ['./training-calendar-page.component.scss'],
 })
 export class TrainingCalendarPageComponent implements OnInit, OnDestroy {
   // NgRx Selectors
@@ -210,16 +211,13 @@ export class TrainingCalendarPageComponent implements OnInit, OnDestroy {
   currentView = 'timeGridWeek';
 
   // UI Configuration
-  breadcrumbItems = [
-    { label: 'Entrenamientos' },
-    { label: 'Calendario' }
-  ];
+  breadcrumbItems = [{ label: 'Entrenamientos' }, { label: 'Calendario' }];
   homeItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
 
   viewOptions = [
     { label: 'Día', value: 'timeGridDay' },
     { label: 'Semana', value: 'timeGridWeek' },
-    { label: 'Mes', value: 'dayGridMonth' }
+    { label: 'Mes', value: 'dayGridMonth' },
   ];
 
   workingHours = { start: '06:00', end: '22:00' };
@@ -230,13 +228,13 @@ export class TrainingCalendarPageComponent implements OnInit, OnDestroy {
   slotDurationOptions = [
     { label: '15 minutos', value: '00:15:00' },
     { label: '30 minutos', value: '00:30:00' },
-    { label: '1 hora', value: '01:00:00' }
+    { label: '1 hora', value: '01:00:00' },
   ];
 
   constructor(
     private store: Store<AppState>,
     private router: Router,
-    private messageService: MessageService
+    private messageService: MessageService,
   ) {}
 
   ngOnInit() {
@@ -259,28 +257,33 @@ export class TrainingCalendarPageComponent implements OnInit, OnDestroy {
     this.selectedTraining = null;
     this.showTrainingForm = true;
     // Pre-fill form with selected date/time
-    this.store.dispatch(TrainingActions.setSelectedDateTime({
-      date: event.date,
-      startTime: event.date,
-      endTime: new Date(event.date.getTime() + 60 * 60 * 1000) // +1 hour
-    }));
+    this.store.dispatch(
+      TrainingActions.setSelectedDateTime({
+        date: event.date,
+        startTime: event.date,
+        endTime: new Date(event.date.getTime() + 60 * 60 * 1000), // +1 hour
+      }),
+    );
   }
 
   onEventDrop(event: any) {
     const updatedTraining = {
       ...event.event.extendedProps.training,
       startTime: event.event.start,
-      endTime: event.event.end
+      endTime: event.event.end,
     };
-    this.store.dispatch(TrainingActions.updateTraining({ 
-      id: updatedTraining.id, 
-      training: updatedTraining 
-    }));
+    this.store.dispatch(
+      TrainingActions.updateTraining({
+        id: updatedTraining.id,
+        training: updatedTraining,
+      }),
+    );
   }
 }
 ```
 
 ### 2. DashboardPage
+
 **Ruta**: `/dashboard`
 **Propósito**: Dashboard principal con métricas y acceso rápido
 
@@ -292,12 +295,13 @@ export class TrainingCalendarPageComponent implements OnInit, OnDestroy {
       <div class="page-header">
         <h1>Dashboard</h1>
         <div class="header-actions">
-          <p-dropdown 
+          <p-dropdown
             [options]="clubs$ | async"
             [(ngModel)]="selectedClub"
             optionLabel="name"
             optionValue="id"
-            placeholder="Seleccionar club">
+            placeholder="Seleccionar club"
+          >
           </p-dropdown>
         </div>
       </div>
@@ -355,20 +359,24 @@ export class TrainingCalendarPageComponent implements OnInit, OnDestroy {
         <div class="dashboard-card">
           <div class="card-header">
             <h3>Entrenamientos Recientes</h3>
-            <p-button 
-              label="Ver Todos" 
-              styleClass="p-button-text"
-              routerLink="/training/calendar">
+            <p-button label="Ver Todos" styleClass="p-button-text" routerLink="/training/calendar">
             </p-button>
           </div>
           <div class="card-content">
-            <div 
-              class="training-item" 
-              *ngFor="let training of recentTrainings$ | async; trackBy: trackByTraining">
+            <div
+              class="training-item"
+              *ngFor="let training of recentTrainings$ | async; trackBy: trackByTraining"
+            >
               <div class="training-info">
                 <h4>{{ training.title }}</h4>
-                <p>{{ training.date | date:'shortDate' }} • {{ training.startTime | date:'shortTime' }}</p>
-                <p-tag [value]="training.type" [severity]="getTrainingTypeSeverity(training.type)"></p-tag>
+                <p>
+                  {{ training.date | date: 'shortDate' }} •
+                  {{ training.startTime | date: 'shortTime' }}
+                </p>
+                <p-tag
+                  [value]="training.type"
+                  [severity]="getTrainingTypeSeverity(training.type)"
+                ></p-tag>
               </div>
               <div class="training-metrics">
                 <span>{{ training.participants?.length || 0 }} atletas</span>
@@ -384,29 +392,33 @@ export class TrainingCalendarPageComponent implements OnInit, OnDestroy {
           </div>
           <div class="card-content">
             <div class="quick-actions">
-              <p-button 
+              <p-button
                 label="Nuevo Entrenamiento"
                 icon="pi pi-plus"
                 styleClass="p-button-outlined"
-                (onClick)="createTraining()">
+                (onClick)="createTraining()"
+              >
               </p-button>
-              <p-button 
+              <p-button
                 label="Registrar Atleta"
                 icon="pi pi-user-plus"
                 styleClass="p-button-outlined"
-                (onClick)="registerAthlete()">
+                (onClick)="registerAthlete()"
+              >
               </p-button>
-              <p-button 
+              <p-button
                 label="Nueva Competencia"
                 icon="pi pi-trophy"
                 styleClass="p-button-outlined"
-                (onClick)="createCompetition()">
+                (onClick)="createCompetition()"
+              >
               </p-button>
-              <p-button 
+              <p-button
                 label="Ver Reportes"
                 icon="pi pi-chart-bar"
                 styleClass="p-button-outlined"
-                routerLink="/reports">
+                routerLink="/reports"
+              >
               </p-button>
             </div>
           </div>
@@ -416,10 +428,11 @@ export class TrainingCalendarPageComponent implements OnInit, OnDestroy {
         <div class="dashboard-card wide">
           <div class="card-header">
             <h3>Calendario Semanal</h3>
-            <p-button 
-              label="Ver Completo" 
+            <p-button
+              label="Ver Completo"
               styleClass="p-button-text"
-              routerLink="/training/calendar">
+              routerLink="/training/calendar"
+            >
             </p-button>
           </div>
           <div class="card-content">
@@ -428,7 +441,8 @@ export class TrainingCalendarPageComponent implements OnInit, OnDestroy {
               [height]="300"
               [events]="weeklyEvents$ | async"
               [headerToolbar]="false"
-              [readonly]="true">
+              [readonly]="true"
+            >
             </app-training-calendar>
           </div>
         </div>
@@ -439,12 +453,13 @@ export class TrainingCalendarPageComponent implements OnInit, OnDestroy {
             <h3>Próximos Eventos</h3>
           </div>
           <div class="card-content">
-            <div 
-              class="event-item" 
-              *ngFor="let event of upcomingEvents$ | async; trackBy: trackByEvent">
+            <div
+              class="event-item"
+              *ngFor="let event of upcomingEvents$ | async; trackBy: trackByEvent"
+            >
               <div class="event-date">
-                <span class="day">{{ event.date | date:'dd' }}</span>
-                <span class="month">{{ event.date | date:'MMM' }}</span>
+                <span class="day">{{ event.date | date: 'dd' }}</span>
+                <span class="month">{{ event.date | date: 'MMM' }}</span>
               </div>
               <div class="event-info">
                 <h4>{{ event.title }}</h4>
@@ -457,7 +472,7 @@ export class TrainingCalendarPageComponent implements OnInit, OnDestroy {
       </div>
     </div>
   `,
-  styleUrls: ['./dashboard-page.component.scss']
+  styleUrls: ['./dashboard-page.component.scss'],
 })
 export class DashboardPageComponent implements OnInit {
   // NgRx Selectors
@@ -475,7 +490,7 @@ export class DashboardPageComponent implements OnInit {
   constructor(
     private store: Store<AppState>,
     private router: Router,
-    private dialogService: DialogService
+    private dialogService: DialogService,
   ) {}
 
   ngOnInit() {
@@ -487,20 +502,20 @@ export class DashboardPageComponent implements OnInit {
   }
 
   createTraining() {
-    this.router.navigate(['/training/calendar'], { 
-      queryParams: { action: 'create' } 
+    this.router.navigate(['/training/calendar'], {
+      queryParams: { action: 'create' },
     });
   }
 
   registerAthlete() {
-    this.router.navigate(['/athletes'], { 
-      queryParams: { action: 'create' } 
+    this.router.navigate(['/athletes'], {
+      queryParams: { action: 'create' },
     });
   }
 
   createCompetition() {
-    this.router.navigate(['/competitions'], { 
-      queryParams: { action: 'create' } 
+    this.router.navigate(['/competitions'], {
+      queryParams: { action: 'create' },
     });
   }
 
@@ -515,6 +530,7 @@ export class DashboardPageComponent implements OnInit {
 ```
 
 ### 3. AthletesListPage
+
 **Ruta**: `/athletes`
 **Propósito**: Listado y gestión de atletas
 
@@ -526,17 +542,14 @@ export class DashboardPageComponent implements OnInit {
       <div class="page-header">
         <h1>Atletas</h1>
         <div class="header-actions">
-          <p-button 
-            label="Exportar Lista" 
+          <p-button
+            label="Exportar Lista"
             icon="pi pi-download"
             styleClass="p-button-outlined"
-            (onClick)="exportAthletes()">
+            (onClick)="exportAthletes()"
+          >
           </p-button>
-          <p-button 
-            label="Nuevo Atleta" 
-            icon="pi pi-plus"
-            (onClick)="createAthlete()">
-          </p-button>
+          <p-button label="Nuevo Atleta" icon="pi pi-plus" (onClick)="createAthlete()"> </p-button>
         </div>
       </div>
 
@@ -545,41 +558,45 @@ export class DashboardPageComponent implements OnInit {
         <div class="search-section">
           <span class="p-input-icon-left">
             <i class="pi pi-search"></i>
-            <input 
-              type="text" 
-              pInputText 
+            <input
+              type="text"
+              pInputText
               placeholder="Buscar atletas..."
               [(ngModel)]="searchTerm"
-              (input)="onSearch($event)">
+              (input)="onSearch($event)"
+            />
           </span>
         </div>
 
         <div class="filters-section">
-          <p-dropdown 
+          <p-dropdown
             [options]="categories$ | async"
             [(ngModel)]="selectedCategory"
             optionLabel="name"
             optionValue="id"
             placeholder="Todas las categorías"
             [showClear]="true"
-            (onChange)="onCategoryFilter($event)">
+            (onChange)="onCategoryFilter($event)"
+          >
           </p-dropdown>
 
-          <p-dropdown 
+          <p-dropdown
             [options]="statusOptions"
             [(ngModel)]="selectedStatus"
             optionLabel="label"
             optionValue="value"
             placeholder="Todos los estados"
             [showClear]="true"
-            (onChange)="onStatusFilter($event)">
+            (onChange)="onStatusFilter($event)"
+          >
           </p-dropdown>
 
-          <p-selectButton 
+          <p-selectButton
             [options]="viewModeOptions"
             [(ngModel)]="viewMode"
             optionLabel="icon"
-            optionValue="value">
+            optionValue="value"
+          >
           </p-selectButton>
         </div>
       </div>
@@ -595,13 +612,14 @@ export class DashboardPageComponent implements OnInit {
             [showMetrics]="true"
             (profileClick)="viewProfile($event)"
             (progressClick)="viewProgress($event)"
-            (scheduleClick)="viewSchedule($event)">
+            (scheduleClick)="viewSchedule($event)"
+          >
           </app-athlete-card>
         </div>
 
         <!-- Table View -->
         <div *ngSwitchCase="'table'" class="athletes-table">
-          <p-table 
+          <p-table
             [value]="filteredAthletes$ | async"
             [loading]="loading$ | async"
             [paginator]="true"
@@ -614,8 +632,8 @@ export class DashboardPageComponent implements OnInit {
             dataKey="id"
             [resizableColumns]="true"
             [columnResizeMode]="'fit'"
-            styleClass="p-datatable-sm">
-            
+            styleClass="p-datatable-sm"
+          >
             <ng-template pTemplate="header">
               <tr>
                 <th pSortableColumn="lastName">
@@ -624,12 +642,8 @@ export class DashboardPageComponent implements OnInit {
                 <th pSortableColumn="category">
                   Categoría <p-sortIcon field="category"></p-sortIcon>
                 </th>
-                <th pSortableColumn="age">
-                  Edad <p-sortIcon field="age"></p-sortIcon>
-                </th>
-                <th pSortableColumn="status">
-                  Estado <p-sortIcon field="status"></p-sortIcon>
-                </th>
+                <th pSortableColumn="age">Edad <p-sortIcon field="age"></p-sortIcon></th>
+                <th pSortableColumn="status">Estado <p-sortIcon field="status"></p-sortIcon></th>
                 <th>Personal Best</th>
                 <th>Entrenamientos/Semana</th>
                 <th>Acciones</th>
@@ -640,10 +654,11 @@ export class DashboardPageComponent implements OnInit {
               <tr>
                 <td>
                   <div class="athlete-name">
-                    <p-avatar 
+                    <p-avatar
                       [image]="athlete.photoUrl"
                       [label]="getInitials(athlete.firstName, athlete.lastName)"
-                      size="normal">
+                      size="normal"
+                    >
                     </p-avatar>
                     <span>{{ athlete.firstName }} {{ athlete.lastName }}</span>
                   </div>
@@ -653,32 +668,33 @@ export class DashboardPageComponent implements OnInit {
                 </td>
                 <td>{{ athlete.age }} años</td>
                 <td>
-                  <p-tag 
-                    [value]="athlete.status" 
-                    [severity]="getStatusSeverity(athlete.status)">
+                  <p-tag [value]="athlete.status" [severity]="getStatusSeverity(athlete.status)">
                   </p-tag>
                 </td>
                 <td>{{ athlete.personalBest || 'N/A' }}</td>
                 <td>{{ athlete.weeklyTrainings || 0 }}</td>
                 <td>
                   <div class="table-actions">
-                    <p-button 
+                    <p-button
                       icon="pi pi-eye"
                       styleClass="p-button-text p-button-sm"
                       (onClick)="viewProfile(athlete)"
-                      pTooltip="Ver perfil">
+                      pTooltip="Ver perfil"
+                    >
                     </p-button>
-                    <p-button 
+                    <p-button
                       icon="pi pi-pencil"
                       styleClass="p-button-text p-button-sm"
                       (onClick)="editAthlete(athlete)"
-                      pTooltip="Editar">
+                      pTooltip="Editar"
+                    >
                     </p-button>
-                    <p-button 
+                    <p-button
                       icon="pi pi-chart-line"
                       styleClass="p-button-text p-button-sm"
                       (onClick)="viewProgress(athlete)"
-                      pTooltip="Ver progreso">
+                      pTooltip="Ver progreso"
+                    >
                     </p-button>
                   </div>
                 </td>
@@ -689,7 +705,7 @@ export class DashboardPageComponent implements OnInit {
       </div>
     </div>
   `,
-  styleUrls: ['./athletes-list-page.component.scss']
+  styleUrls: ['./athletes-list-page.component.scss'],
 })
 export class AthletesListPageComponent implements OnInit {
   // NgRx Selectors
@@ -706,17 +722,17 @@ export class AthletesListPageComponent implements OnInit {
   statusOptions = [
     { label: 'Activo', value: 'active' },
     { label: 'Inactivo', value: 'inactive' },
-    { label: 'Lesionado', value: 'injured' }
+    { label: 'Lesionado', value: 'injured' },
   ];
 
   viewModeOptions = [
     { icon: 'pi pi-th-large', value: 'cards' },
-    { icon: 'pi pi-list', value: 'table' }
+    { icon: 'pi pi-list', value: 'table' },
   ];
 
   constructor(
     private store: Store<AppState>,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -724,9 +740,11 @@ export class AthletesListPageComponent implements OnInit {
   }
 
   onSearch(event: any) {
-    this.store.dispatch(AthleteActions.setSearchTerm({ 
-      searchTerm: event.target.value 
-    }));
+    this.store.dispatch(
+      AthleteActions.setSearchTerm({
+        searchTerm: event.target.value,
+      }),
+    );
   }
 
   trackByAthlete(index: number, athlete: Athlete): string {
@@ -774,6 +792,7 @@ frontend/src/app/features/
 ## Estilos SCSS para Páginas
 
 ### training-calendar-page.component.scss
+
 ```scss
 .training-calendar-page {
   .page-header {
@@ -782,7 +801,7 @@ frontend/src/app/features/
     align-items: center;
     padding: 1rem 0;
     border-bottom: 1px solid var(--surface-border);
-    
+
     .header-actions {
       display: flex;
       gap: 0.5rem;
@@ -794,24 +813,24 @@ frontend/src/app/features/
     justify-content: space-between;
     align-items: center;
     padding: 1rem 0;
-    
+
     .filters-section {
       display: flex;
       gap: 1rem;
       align-items: center;
-      
+
       .filter-group {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        
+
         label {
           font-weight: 500;
           white-space: nowrap;
         }
       }
     }
-    
+
     .view-controls {
       :ng-deep .p-selectbutton {
         .p-button {
@@ -824,7 +843,7 @@ frontend/src/app/features/
   .calendar-container {
     background: white;
     border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
   }
 }
@@ -836,7 +855,7 @@ frontend/src/app/features/
       flex-direction: column;
       gap: 1rem;
       align-items: stretch;
-      
+
       .filters-section {
         flex-wrap: wrap;
       }
@@ -851,12 +870,12 @@ frontend/src/app/features/
       gap: 1rem;
       align-items: stretch;
     }
-    
+
     .filters-section {
       .filter-group {
         flex-direction: column;
         align-items: stretch;
-        
+
         label {
           font-size: 0.875rem;
         }
@@ -867,6 +886,7 @@ frontend/src/app/features/
 ```
 
 ### dashboard-page.component.scss
+
 ```scss
 .dashboard-page {
   .stats-grid {
@@ -874,16 +894,16 @@ frontend/src/app/features/
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1rem;
     margin-bottom: 2rem;
-    
+
     .stat-card {
       background: white;
       padding: 1.5rem;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       display: flex;
       align-items: center;
       gap: 1rem;
-      
+
       .stat-icon {
         width: 60px;
         height: 60px;
@@ -895,34 +915,34 @@ frontend/src/app/features/
         color: white;
         font-size: 1.5rem;
       }
-      
+
       .stat-content {
         flex: 1;
-        
+
         h3 {
           margin: 0 0 0.25rem 0;
           font-size: 2rem;
           font-weight: 700;
           color: var(--text-color);
         }
-        
+
         p {
           margin: 0 0 0.25rem 0;
           color: var(--text-color-secondary);
           font-weight: 500;
         }
-        
+
         .stat-change {
           font-size: 0.875rem;
-          
+
           &.positive {
             color: var(--green-500);
           }
-          
+
           &.negative {
             color: var(--red-500);
           }
-          
+
           &.neutral {
             color: var(--text-color-secondary);
           }
@@ -935,31 +955,31 @@ frontend/src/app/features/
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     gap: 1rem;
-    
+
     .dashboard-card {
       background: white;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       overflow: hidden;
       grid-column: span 6;
-      
+
       &.wide {
         grid-column: span 12;
       }
-      
+
       .card-header {
         padding: 1rem;
         border-bottom: 1px solid var(--surface-border);
         display: flex;
         justify-content: space-between;
         align-items: center;
-        
+
         h3 {
           margin: 0;
           font-weight: 600;
         }
       }
-      
+
       .card-content {
         padding: 1rem;
       }
@@ -970,7 +990,7 @@ frontend/src/app/features/
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
-    
+
     :ng-deep .p-button {
       justify-content: flex-start;
     }
@@ -993,7 +1013,7 @@ frontend/src/app/features/
     .stats-grid {
       grid-template-columns: 1fr;
     }
-    
+
     .quick-actions {
       grid-template-columns: 1fr;
     }

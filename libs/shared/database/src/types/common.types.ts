@@ -6,7 +6,7 @@ export interface PaginationOptions {
   page?: number;
   limit?: number;
   sortBy?: string;
-  sortOrder?: "asc" | "desc";
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface PaginatedResponse<T> {
@@ -114,18 +114,7 @@ export interface ValidationResult {
 
 export interface QueryCondition {
   field: string;
-  operator:
-    | "eq"
-    | "ne"
-    | "gt"
-    | "gte"
-    | "lt"
-    | "lte"
-    | "in"
-    | "nin"
-    | "like"
-    | "ilike"
-    | "between";
+  operator: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'nin' | 'like' | 'ilike' | 'between';
   value: any;
 }
 
@@ -133,7 +122,7 @@ export interface QueryOptions {
   where?: QueryCondition[];
   orderBy?: Array<{
     field: string;
-    direction: "asc" | "desc";
+    direction: 'asc' | 'desc';
   }>;
   include?: string[];
   select?: string[];
@@ -163,7 +152,7 @@ export interface AuditEntry {
 }
 
 export interface SystemEvent {
-  type: "INFO" | "WARNING" | "ERROR" | "CRITICAL";
+  type: 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
   category: string;
   message: string;
   data?: Record<string, any>;
@@ -199,7 +188,7 @@ export interface DatabaseStats {
 export interface NotificationTemplate {
   id: string;
   name: string;
-  type: "email" | "sms" | "push" | "in_app";
+  type: 'email' | 'sms' | 'push' | 'in_app';
   subject?: string;
   body: string;
   variables: string[];
@@ -210,11 +199,11 @@ export interface NotificationQueue {
   id: string;
   templateId: string;
   recipientId: string;
-  channel: "email" | "sms" | "push" | "in_app";
-  priority: "low" | "normal" | "high" | "urgent";
+  channel: 'email' | 'sms' | 'push' | 'in_app';
+  priority: 'low' | 'normal' | 'high' | 'urgent';
   scheduledAt?: string;
   sentAt?: string;
-  status: "pending" | "sent" | "failed" | "cancelled";
+  status: 'pending' | 'sent' | 'failed' | 'cancelled';
   retryCount: number;
   data: Record<string, any>;
 }
@@ -252,8 +241,8 @@ export interface FileUploadOptions {
 export interface FileProcessingJob {
   id: string;
   fileId: string;
-  type: "thumbnail" | "compression" | "virus_scan" | "format_conversion";
-  status: "pending" | "processing" | "completed" | "failed";
+  type: 'thumbnail' | 'compression' | 'virus_scan' | 'format_conversion';
+  status: 'pending' | 'processing' | 'completed' | 'failed';
   progress: number; // 0-100
   result?: any;
   error?: string;
@@ -266,7 +255,7 @@ export interface FileProcessingJob {
 // ============================================================================
 
 export interface ImportOptions {
-  format: "csv" | "excel" | "json" | "xml";
+  format: 'csv' | 'excel' | 'json' | 'xml';
   hasHeaders?: boolean;
   mapping?: Record<string, string>; // column name to field name
   validation?: {
@@ -278,7 +267,7 @@ export interface ImportOptions {
 }
 
 export interface ExportOptions {
-  format: "csv" | "excel" | "json" | "pdf";
+  format: 'csv' | 'excel' | 'json' | 'pdf';
   fields?: string[];
   filters?: Record<string, any>;
   template?: string;
@@ -329,7 +318,7 @@ export interface RedisConfig {
 }
 
 export interface StorageConfig {
-  provider: "local" | "s3" | "gcs" | "azure";
+  provider: 'local' | 's3' | 'gcs' | 'azure';
   bucket?: string;
   region?: string;
   accessKey?: string;
@@ -348,8 +337,7 @@ export type DeepPartial<T> = {
 
 export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
-export type OptionalFields<T, K extends keyof T> = Omit<T, K> &
-  Partial<Pick<T, K>>;
+export type OptionalFields<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export type WithTimestamps<T> = T & {
   createdAt: Date;
@@ -412,7 +400,7 @@ export interface BusinessRule {
 export interface WorkflowStep {
   id: string;
   name: string;
-  type: "approval" | "notification" | "automation" | "validation";
+  type: 'approval' | 'notification' | 'automation' | 'validation';
   config: Record<string, any>;
   nextSteps: string[];
   timeout?: number; // seconds

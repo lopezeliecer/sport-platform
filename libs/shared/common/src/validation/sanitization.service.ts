@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
-import * as DOMPurify from "isomorphic-dompurify";
-import * as validator from "validator";
+import { Injectable } from '@nestjs/common';
+import * as DOMPurify from 'isomorphic-dompurify';
+import * as validator from 'validator';
 
 export interface SanitizationOptions {
   allowedTags?: string[];
@@ -21,8 +21,8 @@ export class SanitizationService {
   };
 
   sanitizeString(input: string, options: SanitizationOptions = {}): string {
-    if (!input || typeof input !== "string") {
-      return "";
+    if (!input || typeof input !== 'string') {
+      return '';
     }
 
     const opts = { ...this.defaultOptions, ...options };
@@ -57,28 +57,25 @@ export class SanitizationService {
     return sanitized;
   }
 
-  sanitizeObject<T extends Record<string, any>>(
-    obj: T,
-    options: SanitizationOptions = {}
-  ): T {
-    if (!obj || typeof obj !== "object") {
+  sanitizeObject<T extends Record<string, any>>(obj: T, options: SanitizationOptions = {}): T {
+    if (!obj || typeof obj !== 'object') {
       return obj;
     }
 
     const sanitized = { ...obj } as any;
 
     for (const [key, value] of Object.entries(sanitized)) {
-      if (typeof value === "string") {
+      if (typeof value === 'string') {
         sanitized[key] = this.sanitizeString(value, options);
       } else if (Array.isArray(value)) {
         sanitized[key] = value.map((item) =>
-          typeof item === "string"
+          typeof item === 'string'
             ? this.sanitizeString(item, options)
-            : typeof item === "object" && item !== null
+            : typeof item === 'object' && item !== null
               ? this.sanitizeObject(item, options)
-              : item
+              : item,
         );
-      } else if (typeof value === "object" && value !== null) {
+      } else if (typeof value === 'object' && value !== null) {
         sanitized[key] = this.sanitizeObject(value, options);
       }
     }
@@ -101,7 +98,7 @@ export class SanitizationService {
     return this.sanitizeObject(data, {
       maxLength: 2000,
       stripTags: false,
-      allowedTags: ["b", "i", "em", "strong", "p", "br"], // Basic formatting for descriptions
+      allowedTags: ['b', 'i', 'em', 'strong', 'p', 'br'], // Basic formatting for descriptions
       allowedAttributes: [],
       allowHtml: true,
     });
@@ -122,7 +119,7 @@ export class SanitizationService {
     return this.sanitizeObject(data, {
       maxLength: 1500,
       stripTags: false,
-      allowedTags: ["b", "i", "em", "strong"], // Basic formatting only
+      allowedTags: ['b', 'i', 'em', 'strong'], // Basic formatting only
       allowedAttributes: [],
       allowHtml: true,
     });
@@ -130,23 +127,22 @@ export class SanitizationService {
 
   // Validate and sanitize email
   sanitizeEmail(email: string): string {
-    if (!email || typeof email !== "string") {
-      return "";
+    if (!email || typeof email !== 'string') {
+      return '';
     }
 
-    const sanitized =
-      validator.normalizeEmail(email.trim().toLowerCase()) || "";
-    return validator.isEmail(sanitized) ? sanitized : "";
+    const sanitized = validator.normalizeEmail(email.trim().toLowerCase()) || '';
+    return validator.isEmail(sanitized) ? sanitized : '';
   }
 
   // Validate and sanitize phone number
   sanitizePhoneNumber(phone: string): string {
-    if (!phone || typeof phone !== "string") {
-      return "";
+    if (!phone || typeof phone !== 'string') {
+      return '';
     }
 
     // Remove all non-digit characters except + for international prefix
-    return phone.replace(/[^\d+]/g, "");
+    return phone.replace(/[^\d+]/g, '');
   }
 
   private sanitizeSqlInjection(input: string): string {
@@ -159,7 +155,7 @@ export class SanitizationService {
 
     let sanitized = input;
     sqlPatterns.forEach((pattern) => {
-      sanitized = sanitized.replace(pattern, "");
+      sanitized = sanitized.replace(pattern, '');
     });
 
     return sanitized;
@@ -178,7 +174,7 @@ export class SanitizationService {
 
     let sanitized = input;
     scriptPatterns.forEach((pattern) => {
-      sanitized = sanitized.replace(pattern, "");
+      sanitized = sanitized.replace(pattern, '');
     });
 
     return sanitized;

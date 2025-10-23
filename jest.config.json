@@ -1,14 +1,8 @@
 {
   "preset": "ts-jest",
   "testEnvironment": "node",
-  "roots": [
-    "<rootDir>/apps",
-    "<rootDir>/libs"
-  ],
-  "testMatch": [
-    "**/__tests__/**/*.ts",
-    "**/?(*.)+(spec|test).ts"
-  ],
+  "roots": ["<rootDir>/apps", "<rootDir>/libs"],
+  "testMatch": ["**/__tests__/**/*.ts", "**/?(*.)+(spec|test).ts"],
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
@@ -26,14 +20,8 @@
     "!**/dist/**"
   ],
   "coverageDirectory": "coverage",
-  "coverageReporters": [
-    "text",
-    "lcov",
-    "html"
-  ],
-  "setupFilesAfterEnv": [
-    "<rootDir>/jest.setup.js"
-  ],
+  "coverageReporters": ["text", "lcov", "html"],
+  "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
   "moduleNameMapping": {
     "^@sports-platform/shared/auth$": "<rootDir>/libs/shared/auth/src",
     "^@sports-platform/shared/database$": "<rootDir>/libs/shared/database/src",

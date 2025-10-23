@@ -5,61 +5,55 @@ import {
   ForbiddenException,
   UnauthorizedException,
   Logger,
-} from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import {
   PERMISSION_KEY,
   ROLES_KEY,
   CLUB_CONTEXT_KEY,
   PUBLIC_KEY,
-} from "../decorators/permissions.decorator";
-import {
-  JwtPayload,
-  Module,
-  Action,
-  Scope,
-  UserRole,
-} from "../types/auth.types";
+} from '../decorators/permissions.decorator';
+import { JwtPayload, Module, Action, Scope, UserRole } from '../types/auth.types';
 
 // Función simple de verificación de permisos
 function hasPermission(
   userRole: string,
   module: Module,
   action: Action,
-  scope: Scope = "club"
+  scope: Scope = 'club',
 ): boolean {
   // Implementación básica de permisos
   const ROLE_PERMISSIONS: Record<string, any> = {
-    CLUB_ADMIN: { "*": ["*"] }, // Admin tiene todos los permisos
+    CLUB_ADMIN: { '*': ['*'] }, // Admin tiene todos los permisos
     COACH: {
-      athletes: ["read", "update", "assign"],
-      training: ["*"],
-      performance: ["*"],
-      communications: ["create", "read"],
+      athletes: ['read', 'update', 'assign'],
+      training: ['*'],
+      performance: ['*'],
+      communications: ['create', 'read'],
     },
     ATHLETE: {
-      training: ["read"],
-      performance: ["read", "create", "update"],
-      competitions: ["read"],
+      training: ['read'],
+      performance: ['read', 'create', 'update'],
+      competitions: ['read'],
     },
     MEDICAL_STAFF: {
-      athletes: ["read", "update"],
-      medical: ["*"],
-      performance: ["read", "view_analytics"],
-      training: ["read"],
+      athletes: ['read', 'update'],
+      medical: ['*'],
+      performance: ['read', 'view_analytics'],
+      training: ['read'],
     },
     PARENT: {
-      athletes: ["read"],
-      training: ["read"],
-      performance: ["read"],
-      competitions: ["read"],
-      payments: ["read", "manage"],
+      athletes: ['read'],
+      training: ['read'],
+      performance: ['read'],
+      competitions: ['read'],
+      payments: ['read', 'manage'],
     },
     CLUB_DIRECTOR: {
-      reports: ["*"],
-      performance: ["read", "view_analytics", "export"],
-      athletes: ["read"],
-      payments: ["read", "view_analytics"],
+      reports: ['*'],
+      performance: ['read', 'view_analytics', 'export'],
+      athletes: ['read'],
+      payments: ['read', 'view_analytics'],
     },
   };
 
@@ -67,14 +61,14 @@ function hasPermission(
   if (!rolePerms) return false;
 
   // Verificar permisos de admin
-  if (rolePerms["*"] && rolePerms["*"].includes("*")) return true;
+  if (rolePerms['*'] && rolePerms['*'].includes('*')) return true;
 
   // Verificar permisos específicos del módulo
   const modulePerms = rolePerms[module];
   if (!modulePerms) return false;
 
   // Verificar si tiene todos los permisos del módulo
-  if (modulePerms.includes("*")) return true;
+  if (modulePerms.includes('*')) return true;
 
   // Verificar acción específica
   return modulePerms.includes(action);
@@ -90,10 +84,7 @@ export class RbacGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
 
     // Verificar si el endpoint es público
-    const isPublic = this.reflector.get<boolean>(
-      PUBLIC_KEY,
-      context.getHandler()
-    );
+    const isPublic = this.reflector.get<boolean>(PUBLIC_KEY, context.getHandler());
     if (isPublic) {
       return true;
     }
@@ -105,38 +96,28 @@ export class RbacGuard implements CanActivate {
       scope: Scope;
     }>(PERMISSION_KEY, context.getHandler());
 
-    const requiredRoles = this.reflector.get<UserRole[]>(
-      ROLES_KEY,
-      context.getHandler()
-    );
+    const requiredRoles = this.reflector.get<UserRole[]>(ROLES_KEY, context.getHandler());
 
-    const requiresClubContext = this.reflector.get<boolean>(
-      CLUB_CONTEXT_KEY,
-      context.getHandler()
-    );
+    const requiresClubContext = this.reflector.get<boolean>(CLUB_CONTEXT_KEY, context.getHandler());
 
     // Si no hay restricciones definidas, DENEGAR acceso por defecto (Principio de Seguridad)
     // Solo endpoints públicos específicos deben usar @Public() decorator
     if (!requiredPermission && !requiredRoles && !requiresClubContext) {
       this.logger.warn(
-        `Access denied to ${request.url} - No security configuration defined. Use @Public() for public endpoints.`
+        `Access denied to ${request.url} - No security configuration defined. Use @Public() for public endpoints.`,
       );
-      throw new ForbiddenException(
-        "Endpoint requires explicit security configuration"
-      );
+      throw new ForbiddenException('Endpoint requires explicit security configuration');
     }
 
     // Verificar que el usuario esté autenticado
     const user: JwtPayload = request.user;
     if (!user) {
-      throw new UnauthorizedException("Token de acceso requerido");
+      throw new UnauthorizedException('Token de acceso requerido');
     }
 
     // Verificar contexto de club si es requerido
     if (requiresClubContext && !user.clubId) {
-      throw new ForbiddenException(
-        "Contexto de club requerido. Selecciona un club primero."
-      );
+      throw new ForbiddenException('Contexto de club requerido. Selecciona un club primero.');
     }
 
     // Extraer roles para el club actual
@@ -146,16 +127,14 @@ export class RbacGuard implements CanActivate {
 
     // Verificar roles requeridos
     if (requiredRoles && requiredRoles.length > 0) {
-      const hasRequiredRole = requiredRoles.some((role) =>
-        currentClubRoles.includes(role)
-      );
+      const hasRequiredRole = requiredRoles.some((role) => currentClubRoles.includes(role));
 
       if (!hasRequiredRole) {
         this.logger.warn(
-          `Usuario ${user.sub} intentó acceder sin roles requeridos: ${requiredRoles.join(", ")}`
+          `Usuario ${user.sub} intentó acceder sin roles requeridos: ${requiredRoles.join(', ')}`,
         );
         throw new ForbiddenException(
-          `Acceso denegado. Roles requeridos: ${requiredRoles.join(", ")}`
+          `Acceso denegado. Roles requeridos: ${requiredRoles.join(', ')}`,
         );
       }
     }
@@ -167,16 +146,16 @@ export class RbacGuard implements CanActivate {
           role,
           requiredPermission.module,
           requiredPermission.action,
-          requiredPermission.scope
-        )
+          requiredPermission.scope,
+        ),
       );
 
       if (!hasRequiredPermission) {
         this.logger.warn(
-          `Usuario ${user.sub} intentó acceder sin permiso: ${requiredPermission.module}:${requiredPermission.action}:${requiredPermission.scope}`
+          `Usuario ${user.sub} intentó acceder sin permiso: ${requiredPermission.module}:${requiredPermission.action}:${requiredPermission.scope}`,
         );
         throw new ForbiddenException(
-          `Acceso denegado. Permiso requerido: ${requiredPermission.module}:${requiredPermission.action}`
+          `Acceso denegado. Permiso requerido: ${requiredPermission.module}:${requiredPermission.action}`,
         );
       }
     }
@@ -200,7 +179,7 @@ export class RbacGuard implements CanActivate {
       : undefined;
 
     this.logger.log(
-      `Acceso autorizado para usuario ${user.sub} en club ${user.clubId || "sin club"}`
+      `Acceso autorizado para usuario ${user.sub} en club ${user.clubId || 'sin club'}`,
     );
 
     return true;

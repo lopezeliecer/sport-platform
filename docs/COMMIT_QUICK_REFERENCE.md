@@ -24,15 +24,16 @@ Enter choice [1-3]:
 
 ### The Three Choices
 
-| Choice | Action | When to Use |
-|--------|--------|-------------|
-| **[1]** | Commit anyway | Time-sensitive commits; CI/CD will catch issues |
-| **[2]** | Cancel & show fix commands | Want to fix now; script shows what to run |
-| **[3]** | Auto-fix & retry | Let script fix formatting/style automatically |
+| Choice  | Action                     | When to Use                                     |
+| ------- | -------------------------- | ----------------------------------------------- |
+| **[1]** | Commit anyway              | Time-sensitive commits; CI/CD will catch issues |
+| **[2]** | Cancel & show fix commands | Want to fix now; script shows what to run       |
+| **[3]** | Auto-fix & retry           | Let script fix formatting/style automatically   |
 
 ## Examples
 
 ### Example 1: Quick Commit
+
 ```bash
 $ git commit -m "Add user feature"
 # → Validation finds 3 issues
@@ -42,8 +43,9 @@ $ git commit -m "Add user feature"
 ```
 
 ### Example 2: Fix Now
+
 ```bash
-$ git commit -m "Add user feature"  
+$ git commit -m "Add user feature"
 # → Validation finds 3 issues
 # → Choose [2]
 # → Commit cancelled ✗
@@ -58,9 +60,10 @@ $ git commit -m "Add user feature"
 ```
 
 ### Example 3: Auto-Fix
+
 ```bash
 $ git commit -m "Add user feature"
-# → Validation finds 3 issues  
+# → Validation finds 3 issues
 # → Choose [3]
 # → Script auto-fixes ✓
 # → Files re-staged ✓
@@ -72,12 +75,14 @@ $ git commit -m "Add user feature"
 ## What Gets Checked
 
 ### ✓ ESLint
+
 - Code quality
 - Unused imports
 - Best practices
 - Style consistency
 
 ### ✓ Prettier
+
 - Quote style (single quotes)
 - Line length (max 100 chars)
 - Indentation (2 spaces)
@@ -85,6 +90,7 @@ $ git commit -m "Add user feature"
 - Trailing commas
 
 ### ✓ TypeScript
+
 - Type safety
 - Type annotations
 - Missing types
@@ -144,6 +150,7 @@ git checkout -- test.txt
 ## Troubleshooting
 
 ### "Pre-commit hook not running"
+
 ```bash
 chmod +x .husky/pre-commit
 chmod +x scripts/validate-commit.sh
@@ -151,6 +158,7 @@ npx husky install
 ```
 
 ### "Command not found in validation script"
+
 ```bash
 # Ensure you're in project root
 cd /path/to/sports-platform
@@ -160,6 +168,7 @@ cd /path/to/sports-platform
 ```
 
 ### "Auto-fix didn't work"
+
 ```bash
 # Run commands manually
 npm run lint:fix
@@ -174,12 +183,14 @@ git commit -m "message"
 ## Philosophy
 
 ✅ **We believe:**
+
 - Developers should NEVER be blocked from committing
 - Issues should be visible for learning
 - Automatic fixes are a convenience, not a requirement
 - CI/CD pipeline is the ultimate gatekeeper
 
 ❌ **We don't:**
+
 - Force developers to fix before commit
 - Prevent commits for any reason
 - Hide issues from developers

@@ -1,17 +1,20 @@
 # Prompt #16: Testing E2E con Cypress
 
 ## Contexto del Sistema
+
 Eres un experto en testing E2E especializado en Cypress y metodologías BDD. Debes implementar una suite de pruebas end-to-end completa para la plataforma deportiva, cubriendo los flujos críticos de usuario con datos dinámicos y escenarios realistas.
 
 ## Estrategia de Testing Definida
 
 ### Framework: Cypress con Factory Pattern
+
 - **Factory Pattern** para generación dinámica de datos de prueba
 - **Page Object Model** para mantenibilidad
 - **BDD con Cucumber** para scenarios descriptivos
 - **Data-driven testing** con fixtures dinámicas
 
 ### Coverage de Escenarios Críticos
+
 - Flujo completo de autenticación (Google OAuth + Sessions)
 - Gestión de entrenamientos (CRUD + validaciones)
 - TrainingCalendarPage (funcionalidad central)
@@ -34,27 +37,27 @@ export default defineConfig({
     viewportHeight: 720,
     video: true,
     screenshotOnRunFailure: true,
-    
+
     env: {
       apiUrl: 'http://localhost:3000/api/v1',
       auth: {
         googleClientId: 'test-client-id',
         testUser: {
           email: 'test@example.com',
-          password: 'testpass123'
-        }
-      }
+          password: 'testpass123',
+        },
+      },
     },
 
     async setupNodeEvents(on, config) {
       await addCucumberPreprocessorPlugin(on, config);
-      
+
       // Data Factory para generar datos dinámicos
       on('task', {
         generateTestData: (type: string) => {
           return require('./cypress/support/factories').generateData(type);
         },
-        
+
         seedDatabase: async (data: any) => {
           // Semilla la base de datos con datos de prueba
           return require('./cypress/support/database').seed(data);
@@ -63,16 +66,13 @@ export default defineConfig({
         cleanDatabase: async () => {
           // Limpia la base de datos después de las pruebas
           return require('./cypress/support/database').clean();
-        }
+        },
       });
 
       return config;
     },
 
-    specPattern: [
-      'cypress/e2e/**/*.feature',
-      'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}'
-    ]
+    specPattern: ['cypress/e2e/**/*.feature', 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}'],
   },
 
   component: {
@@ -80,8 +80,8 @@ export default defineConfig({
       framework: 'angular',
       bundler: 'webpack',
     },
-    specPattern: 'src/**/*.cy.ts'
-  }
+    specPattern: 'src/**/*.cy.ts',
+  },
 });
 ```
 
@@ -122,7 +122,6 @@ export interface TestAthlete {
 }
 
 export class DataFactory {
-  
   static generateClub(overrides: Partial<TestClub> = {}): TestClub {
     return {
       id: faker.string.uuid(),
@@ -131,30 +130,34 @@ export class DataFactory {
       address: faker.location.streetAddress(),
       email: faker.internet.email(),
       phone: faker.phone.number(),
-      ...overrides
+      ...overrides,
     };
   }
 
   static generateTraining(overrides: Partial<TestTraining> = {}): TestTraining {
     const startHour = faker.number.int({ min: 6, max: 20 });
     const duration = faker.number.int({ min: 60, max: 180 }); // 1-3 horas
-    
+
     return {
       id: faker.string.uuid(),
       title: faker.lorem.words(3),
       date: faker.date.future().toISOString().split('T')[0],
       startTime: `${startHour.toString().padStart(2, '0')}:00`,
-      endTime: `${Math.floor((startHour * 60 + duration) / 60).toString().padStart(2, '0')}:${((startHour * 60 + duration) % 60).toString().padStart(2, '0')}`,
+      endTime: `${Math.floor((startHour * 60 + duration) / 60)
+        .toString()
+        .padStart(2, '0')}:${((startHour * 60 + duration) % 60).toString().padStart(2, '0')}`,
       type: faker.helpers.arrayElement(['technique', 'endurance', 'strength', 'competition']),
-      athletes: Array.from({ length: faker.number.int({ min: 3, max: 8 }) }, () => faker.string.uuid()),
+      athletes: Array.from({ length: faker.number.int({ min: 3, max: 8 }) }, () =>
+        faker.string.uuid(),
+      ),
       coach: faker.string.uuid(),
-      ...overrides
+      ...overrides,
     };
   }
 
   static generateAthlete(overrides: Partial<TestAthlete> = {}): TestAthlete {
     const birthDate = faker.date.birthdate({ min: 8, max: 25, mode: 'age' });
-    
+
     return {
       id: faker.string.uuid(),
       firstName: faker.person.firstName(),
@@ -163,7 +166,7 @@ export class DataFactory {
       birthDate: birthDate.toISOString().split('T')[0],
       category: this.calculateCategory(birthDate),
       medicalClearance: faker.datatype.boolean({ probability: 0.8 }),
-      ...overrides
+      ...overrides,
     };
   }
 
@@ -184,13 +187,16 @@ export class DataFactory {
 
 // cypress/support/factories/scenario-builder.ts
 export class ScenarioBuilder {
-  
   static buildTrainingScheduleScenario() {
     const club = DataFactory.generateClub();
     const athletes = DataFactory.generateMultiple(() => DataFactory.generateAthlete(), 12);
-    const trainings = DataFactory.generateMultiple(() => DataFactory.generateTraining({
-      athletes: athletes.slice(0, 6).map(a => a.id)
-    }), 5);
+    const trainings = DataFactory.generateMultiple(
+      () =>
+        DataFactory.generateTraining({
+          athletes: athletes.slice(0, 6).map((a) => a.id),
+        }),
+      5,
+    );
 
     return { club, athletes, trainings };
   }
@@ -198,19 +204,19 @@ export class ScenarioBuilder {
   static buildConflictScenario() {
     const club = DataFactory.generateClub();
     const athlete = DataFactory.generateAthlete();
-    
+
     const conflictingTraining1 = DataFactory.generateTraining({
       date: '2024-03-15',
       startTime: '10:00',
       endTime: '11:30',
-      athletes: [athlete.id]
+      athletes: [athlete.id],
     });
-    
+
     const conflictingTraining2 = DataFactory.generateTraining({
       date: '2024-03-15',
       startTime: '11:00', // Overlap con el anterior
       endTime: '12:30',
-      athletes: [athlete.id]
+      athletes: [athlete.id],
     });
 
     return { club, athlete, trainings: [conflictingTraining1, conflictingTraining2] };
@@ -223,25 +229,50 @@ export class ScenarioBuilder {
 ```typescript
 // cypress/support/pages/training-calendar.page.ts
 export class TrainingCalendarPage {
-  
   // Elementos del calendario (70% layout)
-  get calendarContainer() { return cy.get('[data-cy=calendar-container]'); }
-  get calendarWeekView() { return cy.get('[data-cy=calendar-week-view]'); }
-  get calendarMonthView() { return cy.get('[data-cy=calendar-month-view]'); }
-  get trainingSlots() { return cy.get('[data-cy=training-slot]'); }
-  get addTrainingBtn() { return cy.get('[data-cy=add-training-btn]'); }
-  
+  get calendarContainer() {
+    return cy.get('[data-cy=calendar-container]');
+  }
+  get calendarWeekView() {
+    return cy.get('[data-cy=calendar-week-view]');
+  }
+  get calendarMonthView() {
+    return cy.get('[data-cy=calendar-month-view]');
+  }
+  get trainingSlots() {
+    return cy.get('[data-cy=training-slot]');
+  }
+  get addTrainingBtn() {
+    return cy.get('[data-cy=add-training-btn]');
+  }
+
   // Panel de detalles (30% layout)
-  get detailsPanel() { return cy.get('[data-cy=details-panel]'); }
-  get trainingDetails() { return cy.get('[data-cy=training-details]'); }
-  get athletesList() { return cy.get('[data-cy=athletes-list]'); }
-  get trainingForm() { return cy.get('[data-cy=training-form]'); }
-  
+  get detailsPanel() {
+    return cy.get('[data-cy=details-panel]');
+  }
+  get trainingDetails() {
+    return cy.get('[data-cy=training-details]');
+  }
+  get athletesList() {
+    return cy.get('[data-cy=athletes-list]');
+  }
+  get trainingForm() {
+    return cy.get('[data-cy=training-form]');
+  }
+
   // Filtros y búsqueda
-  get searchInput() { return cy.get('[data-cy=search-input]'); }
-  get athleteFilter() { return cy.get('[data-cy=athlete-filter]'); }
-  get typeFilter() { return cy.get('[data-cy=type-filter]'); }
-  get dateRangeFilter() { return cy.get('[data-cy=date-range-filter]'); }
+  get searchInput() {
+    return cy.get('[data-cy=search-input]');
+  }
+  get athleteFilter() {
+    return cy.get('[data-cy=athlete-filter]');
+  }
+  get typeFilter() {
+    return cy.get('[data-cy=type-filter]');
+  }
+  get dateRangeFilter() {
+    return cy.get('[data-cy=date-range-filter]');
+  }
 
   visit() {
     cy.visit('/training-calendar');
@@ -271,33 +302,33 @@ export class TrainingCalendarPage {
   createTraining(training: Partial<TestTraining>) {
     this.addTrainingBtn.click();
     this.trainingForm.should('be.visible');
-    
+
     if (training.title) {
       cy.get('[data-cy=training-title]').type(training.title);
     }
-    
+
     if (training.date) {
       cy.get('[data-cy=training-date]').type(training.date);
     }
-    
+
     if (training.startTime) {
       cy.get('[data-cy=training-start-time]').type(training.startTime);
     }
-    
+
     if (training.endTime) {
       cy.get('[data-cy=training-end-time]').type(training.endTime);
     }
-    
+
     if (training.type) {
       cy.get('[data-cy=training-type]').select(training.type);
     }
-    
+
     if (training.athletes) {
-      training.athletes.forEach(athleteId => {
+      training.athletes.forEach((athleteId) => {
         cy.get(`[data-cy=athlete-checkbox-${athleteId}]`).check();
       });
     }
-    
+
     cy.get('[data-cy=save-training-btn]').click();
     return this;
   }
@@ -336,12 +367,12 @@ export class TrainingCalendarPage {
     cy.viewport(1280, 720);
     this.calendarContainer.should('have.css', 'flex', '0 0 70%');
     this.detailsPanel.should('have.css', 'flex', '0 0 30%');
-    
+
     // Verificar layout responsive en mobile
     cy.viewport(375, 667);
     this.calendarContainer.should('have.css', 'width', '100%');
     this.detailsPanel.should('not.be.visible'); // Panel colapsado en mobile
-    
+
     return this;
   }
 }
@@ -431,17 +462,20 @@ Given('I am on the training calendar page', () => {
   page.visit();
 });
 
-Given('there is an existing training on {string} from {string} to {string}', (date, startTime, endTime) => {
-  const existingTraining = DataFactory.generateTraining({
-    date,
-    startTime,
-    endTime,
-    athletes: testData.athletes.slice(0, 3).map(a => a.id)
-  });
-  
-  cy.task('seedDatabase', { trainings: [existingTraining] });
-  testData.existingTraining = existingTraining;
-});
+Given(
+  'there is an existing training on {string} from {string} to {string}',
+  (date, startTime, endTime) => {
+    const existingTraining = DataFactory.generateTraining({
+      date,
+      startTime,
+      endTime,
+      athletes: testData.athletes.slice(0, 3).map((a) => a.id),
+    });
+
+    cy.task('seedDatabase', { trainings: [existingTraining] });
+    testData.existingTraining = existingTraining;
+  },
+);
 
 When('I click on the add training button', () => {
   page.addTrainingBtn.click();
@@ -454,7 +488,7 @@ When('I fill in the training details:', (dataTable) => {
 
 When('I select {int} athletes for the training', (count) => {
   const selectedAthletes = testData.athletes.slice(0, count);
-  selectedAthletes.forEach(athlete => {
+  selectedAthletes.forEach((athlete) => {
     cy.get(`[data-cy=athlete-checkbox-${athlete.id}]`).check();
   });
   testData.selectedAthletes = selectedAthletes;
@@ -464,12 +498,15 @@ When('I save the training', () => {
   cy.get('[data-cy=save-training-btn]').click();
 });
 
-When('I try to create a training on {string} from {string} to {string}', (date, startTime, endTime) => {
-  page.createTraining({ date, startTime, endTime });
-});
+When(
+  'I try to create a training on {string} from {string} to {string}',
+  (date, startTime, endTime) => {
+    page.createTraining({ date, startTime, endTime });
+  },
+);
 
 When('I select the same athletes', () => {
-  testData.existingTraining.athletes.forEach(athleteId => {
+  testData.existingTraining.athletes.forEach((athleteId) => {
     cy.get(`[data-cy=athlete-checkbox-${athleteId}]`).check();
   });
 });
@@ -533,14 +570,14 @@ declare global {
 Cypress.Commands.add('login', (role: 'admin' | 'coach' | 'athlete') => {
   cy.session(`${role}-session`, () => {
     cy.visit('/auth/login');
-    
+
     // Mock Google OAuth para testing
     cy.window().then((win) => {
       win.localStorage.setItem('auth-token', 'mock-jwt-token');
       win.localStorage.setItem('user-role', role);
       win.localStorage.setItem('user-id', 'test-user-id');
     });
-    
+
     cy.intercept('POST', '**/auth/validate', {
       statusCode: 200,
       body: {
@@ -549,11 +586,11 @@ Cypress.Commands.add('login', (role: 'admin' | 'coach' | 'athlete') => {
           id: 'test-user-id',
           email: 'test@example.com',
           role: role,
-          clubId: 'test-club-id'
-        }
-      }
+          clubId: 'test-club-id',
+        },
+      },
     }).as('validateAuth');
-    
+
     cy.visit('/dashboard');
     cy.wait('@validateAuth');
   });
@@ -574,13 +611,13 @@ Cypress.Commands.add('checkResponsive', () => {
   const viewports = [
     { width: 1280, height: 720, name: 'desktop' },
     { width: 768, height: 1024, name: 'tablet' },
-    { width: 375, height: 667, name: 'mobile' }
+    { width: 375, height: 667, name: 'mobile' },
   ];
-  
-  viewports.forEach(viewport => {
+
+  viewports.forEach((viewport) => {
     cy.viewport(viewport.width, viewport.height);
     cy.get('[data-cy=main-content]').should('be.visible');
-    
+
     if (viewport.name === 'mobile') {
       cy.get('[data-cy=mobile-menu-toggle]').should('be.visible');
     } else {
@@ -596,7 +633,7 @@ Cypress.Commands.add('waitForAngular', () => {
         if (win.getAllAngularTestabilities) {
           const testabilities = win.getAllAngularTestabilities();
           const pending = testabilities.some((testability) => !testability.isStable());
-          
+
           if (!pending) {
             resolve();
           } else {

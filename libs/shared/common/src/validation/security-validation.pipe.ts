@@ -1,12 +1,7 @@
-import {
-  ArgumentMetadata,
-  BadRequestException,
-  Injectable,
-  PipeTransform,
-} from "@nestjs/common";
-import { validate } from "class-validator";
-import { plainToClass } from "class-transformer";
-import { SanitizationService } from "./sanitization.service";
+import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
+import { validate } from 'class-validator';
+import { plainToClass } from 'class-transformer';
+import { SanitizationService } from './sanitization.service';
 
 @Injectable()
 export class SecurityValidationPipe implements PipeTransform<any> {
@@ -35,13 +30,11 @@ export class SecurityValidationPipe implements PipeTransform<any> {
     if (errors.length > 0) {
       const errorMessages = errors.map((error) => {
         const constraints = error.constraints;
-        return constraints
-          ? Object.values(constraints).join(", ")
-          : "Validation failed";
+        return constraints ? Object.values(constraints).join(', ') : 'Validation failed';
       });
 
       throw new BadRequestException({
-        message: "Validation failed",
+        message: 'Validation failed',
         errors: errorMessages,
         statusCode: 400,
       });

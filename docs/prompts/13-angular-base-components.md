@@ -1,11 +1,13 @@
 # Prompt #13: Angular Base Components Implementation
 
 ## Contexto del Sistema
+
 Eres un experto desarrollador Angular especializado en componentes reutilizables y arquitectura escalable. Debes implementar los componentes base fundamentales para la plataforma deportiva, priorizando el calendario de entrenamientos como componente central.
 
 ## Componentes Base Requeridos
 
 ### 1. TrainingCalendarComponent (PRIORITARIO)
+
 **Propósito**: Componente central del sistema para gestión visual de entrenamientos
 
 ```typescript
@@ -16,30 +18,22 @@ Eres un experto desarrollador Angular especializado en componentes reutilizables
       <!-- Header con navegación y filtros -->
       <div class="calendar-header">
         <div class="calendar-navigation">
-          <p-button 
-            icon="pi pi-chevron-left" 
-            (onClick)="previousWeek()"
-            styleClass="p-button-text">
+          <p-button icon="pi pi-chevron-left" (onClick)="previousWeek()" styleClass="p-button-text">
           </p-button>
           <h2>{{ currentWeek$ | async | weekRange }}</h2>
-          <p-button 
-            icon="pi pi-chevron-right" 
-            (onClick)="nextWeek()"
-            styleClass="p-button-text">
+          <p-button icon="pi pi-chevron-right" (onClick)="nextWeek()" styleClass="p-button-text">
           </p-button>
         </div>
         <div class="calendar-actions">
-          <p-dropdown 
+          <p-dropdown
             [options]="athletes$ | async"
             [(ngModel)]="selectedAthlete"
             placeholder="Filtrar por atleta"
             optionLabel="name"
-            [showClear]="true">
+            [showClear]="true"
+          >
           </p-dropdown>
-          <p-button 
-            label="Nuevo Entrenamiento" 
-            icon="pi pi-plus"
-            (onClick)="createTraining()">
+          <p-button label="Nuevo Entrenamiento" icon="pi pi-plus" (onClick)="createTraining()">
           </p-button>
         </div>
       </div>
@@ -52,24 +46,26 @@ Eres un experto desarrollador Angular especializado en componentes reutilizables
             [options]="calendarOptions"
             [events]="trainingEvents$ | async"
             (dateClick)="onDateClick($event)"
-            (eventClick)="onEventClick($event)">
+            (eventClick)="onEventClick($event)"
+          >
           </p-fullCalendar>
         </div>
-        
+
         <div class="details-panel" [class.expanded]="showDetails">
           <app-training-details
             [selectedDate]="selectedDate$ | async"
             [trainings]="selectedTrainings$ | async"
             [loading]="loading$ | async"
             (trainingUpdated)="onTrainingUpdated($event)"
-            (trainingDeleted)="onTrainingDeleted($event)">
+            (trainingDeleted)="onTrainingDeleted($event)"
+          >
           </app-training-details>
         </div>
       </div>
     </div>
   `,
   styleUrls: ['./training-calendar.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrainingCalendarComponent implements OnInit, OnDestroy {
   // NgRx selectors
@@ -87,7 +83,7 @@ export class TrainingCalendarComponent implements OnInit, OnDestroy {
 
   constructor(
     private store: Store<AppState>,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -114,14 +110,15 @@ export class TrainingCalendarComponent implements OnInit, OnDestroy {
       businessHours: {
         daysOfWeek: [1, 2, 3, 4, 5, 6], // Monday to Saturday
         startTime: '06:00',
-        endTime: '22:00'
-      }
+        endTime: '22:00',
+      },
     };
   }
 }
 ```
 
 ### 2. TrainingDetailsComponent
+
 **Propósito**: Panel lateral con detalles de entrenamientos seleccionados
 
 ```typescript
@@ -130,37 +127,36 @@ export class TrainingCalendarComponent implements OnInit, OnDestroy {
   template: `
     <div class="training-details-panel">
       <div class="panel-header">
-        <h3>{{ selectedDate | date:'EEEE, d MMMM y' }}</h3>
-        <p-button 
-          icon="pi pi-times" 
+        <h3>{{ selectedDate | date: 'EEEE, d MMMM y' }}</h3>
+        <p-button
+          icon="pi pi-times"
           styleClass="p-button-text p-button-sm"
-          (onClick)="closePanel()">
+          (onClick)="closePanel()"
+        >
         </p-button>
       </div>
 
       <div class="panel-content" *ngIf="!loading; else loadingTemplate">
         <div *ngIf="trainings && trainings.length > 0; else noTrainings">
-          <div 
-            class="training-card" 
+          <div
+            class="training-card"
             *ngFor="let training of trainings; trackBy: trackByTraining"
             [class.selected]="selectedTraining?.id === training.id"
-            (click)="selectTraining(training)">
-            
+            (click)="selectTraining(training)"
+          >
             <div class="training-header">
               <span class="training-time">
-                {{ training.startTime | date:'HH:mm' }} - 
-                {{ training.endTime | date:'HH:mm' }}
+                {{ training.startTime | date: 'HH:mm' }} -
+                {{ training.endTime | date: 'HH:mm' }}
               </span>
-              <p-tag 
-                [value]="training.type" 
-                [severity]="getTrainingTypeSeverity(training.type)">
+              <p-tag [value]="training.type" [severity]="getTrainingTypeSeverity(training.type)">
               </p-tag>
             </div>
 
             <div class="training-info">
               <h4>{{ training.title }}</h4>
               <p class="training-description">{{ training.description }}</p>
-              
+
               <div class="training-metrics" *ngIf="training.plannedMetrics">
                 <div class="metric">
                   <i class="pi pi-clock"></i>
@@ -178,20 +174,23 @@ export class TrainingCalendarComponent implements OnInit, OnDestroy {
             </div>
 
             <div class="training-actions">
-              <p-button 
-                icon="pi pi-pencil" 
+              <p-button
+                icon="pi pi-pencil"
                 styleClass="p-button-text p-button-sm"
-                (onClick)="editTraining(training); $event.stopPropagation()">
+                (onClick)="editTraining(training); $event.stopPropagation()"
+              >
               </p-button>
-              <p-button 
-                icon="pi pi-copy" 
+              <p-button
+                icon="pi pi-copy"
                 styleClass="p-button-text p-button-sm"
-                (onClick)="duplicateTraining(training); $event.stopPropagation()">
+                (onClick)="duplicateTraining(training); $event.stopPropagation()"
+              >
               </p-button>
-              <p-button 
-                icon="pi pi-trash" 
+              <p-button
+                icon="pi pi-trash"
                 styleClass="p-button-text p-button-sm p-button-danger"
-                (onClick)="deleteTraining(training); $event.stopPropagation()">
+                (onClick)="deleteTraining(training); $event.stopPropagation()"
+              >
               </p-button>
             </div>
           </div>
@@ -202,10 +201,7 @@ export class TrainingCalendarComponent implements OnInit, OnDestroy {
             <i class="pi pi-calendar-plus"></i>
             <h4>No hay entrenamientos</h4>
             <p>No hay entrenamientos programados para esta fecha.</p>
-            <p-button 
-              label="Crear Entrenamiento" 
-              icon="pi pi-plus"
-              (onClick)="createNewTraining()">
+            <p-button label="Crear Entrenamiento" icon="pi pi-plus" (onClick)="createNewTraining()">
             </p-button>
           </div>
         </ng-template>
@@ -219,13 +215,13 @@ export class TrainingCalendarComponent implements OnInit, OnDestroy {
     </div>
   `,
   styleUrls: ['./training-details.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrainingDetailsComponent {
   @Input() selectedDate: Date | null = null;
   @Input() trainings: Training[] = [];
   @Input() loading = false;
-  
+
   @Output() trainingUpdated = new EventEmitter<Training>();
   @Output() trainingDeleted = new EventEmitter<string>();
   @Output() panelClosed = new EventEmitter<void>();
@@ -238,10 +234,10 @@ export class TrainingDetailsComponent {
 
   getTrainingTypeSeverity(type: string): string {
     const severityMap = {
-      'technique': 'info',
-      'endurance': 'success',
-      'speed': 'warning',
-      'strength': 'danger'
+      technique: 'info',
+      endurance: 'success',
+      speed: 'warning',
+      strength: 'danger',
     };
     return severityMap[type] || 'info';
   }
@@ -249,6 +245,7 @@ export class TrainingDetailsComponent {
 ```
 
 ### 3. AthleteCardComponent
+
 **Propósito**: Tarjeta reutilizable para mostrar información de atletas
 
 ```typescript
@@ -257,11 +254,12 @@ export class TrainingDetailsComponent {
   template: `
     <div class="athlete-card" [class.selected]="selected">
       <div class="athlete-avatar">
-        <p-avatar 
-          [image]="athlete.photoUrl" 
+        <p-avatar
+          [image]="athlete.photoUrl"
           [label]="getInitials(athlete.firstName, athlete.lastName)"
           size="large"
-          shape="circle">
+          shape="circle"
+        >
         </p-avatar>
         <div class="status-indicator" [class]="athlete.status">
           <i class="pi" [class]="getStatusIcon(athlete.status)"></i>
@@ -271,7 +269,7 @@ export class TrainingDetailsComponent {
       <div class="athlete-info">
         <h3>{{ athlete.firstName }} {{ athlete.lastName }}</h3>
         <p class="athlete-category">{{ athlete.category }} • {{ athlete.age }} años</p>
-        
+
         <div class="athlete-metrics" *ngIf="showMetrics">
           <div class="metric">
             <span class="metric-label">Personal Best</span>
@@ -284,38 +282,37 @@ export class TrainingDetailsComponent {
         </div>
 
         <div class="athlete-tags" *ngIf="athlete.tags">
-          <p-tag 
-            *ngFor="let tag of athlete.tags" 
-            [value]="tag"
-            styleClass="athlete-tag">
-          </p-tag>
+          <p-tag *ngFor="let tag of athlete.tags" [value]="tag" styleClass="athlete-tag"> </p-tag>
         </div>
       </div>
 
       <div class="athlete-actions" *ngIf="showActions">
-        <p-button 
-          icon="pi pi-user" 
+        <p-button
+          icon="pi pi-user"
           styleClass="p-button-text"
           (onClick)="viewProfile()"
-          pTooltip="Ver perfil">
+          pTooltip="Ver perfil"
+        >
         </p-button>
-        <p-button 
-          icon="pi pi-chart-line" 
+        <p-button
+          icon="pi pi-chart-line"
           styleClass="p-button-text"
           (onClick)="viewProgress()"
-          pTooltip="Ver progreso">
+          pTooltip="Ver progreso"
+        >
         </p-button>
-        <p-button 
-          icon="pi pi-calendar" 
+        <p-button
+          icon="pi pi-calendar"
           styleClass="p-button-text"
           (onClick)="viewSchedule()"
-          pTooltip="Ver horarios">
+          pTooltip="Ver horarios"
+        >
         </p-button>
       </div>
     </div>
   `,
   styleUrls: ['./athlete-card.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AthleteCardComponent {
   @Input() athlete!: Athlete;
@@ -333,9 +330,9 @@ export class AthleteCardComponent {
 
   getStatusIcon(status: string): string {
     const iconMap = {
-      'active': 'pi-check-circle',
-      'inactive': 'pi-times-circle',
-      'injured': 'pi-exclamation-triangle'
+      active: 'pi-check-circle',
+      inactive: 'pi-times-circle',
+      injured: 'pi-exclamation-triangle',
     };
     return iconMap[status] || 'pi-question-circle';
   }
@@ -343,67 +340,61 @@ export class AthleteCardComponent {
 ```
 
 ### 4. TrainingFormComponent
+
 **Propósito**: Formulario para crear/editar entrenamientos
 
 ```typescript
 @Component({
   selector: 'app-training-form',
   template: `
-    <p-dialog 
-      [(visible)]="visible" 
+    <p-dialog
+      [(visible)]="visible"
       [header]="isEditMode ? 'Editar Entrenamiento' : 'Nuevo Entrenamiento'"
       [modal]="true"
       [closable]="true"
-      [style]="{width: '50vw'}"
-      (onHide)="onClose()">
-      
+      [style]="{ width: '50vw' }"
+      (onHide)="onClose()"
+    >
       <form [formGroup]="trainingForm" (ngSubmit)="onSubmit()">
         <!-- Información básica -->
         <div class="form-section">
           <h4>Información Básica</h4>
-          
+
           <div class="p-field">
             <label for="title">Título *</label>
-            <input 
-              type="text" 
-              id="title"
-              pInputText 
-              formControlName="title"
-              class="w-full">
+            <input type="text" id="title" pInputText formControlName="title" class="w-full" />
           </div>
 
           <div class="p-field">
             <label for="description">Descripción</label>
-            <textarea 
+            <textarea
               id="description"
-              pInputTextarea 
+              pInputTextarea
               formControlName="description"
               rows="3"
-              class="w-full">
+              class="w-full"
+            >
             </textarea>
           </div>
 
           <div class="form-row">
             <div class="p-field">
               <label for="type">Tipo de Entrenamiento *</label>
-              <p-dropdown 
+              <p-dropdown
                 id="type"
                 formControlName="type"
                 [options]="trainingTypes"
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Seleccionar tipo"
-                class="w-full">
+                class="w-full"
+              >
               </p-dropdown>
             </div>
 
             <div class="p-field">
               <label for="difficulty">Dificultad</label>
-              <p-rating 
-                id="difficulty"
-                formControlName="difficulty"
-                [stars]="5"
-                [cancel]="false">
+              <p-rating id="difficulty" formControlName="difficulty" [stars]="5" [cancel]="false">
               </p-rating>
             </div>
           </div>
@@ -412,38 +403,41 @@ export class AthleteCardComponent {
         <!-- Programación temporal -->
         <div class="form-section">
           <h4>Horario</h4>
-          
+
           <div class="form-row">
             <div class="p-field">
               <label for="date">Fecha *</label>
-              <p-calendar 
+              <p-calendar
                 id="date"
                 formControlName="date"
                 dateFormat="dd/mm/yy"
                 [showButtonBar]="true"
-                class="w-full">
+                class="w-full"
+              >
               </p-calendar>
             </div>
 
             <div class="p-field">
               <label for="startTime">Hora Inicio *</label>
-              <p-calendar 
+              <p-calendar
                 id="startTime"
                 formControlName="startTime"
                 [timeOnly]="true"
                 hourFormat="24"
-                class="w-full">
+                class="w-full"
+              >
               </p-calendar>
             </div>
 
             <div class="p-field">
               <label for="endTime">Hora Fin *</label>
-              <p-calendar 
+              <p-calendar
                 id="endTime"
                 formControlName="endTime"
                 [timeOnly]="true"
                 hourFormat="24"
-                class="w-full">
+                class="w-full"
+              >
               </p-calendar>
             </div>
           </div>
@@ -452,8 +446,8 @@ export class AthleteCardComponent {
         <!-- Participantes -->
         <div class="form-section">
           <h4>Atletas Participantes</h4>
-          
-          <p-multiSelect 
+
+          <p-multiSelect
             formControlName="athletes"
             [options]="availableAthletes"
             optionLabel="fullName"
@@ -461,20 +455,18 @@ export class AthleteCardComponent {
             placeholder="Seleccionar atletas"
             [filter]="true"
             filterBy="fullName"
-            class="w-full">
-            
+            class="w-full"
+          >
             <ng-template let-athlete pTemplate="item">
               <div class="athlete-option">
-                <p-avatar 
+                <p-avatar
                   [image]="athlete.photoUrl"
                   [label]="getInitials(athlete.firstName, athlete.lastName)"
-                  size="small">
+                  size="small"
+                >
                 </p-avatar>
                 <span>{{ athlete.fullName }}</span>
-                <p-tag 
-                  [value]="athlete.category"
-                  styleClass="ml-auto">
-                </p-tag>
+                <p-tag [value]="athlete.category" styleClass="ml-auto"> </p-tag>
               </div>
             </ng-template>
           </p-multiSelect>
@@ -483,41 +475,44 @@ export class AthleteCardComponent {
         <!-- Métricas planificadas -->
         <div class="form-section">
           <h4>Métricas Planificadas</h4>
-          
+
           <div class="form-row">
             <div class="p-field">
               <label for="duration">Duración (min)</label>
-              <p-inputNumber 
+              <p-inputNumber
                 id="duration"
                 formControlName="duration"
                 [min]="15"
                 [max]="300"
                 suffix=" min"
-                class="w-full">
+                class="w-full"
+              >
               </p-inputNumber>
             </div>
 
             <div class="p-field">
               <label for="distance">Distancia (m)</label>
-              <p-inputNumber 
+              <p-inputNumber
                 id="distance"
                 formControlName="distance"
                 [min]="0"
                 [max]="10000"
                 suffix=" m"
-                class="w-full">
+                class="w-full"
+              >
               </p-inputNumber>
             </div>
 
             <div class="p-field">
               <label for="intensity">Intensidad (%)</label>
-              <p-inputNumber 
+              <p-inputNumber
                 id="intensity"
                 formControlName="intensity"
                 [min]="50"
                 [max]="100"
                 suffix=" %"
-                class="w-full">
+                class="w-full"
+              >
               </p-inputNumber>
             </div>
           </div>
@@ -525,24 +520,26 @@ export class AthleteCardComponent {
       </form>
 
       <ng-template pTemplate="footer">
-        <p-button 
-          label="Cancelar" 
+        <p-button
+          label="Cancelar"
           icon="pi pi-times"
           styleClass="p-button-text"
-          (onClick)="onClose()">
+          (onClick)="onClose()"
+        >
         </p-button>
-        <p-button 
+        <p-button
           [label]="isEditMode ? 'Actualizar' : 'Crear'"
           icon="pi pi-check"
           [loading]="saving"
           [disabled]="trainingForm.invalid"
-          (onClick)="onSubmit()">
+          (onClick)="onSubmit()"
+        >
         </p-button>
       </ng-template>
     </p-dialog>
   `,
   styleUrls: ['./training-form.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrainingFormComponent implements OnInit {
   @Input() visible = false;
@@ -561,7 +558,7 @@ export class TrainingFormComponent implements OnInit {
     { label: 'Técnica', value: 'technique' },
     { label: 'Resistencia', value: 'endurance' },
     { label: 'Velocidad', value: 'speed' },
-    { label: 'Fuerza', value: 'strength' }
+    { label: 'Fuerza', value: 'strength' },
   ];
 
   constructor(private fb: FormBuilder) {}
@@ -582,7 +579,7 @@ export class TrainingFormComponent implements OnInit {
       athletes: [[], Validators.required],
       duration: [60],
       distance: [1000],
-      intensity: [75]
+      intensity: [75],
     });
   }
 }
@@ -618,53 +615,54 @@ frontend/src/app/shared/components/
 ## Estilos SCSS Responsive
 
 ### training-calendar.component.scss
+
 ```scss
 .training-calendar-wrapper {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  
+
   .calendar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
     border-bottom: 1px solid var(--surface-border);
-    
+
     .calendar-navigation {
       display: flex;
       align-items: center;
       gap: 1rem;
-      
+
       h2 {
         margin: 0;
         font-weight: 600;
       }
     }
-    
+
     .calendar-actions {
       display: flex;
       gap: 1rem;
       align-items: center;
     }
   }
-  
+
   .calendar-content {
     display: flex;
     flex: 1;
     overflow: hidden;
-    
+
     .calendar-main {
       flex: 0 0 70%;
       padding: 1rem;
       overflow-y: auto;
     }
-    
+
     .details-panel {
       flex: 0 0 30%;
       border-left: 1px solid var(--surface-border);
       background: var(--surface-ground);
-      
+
       &.expanded {
         flex: 0 0 40%;
       }
@@ -678,7 +676,7 @@ frontend/src/app/shared/components/
     .calendar-main {
       flex: 0 0 60%;
     }
-    
+
     .details-panel {
       flex: 0 0 40%;
     }
@@ -688,11 +686,11 @@ frontend/src/app/shared/components/
 @media (max-width: 768px) {
   .calendar-content {
     flex-direction: column;
-    
+
     .calendar-main {
       flex: 1;
     }
-    
+
     .details-panel {
       flex: 0 0 300px;
       border-left: none;

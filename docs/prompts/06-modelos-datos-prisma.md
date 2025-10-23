@@ -322,38 +322,31 @@ model PerformanceRecord {
 
 ```typescript
 // libs/shared/common/src/dto/create-athlete.dto.ts
-import {
-  IsString,
-  IsOptional,
-  IsDateString,
-  IsEnum,
-  IsBoolean,
-  IsUUID,
-} from "class-validator";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsString, IsOptional, IsDateString, IsEnum, IsBoolean, IsUUID } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum Gender {
-  MALE = "male",
-  FEMALE = "female",
-  OTHER = "other",
+  MALE = 'male',
+  FEMALE = 'female',
+  OTHER = 'other',
 }
 
 export class CreateAthleteDto {
-  @ApiProperty({ description: "Club ID where athlete belongs" })
+  @ApiProperty({ description: 'Club ID where athlete belongs' })
   @IsUUID()
   clubId: string;
 
-  @ApiPropertyOptional({ description: "User ID if athlete has system access" })
+  @ApiPropertyOptional({ description: 'User ID if athlete has system access' })
   @IsOptional()
   @IsUUID()
   userId?: string;
 
-  @ApiPropertyOptional({ description: "Unique athlete number within club" })
+  @ApiPropertyOptional({ description: 'Unique athlete number within club' })
   @IsOptional()
   @IsString()
   athleteNumber?: string;
 
-  @ApiPropertyOptional({ description: "Date of birth" })
+  @ApiPropertyOptional({ description: 'Date of birth' })
   @IsOptional()
   @IsDateString()
   dateOfBirth?: string;
@@ -363,7 +356,7 @@ export class CreateAthleteDto {
   @IsEnum(Gender)
   gender?: Gender;
 
-  @ApiPropertyOptional({ description: "Emergency contact information" })
+  @ApiPropertyOptional({ description: 'Emergency contact information' })
   @IsOptional()
   emergencyContact?: {
     name: string;
@@ -371,7 +364,7 @@ export class CreateAthleteDto {
     relationship: string;
   };
 
-  @ApiPropertyOptional({ description: "Active status" })
+  @ApiPropertyOptional({ description: 'Active status' })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
@@ -380,9 +373,9 @@ export class CreateAthleteDto {
 
 ```typescript
 // apps/sports-service/src/athletes/athletes.service.ts
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "@libs/shared/database";
-import { CreateAthleteDto, UpdateAthleteDto } from "@libs/shared/common";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '@libs/shared/database';
+import { CreateAthleteDto, UpdateAthleteDto } from '@libs/shared/common';
 
 @Injectable()
 export class AthletesService {
@@ -408,12 +401,12 @@ export class AthletesService {
           user: true,
           performanceRecords: {
             take: 5,
-            orderBy: { recordDate: "desc" },
+            orderBy: { recordDate: 'desc' },
           },
         },
         skip,
         take: limit,
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
       }),
       this.prisma.athlete.count({
         where: { clubId, isActive: true },
@@ -438,14 +431,14 @@ export class AthletesService {
         club: true,
         user: true,
         performanceRecords: {
-          orderBy: { recordDate: "desc" },
+          orderBy: { recordDate: 'desc' },
           take: 10,
         },
       },
     });
 
     if (!athlete) {
-      throw new NotFoundException("Athlete not found");
+      throw new NotFoundException('Athlete not found');
     }
 
     return athlete;
@@ -482,7 +475,7 @@ export class AthletesService {
 export interface SwimmingMetrics {
   distance: number; // meters
   time: number; // seconds
-  stroke: "freestyle" | "backstroke" | "breaststroke" | "butterfly";
+  stroke: 'freestyle' | 'backstroke' | 'breaststroke' | 'butterfly';
   pool_length: 25 | 50; // meters
   split_times?: number[]; // array of split times
   heart_rate?: {
@@ -494,7 +487,7 @@ export interface SwimmingMetrics {
 
 export interface GeneralMetrics {
   duration: number; // minutes
-  intensity: "low" | "medium" | "high";
+  intensity: 'low' | 'medium' | 'high';
   calories_burned?: number;
   notes?: string;
 }
@@ -504,16 +497,10 @@ export type PerformanceMetrics = SwimmingMetrics | GeneralMetrics;
 
 ```typescript
 // libs/shared/common/src/dto/create-performance.dto.ts
-import {
-  IsUUID,
-  IsDateString,
-  IsOptional,
-  IsObject,
-  ValidateNested,
-} from "class-validator";
-import { Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
-import { PerformanceMetrics } from "@libs/shared/types";
+import { IsUUID, IsDateString, IsOptional, IsObject, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
+import { PerformanceMetrics } from '@libs/shared/types';
 
 export class CreatePerformanceDto {
   @ApiProperty()
@@ -535,11 +522,11 @@ export class CreatePerformanceDto {
   recordDate?: string;
 
   @ApiProperty({
-    description: "Performance metrics in JSONB format",
+    description: 'Performance metrics in JSONB format',
     example: {
       distance: 1500,
       time: 900,
-      stroke: "freestyle",
+      stroke: 'freestyle',
       pool_length: 25,
     },
   })

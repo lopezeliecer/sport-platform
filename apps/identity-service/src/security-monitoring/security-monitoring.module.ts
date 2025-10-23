@@ -1,8 +1,8 @@
-import { Module } from "@nestjs/common";
-import { ScheduleModule } from "@nestjs/schedule";
-import { SecurityMonitoringService } from "./security-monitoring.service";
-import { SecurityMonitoringController } from "./security-monitoring.controller";
-import { AuditLogModule } from "../audit/audit-log.module";
+import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
+import { SecurityMonitoringService } from './security-monitoring.service';
+import { SecurityMonitoringController } from './security-monitoring.controller';
+import { AuditLogModule } from '../audit/audit-log.module';
 
 @Module({
   imports: [

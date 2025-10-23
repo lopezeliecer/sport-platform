@@ -1,16 +1,16 @@
 // Multi-tenant utilities for club-based access control and context management
 
-import { Injectable, SetMetadata, ExecutionContext } from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
-import { PrismaClient } from "@prisma/client";
+import { Injectable, SetMetadata, ExecutionContext } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { PrismaClient } from '@prisma/client';
 
 // ============================================================================
 // METADATA KEYS AND DECORATORS
 // ============================================================================
 
-export const CLUB_CONTEXT_KEY = "club_context";
-export const REQUIRE_CLUB_ADMIN = "require_club_admin";
-export const PUBLIC_ENDPOINT = "public_endpoint";
+export const CLUB_CONTEXT_KEY = 'club_context';
+export const REQUIRE_CLUB_ADMIN = 'require_club_admin';
+export const PUBLIC_ENDPOINT = 'public_endpoint';
 
 // Decorator to require club context
 export const ClubContext = () => SetMetadata(CLUB_CONTEXT_KEY, true);
@@ -36,7 +36,7 @@ export class MultiTenantService {
     userId: string,
     clubId: string,
     prisma: PrismaClient,
-    requiredRoles?: string[]
+    requiredRoles?: string[],
   ): Promise<boolean> {
     try {
       const clubMember = await prisma.clubMember.findFirst({
@@ -64,7 +64,7 @@ export class MultiTenantService {
 
       return true;
     } catch (error) {
-      console.error("Error validating club access:", error);
+      console.error('Error validating club access:', error);
       return false;
     }
   }
@@ -75,7 +75,7 @@ export class MultiTenantService {
   async getUserClubRole(
     userId: string,
     clubId: string,
-    prisma: PrismaClient
+    prisma: PrismaClient,
   ): Promise<string | null> {
     try {
       const clubMember = await prisma.clubMember.findFirst({
@@ -91,7 +91,7 @@ export class MultiTenantService {
 
       return clubMember?.role || null;
     } catch (error) {
-      console.error("Error getting user club role:", error);
+      console.error('Error getting user club role:', error);
       return null;
     }
   }
@@ -119,7 +119,7 @@ export class MultiTenantService {
         },
         orderBy: {
           club: {
-            name: "asc",
+            name: 'asc',
           },
         },
       });
@@ -132,7 +132,7 @@ export class MultiTenantService {
           joinedAt: member.joinedAt,
         }));
     } catch (error) {
-      console.error("Error getting user clubs:", error);
+      console.error('Error getting user clubs:', error);
       return [];
     }
   }
@@ -204,7 +204,7 @@ export function createClubContext(clubId: string, userId: string) {
  */
 export async function validateResourceOwnership(
   resourceClubId: string,
-  requestClubId: string
+  requestClubId: string,
 ): Promise<boolean> {
   return resourceClubId === requestClubId;
 }
@@ -214,8 +214,8 @@ export async function validateResourceOwnership(
  */
 export function extractClubId(request: any): string | null {
   // Check headers first
-  if (request.headers["x-club-id"]) {
-    return request.headers["x-club-id"];
+  if (request.headers['x-club-id']) {
+    return request.headers['x-club-id'];
   }
 
   // Check query parameters

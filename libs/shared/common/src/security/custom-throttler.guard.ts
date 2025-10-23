@@ -1,6 +1,6 @@
-import { Injectable, ExecutionContext } from "@nestjs/common";
-import { ThrottlerGuard, ThrottlerException } from "@nestjs/throttler";
-import { Request } from "express";
+import { Injectable, ExecutionContext } from '@nestjs/common';
+import { ThrottlerGuard, ThrottlerException } from '@nestjs/throttler';
+import { Request } from 'express';
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -18,19 +18,15 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     if (req.user && req.user.userId) {
       return `user-${req.user.userId}`;
     }
-    return req.ip || req.socket.remoteAddress || "unknown";
+    return req.ip || req.socket.remoteAddress || 'unknown';
   }
 
-  protected generateKey(
-    context: ExecutionContext,
-    suffix: string,
-    name: string
-  ): string {
+  protected generateKey(context: ExecutionContext, suffix: string, name: string): string {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const route = request.route?.path || request.url;
 
     // Add club context for multi-tenant rate limiting
-    let clubContext = "";
+    let clubContext = '';
     if (request.user?.clubId) {
       clubContext = `-club-${request.user.clubId}`;
     }
@@ -38,15 +34,11 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     return `${name}-${suffix}${clubContext}-${route}`;
   }
 
-  protected async throwThrottlingException(
-    context: ExecutionContext
-  ): Promise<void> {
+  protected async throwThrottlingException(context: ExecutionContext): Promise<void> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const route = request.route?.path || request.url;
 
-    throw new ThrottlerException(
-      `Rate limit exceeded for ${route}. Please try again later.`
-    );
+    throw new ThrottlerException(`Rate limit exceeded for ${route}. Please try again later.`);
   }
 
   protected async shouldSkip(context: ExecutionContext): Promise<boolean> {
@@ -55,7 +47,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     const url = request.url;
 
     // Only skip actual health/monitoring endpoints, not test endpoints
-    const skipPatterns = ["/health", "/metrics"];
+    const skipPatterns = ['/health', '/metrics'];
 
     return skipPatterns.some((pattern) => url.endsWith(pattern));
   }

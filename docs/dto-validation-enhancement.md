@@ -46,21 +46,21 @@ apps/identity-service/src/audit/dto/
 ```typescript
 export class AuditQueryDto {
   @IsOptional()
-  @IsDateString({}, { message: "Start date must be a valid ISO date string" })
+  @IsDateString({}, { message: 'Start date must be a valid ISO date string' })
   startDate?: string;
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
-  @IsNumber({}, { message: "Limit must be a number" })
-  @Min(1, { message: "Limit must be at least 1" })
-  @Max(1000, { message: "Limit cannot exceed 1000" })
+  @IsNumber({}, { message: 'Limit must be a number' })
+  @Min(1, { message: 'Limit must be at least 1' })
+  @Max(1000, { message: 'Limit cannot exceed 1000' })
   limit?: number;
 
   @IsOptional()
-  @IsIn(["timestamp", "severity", "eventType"], {
-    message: "Sort by must be one of: timestamp, severity, eventType",
+  @IsIn(['timestamp', 'severity', 'eventType'], {
+    message: 'Sort by must be one of: timestamp, severity, eventType',
   })
-  sortBy?: "timestamp" | "severity" | "eventType";
+  sortBy?: 'timestamp' | 'severity' | 'eventType';
 
   // ... additional validated fields
 }
@@ -70,16 +70,16 @@ export class AuditQueryDto {
 
 ```typescript
 export class ManualAuditLogDto {
-  @IsNotEmpty({ message: "Event type is required" })
+  @IsNotEmpty({ message: 'Event type is required' })
   @IsEnum(AuditEventType, {
-    message: "Event type must be a valid AuditEventType",
+    message: 'Event type must be a valid AuditEventType',
   })
   eventType: AuditEventType;
 
-  @IsNotEmpty({ message: "Message is required" })
-  @IsString({ message: "Message must be a string" })
-  @MinLength(1, { message: "Message cannot be empty" })
-  @MaxLength(500, { message: "Message cannot exceed 500 characters" })
+  @IsNotEmpty({ message: 'Message is required' })
+  @IsString({ message: 'Message must be a string' })
+  @MinLength(1, { message: 'Message cannot be empty' })
+  @MaxLength(500, { message: 'Message cannot exceed 500 characters' })
   message: string;
 
   // ... additional validated fields
@@ -93,7 +93,7 @@ export class ManualAuditLogDto {
   new ValidationPipe({
     transform: true, // Auto-transform types
     whitelist: true, // Strip unknown properties
-  })
+  }),
 )
 export class AuditLogController {
   // ... endpoints with validated DTOs

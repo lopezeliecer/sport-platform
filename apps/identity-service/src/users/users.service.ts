@@ -1,9 +1,6 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import {
-  User,
-  Prisma,
-} from "@sports-platform/shared/database/prisma/generated/client";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { User, Prisma } from '@sports-platform/shared/database/prisma/generated/client';
 
 @Injectable()
 export class UsersService {

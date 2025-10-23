@@ -1,17 +1,13 @@
-import { SetMetadata } from "@nestjs/common";
-import { Throttle as NestThrottle } from "@nestjs/throttler";
+import { SetMetadata } from '@nestjs/common';
+import { Throttle as NestThrottle } from '@nestjs/throttler';
 
-export const THROTTLE_SKIP_KEY = "throttle_skip";
+export const THROTTLE_SKIP_KEY = 'throttle_skip';
 
 // Simple throttle decorators that override the default (10 req/min)
-export const ThrottleStrict = () =>
-  NestThrottle({ default: { limit: 5, ttl: 60000 } }); // 5 per minute
-export const ThrottleAuth = () =>
-  NestThrottle({ default: { limit: 3, ttl: 60000 } }); // 3 per minute
-export const ThrottleAPI = () =>
-  NestThrottle({ default: { limit: 30, ttl: 60000 } }); // 30 per minute
-export const ThrottleHeavy = () =>
-  NestThrottle({ default: { limit: 1, ttl: 60000 } }); // 1 per minute
+export const ThrottleStrict = () => NestThrottle({ default: { limit: 5, ttl: 60000 } }); // 5 per minute
+export const ThrottleAuth = () => NestThrottle({ default: { limit: 3, ttl: 60000 } }); // 3 per minute
+export const ThrottleAPI = () => NestThrottle({ default: { limit: 30, ttl: 60000 } }); // 30 per minute
+export const ThrottleHeavy = () => NestThrottle({ default: { limit: 1, ttl: 60000 } }); // 1 per minute
 
 // Skip throttling entirely
 export const SkipThrottle = () => SetMetadata(THROTTLE_SKIP_KEY, true);

@@ -1,11 +1,8 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 @Injectable()
-export class PrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
     super({
       datasources: {
@@ -13,11 +10,8 @@ export class PrismaService
           url: process.env.DATABASE_URL,
         },
       },
-      log:
-        process.env.NODE_ENV === "development"
-          ? ["query", "info", "warn", "error"]
-          : ["error"],
-      errorFormat: "pretty",
+      log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
+      errorFormat: 'pretty',
     });
   }
 
@@ -29,15 +23,13 @@ export class PrismaService
       // Set current club context for multi-tenancy
       const clubId = this.getCurrentClubId();
       if (clubId) {
-        await this
-          .$executeRaw`SELECT set_config('app.current_club_id', ${clubId}, true)`;
+        await this.$executeRaw`SELECT set_config('app.current_club_id', ${clubId}, true)`;
       }
 
       // Set current user context for audit logs
       const userId = this.getCurrentUserId();
       if (userId) {
-        await this
-          .$executeRaw`SELECT set_config('app.current_user_id', ${userId}, true)`;
+        await this.$executeRaw`SELECT set_config('app.current_user_id', ${userId}, true)`;
       }
 
       return next(params);
@@ -86,18 +78,18 @@ export class PrismaService
 
   // Multi-tenant models that need automatic club filtering
   private multiTenantModels = [
-    "Athlete",
-    "TrainingTemplate",
-    "TrainingSession",
-    "TrainingAssignment",
-    "PerformanceData",
-    "Competition",
-    "CompetitionEntry",
-    "Payment",
-    "Communication",
-    "MedicalRecord",
-    "File",
-    "AuditLog",
+    'Athlete',
+    'TrainingTemplate',
+    'TrainingSession',
+    'TrainingAssignment',
+    'PerformanceData',
+    'Competition',
+    'CompetitionEntry',
+    'Payment',
+    'Communication',
+    'MedicalRecord',
+    'File',
+    'AuditLog',
   ];
 
   private isMultiTenantModel(model: string | undefined): boolean {
@@ -106,9 +98,7 @@ export class PrismaService
 
   private hasClubIdFilter(params: any): boolean {
     const where = params.args?.where;
-    return (
-      where && (where.clubId !== undefined || where.club?.id !== undefined)
-    );
+    return where && (where.clubId !== undefined || where.club?.id !== undefined);
   }
 
   private addClubIdFilter(params: any, clubId: string): void {
@@ -129,17 +119,14 @@ export class PrismaService
   // Transaction helpers
   async executeInTransaction<T>(
     fn: (
-      prisma: Omit<
-        PrismaService,
-        "$connect" | "$disconnect" | "$on" | "$transaction" | "$use"
-      >
-    ) => Promise<T>
+      prisma: Omit<PrismaService, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>,
+    ) => Promise<T>,
   ): Promise<T> {
     return this.$transaction(async (prisma) => {
       // Preserve context in transaction
       const txPrisma = prisma as PrismaService;
-      txPrisma.setClubContext(this.getCurrentClubId() || "");
-      txPrisma.setUserContext(this.getCurrentUserId() || "");
+      txPrisma.setClubContext(this.getCurrentClubId() || '');
+      txPrisma.setUserContext(this.getCurrentUserId() || '');
 
       return fn(txPrisma);
     });
@@ -148,7 +135,7 @@ export class PrismaService
   // Soft delete helpers
   async softDelete<T extends { isActive?: boolean }>(
     model: string,
-    where: Record<string, any>
+    where: Record<string, any>,
   ): Promise<T> {
     const prismaModel = (this as any)[model.toLowerCase()];
     if (!prismaModel) {
@@ -171,7 +158,7 @@ export class PrismaService
       orderBy?: Record<string, any>;
       include?: Record<string, any>;
       select?: Record<string, any>;
-    } = {}
+    } = {},
   ): Promise<{
     data: T[];
     pagination: {
@@ -187,7 +174,7 @@ export class PrismaService
       page = 1,
       limit = 20,
       where = {},
-      orderBy = { createdAt: "desc" },
+      orderBy = { createdAt: 'desc' },
       include,
       select,
     } = options;
@@ -235,7 +222,7 @@ export class PrismaService
     options: {
       where?: Record<string, any>;
       include?: Record<string, any>;
-    } = {}
+    } = {},
   ): Promise<T[]> {
     const prismaModel = (this as any)[model.toLowerCase()];
     if (!prismaModel) {
@@ -245,7 +232,7 @@ export class PrismaService
     const where = {
       ...options.where,
       [field]: {
-        path: path.split("."),
+        path: path.split('.'),
         equals: value,
       },
     };
@@ -257,10 +244,7 @@ export class PrismaService
   }
 
   // Performance data specific helpers
-  async getAthletePersonalBests(
-    athleteId: string,
-    sport: string
-  ): Promise<any> {
+  async getAthletePersonalBests(athleteId: string, sport: string): Promise<any> {
     const athlete = await this.athlete.findUnique({
       where: { id: athleteId },
       select: { personalBests: true },
@@ -269,11 +253,7 @@ export class PrismaService
     return athlete?.personalBests || {};
   }
 
-  async updatePersonalBest(
-    athleteId: string,
-    event: string,
-    metrics: any
-  ): Promise<void> {
+  async updatePersonalBest(athleteId: string, event: string, metrics: any): Promise<void> {
     await this.athlete.update({
       where: { id: athleteId },
       data: {
@@ -293,7 +273,7 @@ export class PrismaService
     options: {
       limit?: number;
       include?: Record<string, any>;
-    } = {}
+    } = {},
   ): Promise<any[]> {
     const { limit = 10, include } = options;
 
@@ -304,8 +284,8 @@ export class PrismaService
       WHERE a.club_id = ${clubId}::uuid
         AND a.is_active = true
         AND (
-          a.first_name ILIKE ${"%" + searchTerm + "%"} OR
-          a.last_name ILIKE ${"%" + searchTerm + "%"} OR
+          a.first_name ILIKE ${'%' + searchTerm + '%'} OR
+          a.last_name ILIKE ${'%' + searchTerm + '%'} OR
           CONCAT(a.first_name, ' ', a.last_name) % ${searchTerm}
         )
       ORDER BY similarity_score DESC, a.first_name ASC

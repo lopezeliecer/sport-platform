@@ -1,44 +1,37 @@
-import {
-  IsEmail,
-  IsString,
-  IsOptional,
-  IsBoolean,
-  IsEnum,
-  IsUUID,
-} from "class-validator";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsEmail, IsString, IsOptional, IsBoolean, IsEnum, IsUUID } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum AuthProvider {
-  GOOGLE = "GOOGLE",
-  EMAIL = "EMAIL",
-  APPLE = "APPLE",
+  GOOGLE = 'GOOGLE',
+  EMAIL = 'EMAIL',
+  APPLE = 'APPLE',
 }
 
 export enum UserRole {
-  CLUB_ADMIN = "CLUB_ADMIN",
-  COACH = "COACH",
-  ATHLETE = "ATHLETE",
-  MEDICAL_STAFF = "MEDICAL_STAFF",
-  PARENT = "PARENT",
-  CLUB_DIRECTOR = "CLUB_DIRECTOR",
+  CLUB_ADMIN = 'CLUB_ADMIN',
+  COACH = 'COACH',
+  ATHLETE = 'ATHLETE',
+  MEDICAL_STAFF = 'MEDICAL_STAFF',
+  PARENT = 'PARENT',
+  CLUB_DIRECTOR = 'CLUB_DIRECTOR',
 }
 
 export class LoginDto {
-  @ApiProperty({ description: "User email" })
+  @ApiProperty({ description: 'User email' })
   @IsEmail()
   email: string;
 
-  @ApiPropertyOptional({ description: "Password for email login" })
+  @ApiPropertyOptional({ description: 'Password for email login' })
   @IsOptional()
   @IsString()
   password?: string;
 
-  @ApiPropertyOptional({ description: "Google OAuth access token" })
+  @ApiPropertyOptional({ description: 'Google OAuth access token' })
   @IsOptional()
   @IsString()
   googleToken?: string;
 
-  @ApiPropertyOptional({ description: "Device information" })
+  @ApiPropertyOptional({ description: 'Device information' })
   @IsOptional()
   deviceInfo?: {
     userAgent?: string;
@@ -49,11 +42,11 @@ export class LoginDto {
 }
 
 export class GoogleAuthDto {
-  @ApiProperty({ description: "Google OAuth access token" })
+  @ApiProperty({ description: 'Google OAuth access token' })
   @IsString()
   accessToken: string;
 
-  @ApiPropertyOptional({ description: "Device information" })
+  @ApiPropertyOptional({ description: 'Device information' })
   @IsOptional()
   deviceInfo?: {
     userAgent?: string;
@@ -64,145 +57,145 @@ export class GoogleAuthDto {
 }
 
 export class RefreshTokenDto {
-  @ApiProperty({ description: "Refresh token" })
+  @ApiProperty({ description: 'Refresh token' })
   @IsString()
   refreshToken: string;
 }
 
 export class UserInfoDto {
-  @ApiProperty({ description: "User ID" })
+  @ApiProperty({ description: 'User ID' })
   id: string;
 
-  @ApiProperty({ description: "Email address" })
+  @ApiProperty({ description: 'Email address' })
   email: string;
 
-  @ApiProperty({ description: "First name" })
+  @ApiProperty({ description: 'First name' })
   firstName: string;
 
-  @ApiProperty({ description: "Last name" })
+  @ApiProperty({ description: 'Last name' })
   lastName: string;
 
-  @ApiPropertyOptional({ description: "Profile picture URL" })
+  @ApiPropertyOptional({ description: 'Profile picture URL' })
   @IsOptional()
   profilePicture?: string;
 
-  @ApiProperty({ description: "Email verification status" })
+  @ApiProperty({ description: 'Email verification status' })
   emailVerified: boolean;
 
-  @ApiProperty({ description: "Authentication provider" })
+  @ApiProperty({ description: 'Authentication provider' })
   authProvider: AuthProvider;
 
-  @ApiProperty({ description: "Account active status" })
+  @ApiProperty({ description: 'Account active status' })
   isActive: boolean;
 
-  @ApiPropertyOptional({ description: "Last login timestamp" })
+  @ApiPropertyOptional({ description: 'Last login timestamp' })
   @IsOptional()
   lastLoginAt?: Date;
 }
 
 export class ClubMembershipDto {
-  @ApiProperty({ description: "Club ID" })
+  @ApiProperty({ description: 'Club ID' })
   clubId: string;
 
-  @ApiProperty({ description: "Club name" })
+  @ApiProperty({ description: 'Club name' })
   clubName: string;
 
-  @ApiProperty({ description: "Club slug" })
+  @ApiProperty({ description: 'Club slug' })
   clubSlug: string;
 
-  @ApiPropertyOptional({ description: "Club logo URL" })
+  @ApiPropertyOptional({ description: 'Club logo URL' })
   @IsOptional()
   clubLogo?: string;
 
-  @ApiProperty({ description: "User role in this club" })
+  @ApiProperty({ description: 'User role in this club' })
   role: UserRole;
 
-  @ApiProperty({ description: "Membership active status" })
+  @ApiProperty({ description: 'Membership active status' })
   isActive: boolean;
 
-  @ApiProperty({ description: "Permissions in this club" })
+  @ApiProperty({ description: 'Permissions in this club' })
   permissions: string[];
 
-  @ApiPropertyOptional({ description: "Role expiration date" })
+  @ApiPropertyOptional({ description: 'Role expiration date' })
   @IsOptional()
   expiresAt?: Date;
 }
 
 export class AuthResponseDto {
-  @ApiProperty({ description: "Access token (JWT)" })
+  @ApiProperty({ description: 'Access token (JWT)' })
   accessToken: string;
 
-  @ApiProperty({ description: "Refresh token" })
+  @ApiProperty({ description: 'Refresh token' })
   refreshToken: string;
 
-  @ApiProperty({ description: "Token expiration time in seconds" })
+  @ApiProperty({ description: 'Token expiration time in seconds' })
   expiresIn: number;
 
-  @ApiProperty({ description: "Token type" })
-  tokenType: string = "Bearer";
+  @ApiProperty({ description: 'Token type' })
+  tokenType: string = 'Bearer';
 
-  @ApiProperty({ description: "User information" })
+  @ApiProperty({ description: 'User information' })
   user: UserInfoDto;
 
-  @ApiProperty({ description: "Available clubs for the user" })
+  @ApiProperty({ description: 'Available clubs for the user' })
   clubs: ClubMembershipDto[];
 
-  @ApiPropertyOptional({ description: "Default club ID" })
+  @ApiPropertyOptional({ description: 'Default club ID' })
   @IsOptional()
   defaultClubId?: string;
 }
 
 export class SwitchClubDto {
-  @ApiProperty({ description: "Target club ID" })
+  @ApiProperty({ description: 'Target club ID' })
   @IsUUID()
   clubId: string;
 }
 
 export class LogoutDto {
-  @ApiPropertyOptional({ description: "Logout from all devices" })
+  @ApiPropertyOptional({ description: 'Logout from all devices' })
   @IsOptional()
   @IsBoolean()
   allDevices?: boolean = false;
 }
 
 export class RevokeSessionDto {
-  @ApiProperty({ description: "Session ID to revoke" })
+  @ApiProperty({ description: 'Session ID to revoke' })
   @IsUUID()
   sessionId: string;
 
-  @ApiPropertyOptional({ description: "Reason for revocation" })
+  @ApiPropertyOptional({ description: 'Reason for revocation' })
   @IsOptional()
   @IsString()
   reason?: string;
 }
 
 export class SessionInfoDto {
-  @ApiProperty({ description: "Session ID" })
+  @ApiProperty({ description: 'Session ID' })
   id: string;
 
-  @ApiProperty({ description: "Device information" })
+  @ApiProperty({ description: 'Device information' })
   deviceInfo: any;
 
-  @ApiPropertyOptional({ description: "IP address" })
+  @ApiPropertyOptional({ description: 'IP address' })
   @IsOptional()
   ipAddress?: string;
 
-  @ApiPropertyOptional({ description: "User agent" })
+  @ApiPropertyOptional({ description: 'User agent' })
   @IsOptional()
   userAgent?: string;
 
-  @ApiProperty({ description: "Session status" })
+  @ApiProperty({ description: 'Session status' })
   status: string;
 
-  @ApiProperty({ description: "Last activity timestamp" })
+  @ApiProperty({ description: 'Last activity timestamp' })
   lastActivityAt: Date;
 
-  @ApiProperty({ description: "Session creation timestamp" })
+  @ApiProperty({ description: 'Session creation timestamp' })
   createdAt: Date;
 
-  @ApiProperty({ description: "Session expiration timestamp" })
+  @ApiProperty({ description: 'Session expiration timestamp' })
   expiresAt: Date;
 
-  @ApiProperty({ description: "Is current session" })
+  @ApiProperty({ description: 'Is current session' })
   isCurrent: boolean;
 }

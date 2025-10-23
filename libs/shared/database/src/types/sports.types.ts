@@ -6,11 +6,11 @@ export interface SwimmingMetrics {
   // Basic performance data
   distance: number; // meters
   time: number; // seconds
-  stroke: "freestyle" | "backstroke" | "breaststroke" | "butterfly" | "medley";
+  stroke: 'freestyle' | 'backstroke' | 'breaststroke' | 'butterfly' | 'medley';
 
   // Pool information
   poolLength: 25 | 50; // meters
-  poolType: "indoor" | "outdoor";
+  poolType: 'indoor' | 'outdoor';
   waterTemperature?: number; // celsius
 
   // Performance details
@@ -46,11 +46,11 @@ export interface SwimmingMetrics {
 
   // Effort and perception
   ratingPerceivedExertion?: number; // 1-10 scale (RPE)
-  effortLevel?: "easy" | "moderate" | "hard" | "very_hard" | "maximum";
+  effortLevel?: 'easy' | 'moderate' | 'hard' | 'very_hard' | 'maximum';
 
   // Environmental conditions
   conditions?: {
-    weather?: "sunny" | "cloudy" | "rainy" | "windy";
+    weather?: 'sunny' | 'cloudy' | 'rainy' | 'windy';
     humidity?: number; // percentage
     temperature?: number; // celsius
     altitude?: number; // meters above sea level
@@ -66,18 +66,18 @@ export interface TrackFieldMetrics {
 
   // Event type
   eventType:
-    | "sprint"
-    | "middle_distance"
-    | "long_distance"
-    | "hurdles"
-    | "jump"
-    | "throw"
-    | "combined"
-    | "relay";
+    | 'sprint'
+    | 'middle_distance'
+    | 'long_distance'
+    | 'hurdles'
+    | 'jump'
+    | 'throw'
+    | 'combined'
+    | 'relay';
 
   // Track information
-  trackType: "indoor" | "outdoor";
-  trackSurface: "synthetic" | "cinder" | "grass" | "road";
+  trackType: 'indoor' | 'outdoor';
+  trackSurface: 'synthetic' | 'cinder' | 'grass' | 'road';
 
   // Performance details
   splitTimes?: number[]; // lap or segment times
@@ -107,17 +107,11 @@ export interface TrackFieldMetrics {
 
 export interface GeneralFitnessMetrics {
   // Workout type
-  workoutType:
-    | "strength"
-    | "cardio"
-    | "flexibility"
-    | "balance"
-    | "endurance"
-    | "recovery";
+  workoutType: 'strength' | 'cardio' | 'flexibility' | 'balance' | 'endurance' | 'recovery';
 
   // Duration and intensity
   duration: number; // minutes
-  intensity: "low" | "moderate" | "high" | "very_high";
+  intensity: 'low' | 'moderate' | 'high' | 'very_high';
 
   // Physiological data
   heartRate?: {
@@ -150,10 +144,7 @@ export interface GeneralFitnessMetrics {
 }
 
 // Union type for all possible metrics
-export type PerformanceMetrics =
-  | SwimmingMetrics
-  | TrackFieldMetrics
-  | GeneralFitnessMetrics;
+export type PerformanceMetrics = SwimmingMetrics | TrackFieldMetrics | GeneralFitnessMetrics;
 
 // ============================================================================
 // TRAINING STRUCTURE TYPES
@@ -168,7 +159,7 @@ export interface TrainingExercise {
   repetitions?: number;
   sets?: number;
   restTime?: number; // seconds
-  intensity?: "low" | "moderate" | "high" | "very_high";
+  intensity?: 'low' | 'moderate' | 'high' | 'very_high';
   targetHeartRate?: {
     min?: number;
     max?: number;
@@ -198,7 +189,7 @@ export interface TrainingPlan {
   totalDuration?: number; // calculated total minutes
   totalDistance?: number; // calculated total meters
   estimatedCalories?: number;
-  difficultyLevel?: "beginner" | "intermediate" | "advanced" | "elite";
+  difficultyLevel?: 'beginner' | 'intermediate' | 'advanced' | 'elite';
   focus?: string[]; // e.g., ['endurance', 'technique', 'speed']
   equipment?: string[];
   notes?: string;
@@ -209,7 +200,7 @@ export interface TrainingPlan {
 // ============================================================================
 
 export interface NotificationRecipient {
-  type: "user" | "role" | "group" | "all_club";
+  type: 'user' | 'role' | 'group' | 'all_club';
   id?: string; // user ID or role name
   criteria?: {
     sport?: string;
@@ -249,7 +240,7 @@ export interface MedicalHistory {
   }[];
   allergies?: {
     allergen: string;
-    severity: "mild" | "moderate" | "severe" | "life_threatening";
+    severity: 'mild' | 'moderate' | 'severe' | 'life_threatening';
     reaction: string;
   }[];
   surgeries?: {
@@ -260,10 +251,10 @@ export interface MedicalHistory {
   injuries?: {
     type: string;
     date: string;
-    severity: "minor" | "moderate" | "severe";
+    severity: 'minor' | 'moderate' | 'severe';
     treatment: string;
     recoveryTime?: number; // days
-    status: "active" | "recovered" | "chronic";
+    status: 'active' | 'recovered' | 'chronic';
   }[];
 }
 
@@ -321,7 +312,7 @@ export interface NutritionPlan {
 export interface PaymentBreakdown {
   baseAmount: number;
   discounts?: {
-    type: "percentage" | "fixed";
+    type: 'percentage' | 'fixed';
     value: number;
     reason: string;
   }[];
@@ -338,7 +329,7 @@ export interface PaymentBreakdown {
 }
 
 export interface RecurringPaymentSchedule {
-  frequency: "weekly" | "monthly" | "quarterly" | "annually";
+  frequency: 'weekly' | 'monthly' | 'quarterly' | 'annually';
   startDate: string;
   endDate?: string;
   dayOfMonth?: number; // for monthly payments
@@ -357,7 +348,7 @@ export interface CompetitionEvent {
   sport: string;
   category: string;
   ageGroup?: string;
-  gender?: "male" | "female" | "mixed";
+  gender?: 'male' | 'female' | 'mixed';
   format: string; // e.g., 'time_trial', 'elimination', 'points'
   qualifying_standard?: {
     time?: number;
@@ -393,8 +384,8 @@ export interface FileMetadata {
   thumbnailUrl?: string;
   previewUrl?: string;
   checksum?: string;
-  virus_scan_result?: "clean" | "infected" | "pending";
-  processing_status?: "pending" | "completed" | "failed";
+  virus_scan_result?: 'clean' | 'infected' | 'pending';
+  processing_status?: 'pending' | 'completed' | 'failed';
 }
 
 // ============================================================================
@@ -430,10 +421,7 @@ export interface ClubSettings {
   privacy: {
     dataRetentionPeriod: number; // days
     parentalConsentRequired: boolean;
-    medicalDataAccessLevel:
-      | "restricted"
-      | "coaches_only"
-      | "medical_staff_only";
+    medicalDataAccessLevel: 'restricted' | 'coaches_only' | 'medical_staff_only';
   };
 }
 
@@ -446,7 +434,7 @@ export interface UserPreferences {
     email: boolean;
     sms: boolean;
     push: boolean;
-    frequency: "immediate" | "daily_digest" | "weekly_digest";
+    frequency: 'immediate' | 'daily_digest' | 'weekly_digest';
   };
   dashboard: {
     defaultView: string;
@@ -454,7 +442,7 @@ export interface UserPreferences {
     refreshInterval: number; // seconds
   };
   privacy: {
-    profileVisibility: "public" | "club_only" | "private";
+    profileVisibility: 'public' | 'club_only' | 'private';
     performanceDataSharing: boolean;
     contactInfoSharing: boolean;
   };

@@ -1,14 +1,6 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import {
-  CreateAthleteDto,
-  UpdateAthleteDto,
-  AthleteResponseDto,
-} from "./dto/athlete.dto";
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateAthleteDto, UpdateAthleteDto, AthleteResponseDto } from './dto/athlete.dto';
 
 @Injectable()
 export class AthletesService {
@@ -17,7 +9,7 @@ export class AthletesService {
   async create(
     createAthleteDto: CreateAthleteDto,
     clubId: string,
-    userId: string
+    userId: string,
   ): Promise<AthleteResponseDto> {
     try {
       const athlete = await this.prisma.athlete.create({
@@ -37,7 +29,7 @@ export class AthletesService {
 
       return this.mapToResponseDto(athlete);
     } catch (error) {
-      throw new BadRequestException("Failed to create athlete");
+      throw new BadRequestException('Failed to create athlete');
     }
   }
 
@@ -50,9 +42,9 @@ export class AthletesService {
       // Add search filters if provided
       if (searchDto?.search) {
         where.OR = [
-          { firstName: { contains: searchDto.search, mode: "insensitive" } },
-          { lastName: { contains: searchDto.search, mode: "insensitive" } },
-          { email: { contains: searchDto.search, mode: "insensitive" } },
+          { firstName: { contains: searchDto.search, mode: 'insensitive' } },
+          { lastName: { contains: searchDto.search, mode: 'insensitive' } },
+          { email: { contains: searchDto.search, mode: 'insensitive' } },
         ];
       }
 
@@ -73,7 +65,7 @@ export class AthletesService {
           },
           skip: searchDto?.offset || 0,
           take: searchDto?.limit || 20,
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: 'desc' },
         }),
         this.prisma.athlete.count({ where }),
       ]);
@@ -85,15 +77,11 @@ export class AthletesService {
         limit: searchDto?.limit || 20,
       };
     } catch (error) {
-      throw new BadRequestException("Failed to fetch athletes");
+      throw new BadRequestException('Failed to fetch athletes');
     }
   }
 
-  async findOne(
-    id: string,
-    clubId: string,
-    userId: string
-  ): Promise<AthleteResponseDto> {
+  async findOne(id: string, clubId: string, userId: string): Promise<AthleteResponseDto> {
     try {
       const athlete = await this.prisma.athlete.findFirst({
         where: {
@@ -111,7 +99,7 @@ export class AthletesService {
       });
 
       if (!athlete) {
-        throw new NotFoundException("Athlete not found");
+        throw new NotFoundException('Athlete not found');
       }
 
       return this.mapToResponseDto(athlete);
@@ -119,7 +107,7 @@ export class AthletesService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new BadRequestException("Failed to fetch athlete");
+      throw new BadRequestException('Failed to fetch athlete');
     }
   }
 
@@ -127,7 +115,7 @@ export class AthletesService {
     id: string,
     updateAthleteDto: UpdateAthleteDto,
     clubId: string,
-    userId: string
+    userId: string,
   ): Promise<AthleteResponseDto> {
     try {
       // Verify athlete exists and belongs to club
@@ -136,7 +124,7 @@ export class AthletesService {
       });
 
       if (!existingAthlete) {
-        throw new NotFoundException("Athlete not found");
+        throw new NotFoundException('Athlete not found');
       }
 
       const athlete = await this.prisma.athlete.update({
@@ -157,7 +145,7 @@ export class AthletesService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new BadRequestException("Failed to update athlete");
+      throw new BadRequestException('Failed to update athlete');
     }
   }
 
@@ -169,7 +157,7 @@ export class AthletesService {
       });
 
       if (!existingAthlete) {
-        throw new NotFoundException("Athlete not found");
+        throw new NotFoundException('Athlete not found');
       }
 
       await this.prisma.athlete.delete({
@@ -179,15 +167,11 @@ export class AthletesService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new BadRequestException("Failed to delete athlete");
+      throw new BadRequestException('Failed to delete athlete');
     }
   }
 
-  async getStatistics(
-    id: string,
-    clubId: string,
-    userId: string
-  ): Promise<any> {
+  async getStatistics(id: string, clubId: string, userId: string): Promise<any> {
     try {
       // Verify athlete exists and belongs to club
       const athlete = await this.prisma.athlete.findFirst({
@@ -195,7 +179,7 @@ export class AthletesService {
       });
 
       if (!athlete) {
-        throw new NotFoundException("Athlete not found");
+        throw new NotFoundException('Athlete not found');
       }
 
       // Return basic statistics
@@ -212,7 +196,7 @@ export class AthletesService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new BadRequestException("Failed to fetch athlete statistics");
+      throw new BadRequestException('Failed to fetch athlete statistics');
     }
   }
 

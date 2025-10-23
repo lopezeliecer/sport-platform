@@ -3,6 +3,7 @@
 ## Overview
 
 The Sports Platform uses a **developer-friendly** pre-commit validation system that:
+
 - ✅ **Never blocks** developers from committing
 - 📋 **Shows all issues** before commit (errors and warnings)
 - 🤔 **Asks for confirmation** if issues are found
@@ -13,13 +14,17 @@ The Sports Platform uses a **developer-friendly** pre-commit validation system t
 When you run `git commit`, the following happens:
 
 ### 1. Validation Script Runs
+
 The validation script checks staged files for:
+
 - **ESLint issues** (code quality, style)
 - **Formatting issues** (Prettier compliance)
 - **TypeScript errors** (type safety)
 
 ### 2. Results Displayed
+
 You'll see a summary of all issues found (if any):
+
 ```
 📊 Validation Summary
 ════════════════════════════════════════════════════
@@ -32,17 +37,21 @@ You'll see a summary of all issues found (if any):
 If issues are found, you have **three options**:
 
 #### Option 1: Commit Anyway ✅
+
 ```
 [1] Proceed with commit anyway (I'll fix later)
 ```
+
 - **Use when:** You want to commit and fix issues later
 - **Result:** Commit proceeds, but CI/CD may catch issues
 - **Note:** Pipeline might fail - better to choose option 3
 
 #### Option 2: Cancel and Fix 🛑
+
 ```
 [2] Cancel commit (let me fix the issues)
 ```
+
 - **Use when:** You want to fix issues now
 - **Result:** Commit is cancelled, gives you commands to fix issues
 - **Commands displayed:**
@@ -53,11 +62,13 @@ If issues are found, you have **three options**:
   ```
 
 #### Option 3: Auto-Fix and Retry 🔧
+
 ```
 [3] Run auto-fix formatter and retry validation
 ```
+
 - **Use when:** You want automatic fixes
-- **Result:** 
+- **Result:**
   - Auto-fixes applied
   - Files re-staged
   - Validation runs again
@@ -67,6 +78,7 @@ If issues are found, you have **three options**:
 ## Common Workflows
 
 ### Workflow 1: Quick Commit (I'll fix later)
+
 ```bash
 git add .
 git commit -m "Add new feature"
@@ -77,6 +89,7 @@ git commit -m "Add new feature"
 ```
 
 ### Workflow 2: Clean Commit (Fix now)
+
 ```bash
 git add .
 git commit -m "Add new feature"
@@ -94,6 +107,7 @@ git commit -m "Add new feature"
 ```
 
 ### Workflow 3: Smart Commit (Auto-fix)
+
 ```bash
 git add .
 git commit -m "Add new feature"
@@ -143,12 +157,14 @@ npm run type-check:all
 ## What Gets Validated
 
 ### ESLint Checks
+
 - Code quality rules
 - TypeScript best practices
 - Unused variables/imports
 - Code style consistency
 
 ### Formatting Checks
+
 - Single vs double quotes
 - Trailing commas
 - Line length (100 characters)
@@ -156,6 +172,7 @@ npm run type-check:all
 - Semicolons
 
 ### TypeScript Checks
+
 - Type safety
 - Missing type annotations
 - Type compatibility
@@ -163,22 +180,27 @@ npm run type-check:all
 ## Fixing Common Issues
 
 ### Issue: Single vs Double Quotes
+
 **Error:** `Replace "string" with 'string'`
 **Fix:** Run `npm run format:root` (auto-fixes)
 
 ### Issue: Unused Variables
+
 **Error:** `'variable' is defined but never used`
 **Fix:** Remove the variable or prefix with underscore if intentionally unused: `_variable`
 
 ### Issue: Line Too Long
+
 **Error:** `Line too long`
 **Fix:** Run `npm run format:root` (auto-fixes via line wrapping)
 
 ### Issue: TypeScript Type Error
+
 **Error:** `Unsafe member access on any value`
 **Fix:** Add proper type annotations or cast the value
 
 ### Issue: Missing Await
+
 **Warning:** `Missing await in async function`
 **Fix:** Add `await` before the promise or remove `async` if not needed
 
@@ -187,7 +209,9 @@ npm run type-check:all
 To make this even smoother, configure your editor:
 
 ### VS Code
+
 Add to `.vscode/settings.json`:
+
 ```json
 {
   "editor.formatOnSave": true,
@@ -212,6 +236,7 @@ This approach follows these principles:
 ## What Happens in CI/CD
 
 Even if you commit with issues, the CI/CD pipeline will:
+
 1. Run all linting and type checks
 2. Block merge if issues fail
 3. Require fixes before PR can be merged
@@ -221,12 +246,14 @@ So issues caught by the pre-commit hook will eventually need fixing anyway!
 ## Tips & Best Practices
 
 ✅ **Do:**
+
 - Use option [3] (auto-fix) for quick cleaning
 - Run `npm run format:root` regularly
 - Fix TypeScript errors early (harder to refactor later)
 - Commit frequently with small, focused changes
 
 ❌ **Don't:**
+
 - Use `--no-verify` routinely
 - Ignore TypeScript errors
 - Commit large batches with formatting issues
@@ -235,6 +262,7 @@ So issues caught by the pre-commit hook will eventually need fixing anyway!
 ## Troubleshooting
 
 ### Pre-commit hook not running
+
 ```bash
 # Ensure hook is executable
 chmod +x .husky/pre-commit
@@ -245,6 +273,7 @@ npx husky install
 ```
 
 ### Hook runs but my changes aren't validated
+
 ```bash
 # Ensure files are staged
 git add .  # Stage all changes first
@@ -252,6 +281,7 @@ git commit -m "message"
 ```
 
 ### Auto-fix option (3) doesn't work
+
 ```bash
 # Run manual fix commands
 npm run lint:fix

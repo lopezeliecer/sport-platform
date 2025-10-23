@@ -36,14 +36,14 @@ npm run format
 
 ## ESLint Common Issues
 
-| Issue | Fix |
-|-------|-----|
-| Unused variables | Remove variable or prefix with `_` (e.g., `_unused`) |
-| Unexpected `any` | Replace with specific type |
-| Missing return type | Add `: ReturnType` to function |
-| Trailing commas | Prettier will add automatically |
-| Double quotes | Prettier will convert to single quotes |
-| Multiple blank lines | Prettier will normalize to single |
+| Issue                | Fix                                                  |
+| -------------------- | ---------------------------------------------------- |
+| Unused variables     | Remove variable or prefix with `_` (e.g., `_unused`) |
+| Unexpected `any`     | Replace with specific type                           |
+| Missing return type  | Add `: ReturnType` to function                       |
+| Trailing commas      | Prettier will add automatically                      |
+| Double quotes        | Prettier will convert to single quotes               |
+| Multiple blank lines | Prettier will normalize to single                    |
 
 ## Before Committing
 
@@ -90,19 +90,23 @@ git commit --no-verify
 ## Troubleshooting
 
 **"ESLint parsing errors"**
+
 - Clear node_modules: `rm -rf node_modules && npm install`
 - Rebuild: `npm run build`
 
 **"Different results in IDE vs CLI"**
+
 - Restart VS Code
 - Check `.vscode/settings.json` is properly formatted
 
 **"Prettier conflicts with ESLint"**
+
 - This should not happen (already configured)
 - Clear ESLint cache: `npx eslint --cache --fix .`
 
 ## Documentation
 
 For detailed configuration and rules, see:
+
 - `docs/LINTING_GUIDE.md` - Complete linting guide
 - `LINTING_SETUP.md` - Setup summary and status
