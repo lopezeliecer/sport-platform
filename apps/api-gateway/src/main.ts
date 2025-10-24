@@ -43,24 +43,7 @@ async function bootstrap() {
   // CORS Configuration
   app.enableCors(securityConfig.cors);
 
-  // Global Security Validation Pipe
-  app.useGlobalPipes(
-    new SecurityValidationPipe(sanitizationService),
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
-      exceptionFactory: (errors) => {
-        console.error('Validation errors:', errors);
-        return new ValidationPipe().createExceptionFactory()(errors);
-      },
-    }),
-  );
-
-  // Global Rate Limiting - Configured in AppModule with ThrottlerGuard
+  // Global Security Validation Pipe and Rate Limiting - Configured in AppModule with ThrottlerGuard
   app.useGlobalPipes(
     new SecurityValidationPipe(sanitizationService),
     new ValidationPipe({
