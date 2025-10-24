@@ -3,12 +3,15 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # IDEs and editors
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
 
 # OS
 .DS_Store
@@ -25,8 +28,16 @@ Thumbs.db
 dist/
 build/
 out/
-
-# Logs
+*.tsbuildinfo
+*.d.ts
+*.d.ts.map
+*.js.map
+apps/*/dist/
+libs/*/dist/
+libs/*/src/**/*.js
+libs/*/src/**/*.js.map
+libs/*/src/**/*.d.ts
+libs/*/src/**/*.d.ts.map
 logs/
 *.log
 
@@ -53,5 +64,28 @@ temp/
 # Angular specific
 .angular/
 
+# NestJS build outputs
+apps/*/dist/
+libs/*/dist/
+
 # Prisma
 libs/shared/database/prisma/generated/
+
+# Package lock files (optional - for monorepo consistency)
+package-lock.json
+
+# IDE files
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Misc
+.cache/
+.parcel-cache
+.vuepress/dist
+dist
+.cache
+.vuepress/dist
