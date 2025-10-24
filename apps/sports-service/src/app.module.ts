@@ -2,7 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { AthletesModule } from './athletes/athletes.module';
-import { SharedAuthModule } from '../../../libs/shared/auth/src/shared-auth.module';
+import { TrainingModule } from './training/training.module';
+import { PerformanceModule } from './performance/performance.module';
+import { CompetitionsModule } from './competitions/competitions.module';
+import { SharedAuthModule } from '@sports-platform/shared/auth';
 
 @Module({
   imports: [
@@ -10,9 +13,12 @@ import { SharedAuthModule } from '../../../libs/shared/auth/src/shared-auth.modu
       isGlobal: true,
       envFilePath: ['../../.env', '.env'],
     }),
-    SharedAuthModule, // Módulo de autenticación compartido
+    SharedAuthModule,
     PrismaModule,
     AthletesModule,
+    TrainingModule,
+    PerformanceModule,
+    CompetitionsModule,
   ],
   controllers: [],
   providers: [],
