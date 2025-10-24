@@ -7,6 +7,34 @@ import {
 } from './dto/create-training-session.dto';
 import { RecordAttendanceDto, AttendanceStatus } from './dto/attendance.dto';
 
+// Type-safe mapping between DTO AttendanceStatus and Prisma AttendanceStatus
+type PrismaAttendanceStatus = 'SCHEDULED' | 'PRESENT' | 'ABSENT' | 'LATE' | 'EARLY_DEPARTURE';
+
+/**
+ * Type for session attendance summary with all properties
+ */
+export interface SessionAttendanceSummary {
+  sessionId: string;
+  date: Date;
+  total: number;
+  present: number;
+  absent: number;
+  late: number;
+  earlyDeparture: number;
+  attendanceRate: number;
+}
+
+/**
+ * Maps DTO AttendanceStatus to Prisma AttendanceStatus with type safety
+ */
+const attendanceStatusMap: Record<AttendanceStatus, PrismaAttendanceStatus> = {
+  [AttendanceStatus.PRESENT]: 'PRESENT',
+  [AttendanceStatus.ABSENT]: 'ABSENT',
+  [AttendanceStatus.LATE]: 'LATE',
+  [AttendanceStatus.EXCUSED]: 'ABSENT', // Map EXCUSED to ABSENT with notes
+  [AttendanceStatus.INJURED]: 'ABSENT', // Map INJURED to ABSENT with notes
+};
+
 @Injectable()
 export class TrainingService {
   constructor(private readonly prisma: PrismaService) {}
@@ -293,6 +321,9 @@ export class TrainingService {
       throw new Error(`Training session ${sessionId} not found`);
     }
 
+    // Map DTO status to Prisma status with type safety
+    const prismaStatus = attendanceStatusMap[status];
+
     // Update or create training assignment record
     const attendance = await this.prisma.trainingAssignment.upsert({
       where: {
@@ -302,7 +333,7 @@ export class TrainingService {
         },
       },
       update: {
-        attendanceStatus: status as any,
+        attendanceStatus: prismaStatus,
         checkedInAt: checkInTime ? new Date(checkInTime) : undefined,
         checkedOutAt: checkOutTime ? new Date(checkOutTime) : undefined,
         coachNotes: notes,
@@ -313,7 +344,7 @@ export class TrainingService {
         athleteId,
         clubId,
         assignedBy: 'system',
-        attendanceStatus: status as any,
+        attendanceStatus: prismaStatus,
         checkedInAt: checkInTime ? new Date(checkInTime) : undefined,
         checkedOutAt: checkOutTime ? new Date(checkOutTime) : undefined,
         coachNotes: notes,
@@ -331,7 +362,10 @@ export class TrainingService {
   /**
    * Get attendance summary for a session
    */
-  async getSessionAttendanceSummary(sessionId: string, clubId: string) {
+  async getSessionAttendanceSummary(
+    sessionId: string,
+    clubId: string,
+  ): Promise<SessionAttendanceSummary> {
     const session = await this.getSessionById(sessionId, clubId);
 
     const attendances = await this.prisma.trainingAssignment.groupBy({
@@ -340,21 +374,25 @@ export class TrainingService {
       _count: true,
     });
 
-    const summary = {
+    const present = attendances.find((a) => a.attendanceStatus === 'PRESENT')?._count || 0;
+    const absent = attendances.find((a) => a.attendanceStatus === 'ABSENT')?._count || 0;
+    const late = attendances.find((a) => a.attendanceStatus === 'LATE')?._count || 0;
+    const earlyDeparture =
+      attendances.find((a) => a.attendanceStatus === 'EARLY_DEPARTURE')?._count || 0;
+
+    const total = present + absent + late + earlyDeparture;
+    const attendanceRate = total > 0 ? (present / total) * 100 : 0;
+
+    return {
       sessionId,
       date: session.scheduledAt,
-      total: attendances.reduce((sum, a) => sum + (a._count || 0), 0),
-      present: attendances.find((a) => a.attendanceStatus === 'PRESENT')?._count || 0,
-      absent: attendances.find((a) => a.attendanceStatus === 'ABSENT')?._count || 0,
-      late: attendances.find((a) => a.attendanceStatus === 'LATE')?._count || 0,
-      earlyDeparture:
-        attendances.find((a) => a.attendanceStatus === 'EARLY_DEPARTURE')?._count || 0,
+      total,
+      present,
+      absent,
+      late,
+      earlyDeparture,
+      attendanceRate,
     };
-
-    const total = summary.present + summary.absent + summary.late + summary.earlyDeparture;
-    summary['attendanceRate'] = total > 0 ? (summary.present / total) * 100 : 0;
-
-    return summary;
   }
 
   /**

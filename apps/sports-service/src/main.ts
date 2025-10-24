@@ -25,20 +25,17 @@ async function bootstrap() {
   // Security Headers with Helmet
   app.use(helmet(securityConfig.helmet as any));
 
-  // Override specific headers if needed
+  // Override specific headers if needed and generate unique request ID per request
   app.use((req: any, res: any, next: any) => {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-Sports-Service', 'Sports-Service-v1');
+    res.setHeader('X-Request-ID', randomUUID());
+    res.setHeader('X-API-Version', 'v1');
     next();
   });
 
-  // Custom security headers
-  app.use(
-    addCustomSecurityHeaders({
-      'X-API-Version': 'v1',
-      'X-Request-ID': randomUUID(),
-    } as any),
-  );
+  // Custom security headers (without X-Request-ID which is now per-request)
+  app.use(addCustomSecurityHeaders({} as any));
 
   // CORS configuration
   app.enableCors(securityConfig.cors);

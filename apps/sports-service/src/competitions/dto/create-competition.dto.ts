@@ -4,9 +4,9 @@ import {
   IsNotEmpty,
   IsDateString,
   IsOptional,
-  IsArray,
   IsEnum,
   IsNumber,
+  IsBoolean,
 } from 'class-validator';
 
 export enum CompetitionStatus {
@@ -108,7 +108,7 @@ export class RecordCompetitionResultDto {
   qualified?: boolean;
 
   @ApiProperty({ description: 'Notes about the performance' })
-  @IsString()
+  @IsBoolean()
   @IsOptional()
   notes?: string;
 }

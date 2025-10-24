@@ -12,7 +12,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { TrainingService } from './training.service';
+import { TrainingService, SessionAttendanceSummary } from './training.service';
 import { CreateTrainingSessionDto } from './dto/create-training-session.dto';
 import { RecordAttendanceDto } from './dto/attendance.dto';
 import {
@@ -165,7 +165,10 @@ export class TrainingController {
     status: 200,
     description: 'Attendance summary retrieved successfully',
   })
-  async getAttendanceSummary(@Param('id') sessionId: string, @CurrentClubId() clubId: string) {
+  async getAttendanceSummary(
+    @Param('id') sessionId: string,
+    @CurrentClubId() clubId: string,
+  ): Promise<SessionAttendanceSummary> {
     return this.trainingService.getSessionAttendanceSummary(sessionId, clubId);
   }
 
