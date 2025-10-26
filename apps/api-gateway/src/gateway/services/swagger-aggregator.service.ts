@@ -219,7 +219,14 @@ export class SwaggerAggregatorService {
 
           // Merge all HTTP methods for this path
           if (typeof methods === 'object' && methods !== null) {
-            Object.assign(paths[path], methods);
+            Object.entries(methods).forEach(([method, operation]) => {
+              if (paths[path][method]) {
+                this.logger.warn(
+                  `SwaggerAggregator: Conflict detected for path "${path}" and method "${method}" between services. Overwriting previous definition.`,
+                );
+              }
+              paths[path][method] = operation;
+            });
 
             // Track which methods reference which tags
             Object.values(methods as Record<string, OpenAPIOperation>).forEach((operation) => {
@@ -246,7 +253,7 @@ export class SwaggerAggregatorService {
       const docTags = docs.tags as Array<{ name: string; description?: string }>;
       if (Array.isArray(docTags)) {
         docTags.forEach((tag) => {
-          const uniqueTagName = `[${serviceKey.toUpperCase()}] ${tag.name}`;
+          const uniqueTagName = this.formatServiceTag(serviceKey, tag.name);
           if (!tagNames.has(uniqueTagName)) {
             tags.push({
               name: uniqueTagName,
@@ -261,10 +268,10 @@ export class SwaggerAggregatorService {
 
     // Add service status tags
     this.services.forEach((service) => {
-      const serviceKey = service.key.toUpperCase();
-      if (!tagNames.has(`SERVICE: ${serviceKey}`)) {
+      const statusTagName = `SERVICE: ${service.key.toUpperCase()}`;
+      if (!tagNames.has(statusTagName)) {
         tags.push({
-          name: `SERVICE: ${serviceKey}`,
+          name: statusTagName,
           description: `Endpoints from ${service.name}`,
           'x-service': service.key,
         });
@@ -280,6 +287,13 @@ export class SwaggerAggregatorService {
       },
       tags,
     };
+  }
+
+  /**
+   * Format service tag with consistent naming convention
+   */
+  private formatServiceTag(serviceKey: string, tagName: string): string {
+    return `[${serviceKey.toUpperCase()}] ${tagName}`;
   }
 
   /**
