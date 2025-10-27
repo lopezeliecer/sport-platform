@@ -18,7 +18,6 @@ import { AuthService } from './auth.service';
 import {
   ThrottleRefreshToken,
   ThrottleAPI,
-  ThrottleStrict,
 } from '../../../../libs/shared/common/src/security/throttle.decorators';
 import {
   GoogleAuthDto,

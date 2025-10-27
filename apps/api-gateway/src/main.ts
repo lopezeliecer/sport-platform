@@ -22,6 +22,9 @@ async function bootstrap() {
   const isProduction = configService.get('NODE_ENV') === 'production';
   const securityConfig = createSecurityConfig(isProduction);
 
+  // Generate gateway instance ID once at startup
+  const gatewayInstanceId = randomUUID();
+
   // Security Headers with Helmet
   app.use(helmet(securityConfig.helmet as any));
 
@@ -29,6 +32,7 @@ async function bootstrap() {
   app.use((req: any, res: any, next: any) => {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-Gateway-Service', 'API-Gateway-v1');
+    res.setHeader('X-Request-ID', `${gatewayInstanceId}-${Date.now()}`);
     next();
   });
 
@@ -36,7 +40,6 @@ async function bootstrap() {
   app.use(
     addCustomSecurityHeaders({
       'X-API-Version': 'v1',
-      'X-Request-ID': randomUUID(),
     } as any),
   );
 
@@ -86,6 +89,18 @@ async function bootstrap() {
       tagsSorter: 'alpha',
       operationsSorter: 'alpha',
     },
+  });
+
+  // Expose Gateway Swagger JSON
+  app.use('/api/docs-json', (req: any, res: any) => {
+    try {
+      res.header('Content-Type', 'application/json');
+      res.header('Cache-Control', 'public, max-age=300');
+      res.status(200).send(document);
+    } catch (error) {
+      console.error('Error serving API docs JSON:', error);
+      res.status(500).json({ error: 'Failed to retrieve API documentation' });
+    }
   });
 
   // Start server

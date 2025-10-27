@@ -2,18 +2,14 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  AuthSessionStatus,
-  UserRole,
-} from '@sports-platform/shared/database/prisma/generated/client';
-import * as crypto from 'crypto';
+import { AuthSessionStatus } from '@sports-platform/shared/database/prisma/generated/client';
 import { JwtPayload } from '../auth/strategies/jwt.strategy';
 import { createHash, randomBytes } from 'crypto';
 
 export interface CreateSessionData {
   userId: string;
   clubId?: string;
-  deviceInfo?: any;
+  deviceInfo?: string;
   ipAddress?: string;
   userAgent?: string;
   deviceFingerprint?: string;
@@ -23,7 +19,7 @@ export interface SessionInfo {
   id: string;
   userId: string;
   currentClubId?: string;
-  deviceInfo: any;
+  deviceInfo: string;
   ipAddress?: string;
   userAgent?: string;
   status: AuthSessionStatus;
@@ -197,7 +193,7 @@ export class SessionsService {
       id: session.id,
       userId: session.userId,
       currentClubId: session.currentClubId,
-      deviceInfo: session.deviceInfo,
+      deviceInfo: session.deviceInfo.toString(),
       ipAddress: session.ipAddress,
       userAgent: session.userAgent,
       status: session.status,
@@ -235,10 +231,11 @@ export class SessionsService {
   }
 
   async revokeAllUserSessions(userId: string, exceptSessionId?: string): Promise<void> {
-    const whereCondition: any = {
-      userId,
-      status: AuthSessionStatus.ACTIVE,
-    };
+    const whereCondition: { id?: object; userId: string; status: keyof typeof AuthSessionStatus } =
+      {
+        userId,
+        status: AuthSessionStatus.ACTIVE,
+      };
 
     if (exceptSessionId) {
       whereCondition.id = { not: exceptSessionId };
@@ -269,7 +266,7 @@ export class SessionsService {
       id: session.id,
       userId: session.userId,
       currentClubId: session.currentClubId,
-      deviceInfo: session.deviceInfo,
+      deviceInfo: session.deviceInfo.toString(),
       ipAddress: session.ipAddress,
       userAgent: session.userAgent,
       status: session.status,

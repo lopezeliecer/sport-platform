@@ -7,8 +7,6 @@ import { AuthSessionStatus } from '@sports-platform/shared/database/prisma/gener
 
 describe('EnhancedSessionsService', () => {
   let service: EnhancedSessionsService;
-  let prismaService: PrismaService;
-  let jwtService: JwtService;
 
   const mockPrismaService = {
     userSession: {
@@ -60,8 +58,6 @@ describe('EnhancedSessionsService', () => {
     }).compile();
 
     service = module.get<EnhancedSessionsService>(EnhancedSessionsService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    jwtService = module.get<JwtService>(JwtService);
   });
 
   it('should be defined', () => {

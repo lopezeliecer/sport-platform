@@ -29,7 +29,7 @@ export class SecurityMonitoringInterceptor implements NestInterceptor {
     const clubId = user?.clubId;
 
     return next.handle().pipe(
-      tap(async (data) => {
+      tap(async (_data) => {
         const responseTime = Date.now() - startTime;
         const statusCode = response.statusCode;
 
@@ -134,7 +134,7 @@ export class SecurityMonitoringInterceptor implements NestInterceptor {
   private getEventTypeForError(
     error: any,
     endpoint: string,
-    method: string,
+    _method: string,
   ): SecurityEventType | null {
     const statusCode = error.status || 500;
 

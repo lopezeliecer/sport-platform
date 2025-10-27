@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsOptional, IsBoolean, IsEnum, IsUUID } from 'class-validator';
+import { IsEmail, IsString, IsOptional, IsBoolean, IsUUID } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum AuthProvider {

@@ -9,7 +9,6 @@ import {
 
 describe('TrainingService', () => {
   let service: TrainingService;
-  let prismaService: PrismaService;
 
   const mockPrismaService = {
     trainingSession: {
@@ -46,7 +45,6 @@ describe('TrainingService', () => {
     }).compile();
 
     service = module.get<TrainingService>(TrainingService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   describe('createSession', () => {

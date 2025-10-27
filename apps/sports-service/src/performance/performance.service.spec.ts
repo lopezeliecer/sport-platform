@@ -5,7 +5,6 @@ import { CreatePerformanceMetricDto } from './dto/create-performance-metric.dto'
 
 describe('PerformanceService', () => {
   let service: PerformanceService;
-  let prismaService: PrismaService;
 
   const mockPrismaService = {
     athlete: {
@@ -35,7 +34,6 @@ describe('PerformanceService', () => {
     }).compile();
 
     service = module.get<PerformanceService>(PerformanceService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   describe('recordMetric', () => {

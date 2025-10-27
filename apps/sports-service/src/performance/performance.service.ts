@@ -52,6 +52,7 @@ export class PerformanceService {
       offset?: number;
     },
   ) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { metricType, startDate, endDate, limit = 50, offset = 0 } = filters || {};
 
     // Verify athlete exists and belongs to club
@@ -66,7 +67,7 @@ export class PerformanceService {
       throw new Error(`Athlete ${athleteId} not found in club ${clubId}`);
     }
 
-    // Return paginated metrics (mock implementation)
+    // TODO: Return paginated metrics (mock implementation)
     return {
       athleteId,
       metrics: [],
@@ -114,6 +115,7 @@ export class PerformanceService {
       groupBy?: 'day' | 'week' | 'month';
     },
   ) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { startDate, endDate, groupBy = 'week' } = filters || {};
 
     // Verify athlete exists
@@ -127,7 +129,7 @@ export class PerformanceService {
     if (!athlete) {
       throw new Error(`Athlete ${athleteId} not found in club ${clubId}`);
     }
-
+    // TODO: Implement performance trends calculation
     return {
       athleteId,
       metricType,

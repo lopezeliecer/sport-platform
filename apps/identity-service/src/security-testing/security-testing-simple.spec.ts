@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { SecurityTestingService } from './security-testing.service';
 import { EnvironmentSecurityService } from '../environment-security/environment-security.service';
@@ -12,7 +12,6 @@ import { SecurityMonitoringService } from '../security-monitoring/security-monit
  */
 describe('SecurityTestingService', () => {
   let service: SecurityTestingService;
-  let configService: ConfigService;
   let jwtService: JwtService;
 
   beforeEach(async () => {
@@ -65,7 +64,6 @@ describe('SecurityTestingService', () => {
     }).compile();
 
     service = module.get<SecurityTestingService>(SecurityTestingService);
-    configService = module.get<ConfigService>(ConfigService);
     jwtService = module.get<JwtService>(JwtService);
   });
 

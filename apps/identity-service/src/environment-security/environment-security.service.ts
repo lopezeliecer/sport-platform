@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
   createHash,
-  createHmac,
   randomBytes,
   scrypt,
   createCipheriv,
@@ -301,9 +300,6 @@ export class EnvironmentSecurityService implements OnModuleInit {
    * Build CORS configuration
    */
   private buildCorsConfig() {
-    const environment = this.configService.get<EnvironmentType>('NODE_ENV');
-    const isProduction = environment === EnvironmentType.PRODUCTION;
-
     return {
       enabled: this.configService.get<boolean>('CORS_ENABLED', true),
       origin: this.parseCorsOrigin(),
@@ -738,6 +734,7 @@ export class EnvironmentSecurityService implements OnModuleInit {
         const parsed = JSON.parse(customHeadersStr);
         Object.assign(headers, parsed);
       } catch (error) {
+        console.error(error);
         this.logger.warn('Failed to parse CUSTOM_SECURITY_HEADERS, using empty object');
       }
     }

@@ -19,13 +19,8 @@ import { AuthService } from './auth.service';
 import { EnhancedSessionsService } from '../sessions/enhanced-sessions-v2.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RbacGuard } from './guards/rbac.guard';
-import { ClubContextMiddleware } from './middleware/club-context.middleware';
 import { CurrentUser, CurrentClubId, ClubContext } from './middleware/club-context.middleware';
-import {
-  RequireClubAdmin,
-  RequireClubContext,
-  CanManageAthletes,
-} from './decorators/permissions.decorator';
+import { RequireClubContext } from './decorators/permissions.decorator';
 import { GoogleAuthDto, AuthResponseDto } from './dto/auth.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import {

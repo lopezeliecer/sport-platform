@@ -58,8 +58,10 @@ export class CompetitionsService {
       offset?: number;
     },
   ) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { status, limit = 20, offset = 0 } = filters || {};
 
+    // TODO: Implement competition return list
     return {
       clubId,
       competitions: [],
@@ -85,9 +87,10 @@ export class CompetitionsService {
   /**
    * Register athlete for competition
    */
-  async registerAthleteForCompetition(registerDto: RegisterAthleteCompetitionDto, clubId: string) {
+  async registerAthleteForCompetition(registerDto: RegisterAthleteCompetitionDto, _clubId: string) {
     const { athleteId, competitionId, category, targetPerformance } = registerDto;
 
+    // TODO: Missing insert into database
     return {
       id: `reg_${Date.now()}`,
       athleteId,
@@ -102,10 +105,11 @@ export class CompetitionsService {
   /**
    * Record competition results for athlete
    */
-  async recordResult(recordResultDto: RecordCompetitionResultDto, clubId: string) {
+  async recordResult(recordResultDto: RecordCompetitionResultDto, _clubId: string) {
     const { athleteId, competitionId, finalPerformance, position, qualified, notes } =
       recordResultDto;
 
+    // TODO: Missing insert into database
     return {
       id: `result_${Date.now()}`,
       athleteId,
@@ -121,7 +125,8 @@ export class CompetitionsService {
   /**
    * Get competition results
    */
-  async getCompetitionResults(competitionId: string, clubId: string) {
+  async getCompetitionResults(competitionId: string, _clubId: string) {
+    // TODO: Missing query database
     return {
       competitionId,
       results: [],
@@ -131,7 +136,8 @@ export class CompetitionsService {
   /**
    * Get athlete's competition history
    */
-  async getAthleteCompetitionHistory(athleteId: string, clubId: string) {
+  async getAthleteCompetitionHistory(athleteId: string, _clubId: string) {
+    // TODO: Missing query database
     return {
       athleteId,
       competitions: [],
@@ -141,7 +147,8 @@ export class CompetitionsService {
   /**
    * Get competition statistics
    */
-  async getCompetitionStatistics(competitionId: string, clubId: string) {
+  async getCompetitionStatistics(competitionId: string, _clubId: string) {
+    // TODO: Missing query database
     return {
       competitionId,
       totalParticipants: 0,

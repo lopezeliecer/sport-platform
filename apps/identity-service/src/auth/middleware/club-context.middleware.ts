@@ -4,17 +4,17 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from '../strategies/jwt.strategy';
 
-declare global {
-  namespace Express {
-    interface Request {
-      jwtUser?: JwtPayload;
-      clubId?: string;
-      clubContext?: {
-        clubId: string;
-        userRoles: string[];
-        permissions: string[];
-      };
-    }
+export interface ClubContextData {
+  clubId: string;
+  userRoles: string[];
+  permissions: string[];
+}
+
+declare module 'express-serve-static-core' {
+  interface Request {
+    jwtUser?: JwtPayload;
+    clubId?: string;
+    clubContext?: ClubContextData;
   }
 }
 

@@ -85,6 +85,18 @@ async function bootstrap() {
     },
   });
 
+  // Expose Swagger JSON for API Gateway aggregation
+  app.use('/api/docs-json', (req: any, res: any) => {
+    try {
+      res.header('Content-Type', 'application/json');
+      res.header('Cache-Control', 'public, max-age=300');
+      res.status(200).send(document);
+    } catch (error) {
+      console.error('Error serving API docs JSON:', error);
+      res.status(500).json({ error: 'Failed to retrieve API documentation' });
+    }
+  });
+
   // Start the server
   const port = configService.get('PORT', 3002);
   await app.listen(port);

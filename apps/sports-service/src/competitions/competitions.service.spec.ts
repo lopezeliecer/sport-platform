@@ -10,7 +10,6 @@ import {
 
 describe('CompetitionsService', () => {
   let service: CompetitionsService;
-  let prismaService: PrismaService;
 
   const mockPrismaService = {
     athlete: {
@@ -47,7 +46,6 @@ describe('CompetitionsService', () => {
     }).compile();
 
     service = module.get<CompetitionsService>(CompetitionsService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   describe('createCompetition', () => {
