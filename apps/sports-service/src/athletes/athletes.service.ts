@@ -9,7 +9,7 @@ export class AthletesService {
   async create(
     createAthleteDto: CreateAthleteDto,
     clubId: string,
-    userId: string,
+    _userId: string,
   ): Promise<AthleteResponseDto> {
     try {
       const athlete = await this.prisma.athlete.create({
@@ -29,11 +29,12 @@ export class AthletesService {
 
       return this.mapToResponseDto(athlete);
     } catch (error) {
+      console.error(error);
       throw new BadRequestException('Failed to create athlete');
     }
   }
 
-  async findAll(searchDto: any, clubId: string, userId: string): Promise<any> {
+  async findAll(searchDto: any, clubId: string, _userId: string): Promise<any> {
     try {
       const where: any = {
         clubId,
@@ -77,11 +78,12 @@ export class AthletesService {
         limit: searchDto?.limit || 20,
       };
     } catch (error) {
+      console.error(error);
       throw new BadRequestException('Failed to fetch athletes');
     }
   }
 
-  async findOne(id: string, clubId: string, userId: string): Promise<AthleteResponseDto> {
+  async findOne(id: string, clubId: string, _userId: string): Promise<AthleteResponseDto> {
     try {
       const athlete = await this.prisma.athlete.findFirst({
         where: {
@@ -115,7 +117,7 @@ export class AthletesService {
     id: string,
     updateAthleteDto: UpdateAthleteDto,
     clubId: string,
-    userId: string,
+    _userId: string,
   ): Promise<AthleteResponseDto> {
     try {
       // Verify athlete exists and belongs to club
@@ -149,7 +151,7 @@ export class AthletesService {
     }
   }
 
-  async remove(id: string, clubId: string, userId: string): Promise<void> {
+  async remove(id: string, clubId: string, _userId: string): Promise<void> {
     try {
       // Verify athlete exists and belongs to club
       const existingAthlete = await this.prisma.athlete.findFirst({
@@ -171,7 +173,7 @@ export class AthletesService {
     }
   }
 
-  async getStatistics(id: string, clubId: string, userId: string): Promise<any> {
+  async getStatistics(id: string, clubId: string, _userId: string): Promise<any> {
     try {
       // Verify athlete exists and belongs to club
       const athlete = await this.prisma.athlete.findFirst({

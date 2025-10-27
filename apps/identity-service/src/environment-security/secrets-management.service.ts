@@ -33,7 +33,7 @@ export class SecretsManagementService implements OnModuleInit {
         type: SecretType.DATABASE_CREDENTIAL,
         minLength: 12,
         maxLength: 256,
-        requirePattern: /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:,.<>?\/]+$/,
+        requirePattern: /^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{}|;:,.<>?/]+$/,
         entropyThreshold: 3.0,
       },
     ],
@@ -440,7 +440,7 @@ export class SecretsManagementService implements OnModuleInit {
       }
 
       // Remove all versions
-      for (const [id, secret] of secretsToDelete) {
+      for (const [id] of secretsToDelete) {
         this.secrets.delete(id);
         await this.logSecretAccess(id, name, 'DELETE', true);
       }

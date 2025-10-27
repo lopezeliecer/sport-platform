@@ -2,23 +2,15 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
-  ConflictException,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthProvider, UserRole } from '@sports-platform/shared/database/prisma/generated/client';
-import { SessionsService } from '../sessions/sessions.service';
-import {
-  GoogleAuthDto,
-  LoginDto,
-  AuthResponseDto,
-  UserInfoDto,
-  ClubMembershipDto,
-} from './dto/auth.dto';
+import { SessionInfo, SessionsService } from '../sessions/sessions.service';
+import { GoogleAuthDto, AuthResponseDto, UserInfoDto, ClubMembershipDto } from './dto/auth.dto';
 import { PermissionChecker } from '../permissions/permissions';
-import * as bcrypt from 'bcryptjs';
 
 interface GoogleUserInfo {
   googleId: string;
@@ -114,7 +106,7 @@ export class AuthService {
       {
         userId: user.id,
         clubId: defaultClub?.clubId,
-        deviceInfo: googleAuthDto.deviceInfo,
+        deviceInfo: JSON.stringify(googleAuthDto.deviceInfo),
         ipAddress,
         userAgent,
       },
@@ -209,7 +201,7 @@ export class AuthService {
     return this.mapToClubMemberships(userClubRoles);
   }
 
-  async getUserActiveSessions(userId: string): Promise<any[]> {
+  async getUserActiveSessions(userId: string): Promise<SessionInfo[]> {
     return this.sessionsService.getUserActiveSessions(userId);
   }
 
@@ -239,6 +231,7 @@ export class AuthService {
         emailVerified: googleUser.verified_email,
       };
     } catch (error) {
+      console.error(error);
       throw new BadRequestException('Failed to verify Google token');
     }
   }
@@ -334,7 +327,7 @@ export class AuthService {
         {
           userId: user.id,
           clubId: user.defaultClubId,
-          deviceInfo: { oauth: true, timestamp: new Date().toISOString() },
+          deviceInfo: JSON.stringify({ oauth: true, timestamp: new Date().toISOString() }),
           ipAddress: '127.0.0.1', // Should get real IP from request
           userAgent: 'OAuth-Flow',
         },
@@ -502,6 +495,7 @@ export class AuthService {
     try {
       return this.jwtService.verify(token);
     } catch (error) {
+      console.error(error);
       throw new UnauthorizedException('Invalid JWT token');
     }
   }

@@ -1,8 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import * as crypto from 'crypto';
-import * as bcrypt from 'bcryptjs';
 import { EnvironmentSecurityService } from '../environment-security/environment-security.service';
 import { SecretsManagementService } from '../environment-security/secrets-management.service';
 import { SecurityMonitoringService } from '../security-monitoring/security-monitoring.service';
@@ -92,6 +90,7 @@ export class SecurityTestingService {
         await this.jwtService.verifyAsync(jwtToken);
         tokenValidated = true;
       } catch (error) {
+        console.error(error);
         // Token should be invalid for bypass test
         return { isSecure: true, vulnerabilities, tokenValidated };
       }

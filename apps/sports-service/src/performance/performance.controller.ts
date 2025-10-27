@@ -17,8 +17,6 @@ import {
   RbacGuard,
   RequireClubContext,
   CurrentClubId,
-  CurrentUser,
-  JwtPayload,
 } from '@sports-platform/shared/auth';
 
 @ApiTags('Performance')

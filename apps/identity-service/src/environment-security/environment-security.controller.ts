@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
   Body,
   Param,
@@ -29,10 +28,8 @@ import { SecretsManagementService } from './secrets-management.service';
 import {
   EnvironmentSecurityConfig,
   SecurityViolation,
-  SecurityLevel,
-  EnvironmentType,
 } from './interfaces/environment-security.interface';
-import { SecretMetadata, SecretType, SecretAccessLog } from './interfaces/secrets.interface';
+import { SecretMetadata, SecretAccessLog } from './interfaces/secrets.interface';
 
 @ApiTags('environment-security')
 @Controller('environment-security')

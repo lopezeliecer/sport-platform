@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  CreateTrainingSessionDto,
-  SessionType,
-  SessionIntensity,
-} from './dto/create-training-session.dto';
+import { CreateTrainingSessionDto, SessionType } from './dto/create-training-session.dto';
 import { RecordAttendanceDto, AttendanceStatus } from './dto/attendance.dto';
+import { SessionStatus } from '@sports-platform/shared/database/prisma/generated/client';
 
 // Type-safe mapping between DTO AttendanceStatus and Prisma AttendanceStatus
 type PrismaAttendanceStatus = 'SCHEDULED' | 'PRESENT' | 'ABSENT' | 'LATE' | 'EARLY_DEPARTURE';
@@ -47,7 +44,6 @@ export class TrainingService {
       title,
       description,
       type,
-      intensity,
       startTime,
       endTime,
       location,
@@ -75,6 +71,7 @@ export class TrainingService {
       RECOVERY: 'SWIMMING',
     };
 
+    // TODO: Assign level based on input. Need to update input
     // Create training session
     const session = await this.prisma.trainingSession.create({
       data: {
@@ -89,7 +86,7 @@ export class TrainingService {
         clubId,
         coachId,
         notes,
-        status: 'SCHEDULED',
+        status: SessionStatus.SCHEDULED,
       },
       include: {
         coach: {
@@ -138,6 +135,12 @@ export class TrainingService {
     if (coachId) where.coachId = coachId;
     if (type) where.category = type;
     if (status) where.status = status;
+    if (athleteId)
+      where.trainingAssignments = {
+        some: {
+          athleteId: athleteId,
+        },
+      };
 
     if (startDate || endDate) {
       where.scheduledAt = {};
@@ -210,7 +213,13 @@ export class TrainingService {
     clubId: string,
     updateData: Partial<CreateTrainingSessionDto>,
   ) {
+    // Verify session exists and belongs to the club (throws if not found)
     const session = await this.getSessionById(sessionId, clubId);
+
+    // Prevent updates to completed or cancelled sessions
+    if (session.status === SessionStatus.COMPLETED || session.status === SessionStatus.CANCELLED) {
+      throw new Error(`Cannot update training session with status ${session.status}.`);
+    }
 
     // If dates are being updated, validate them
     if (updateData.startTime && updateData.endTime) {
@@ -245,11 +254,7 @@ export class TrainingService {
   /**
    * Cancel or mark session as completed
    */
-  async updateSessionStatus(
-    sessionId: string,
-    clubId: string,
-    status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'POSTPONED',
-  ) {
+  async updateSessionStatus(sessionId: string, clubId: string, status: SessionStatus) {
     await this.getSessionById(sessionId, clubId);
 
     const updated = await this.prisma.trainingSession.update({
