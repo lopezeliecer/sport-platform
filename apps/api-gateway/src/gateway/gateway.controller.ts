@@ -1,10 +1,21 @@
-import { Controller, Get, All, Req, Res, HttpStatus, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  All,
+  Req,
+  Res,
+  HttpStatus,
+  BadRequestException,
+  Post,
+  Param,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProxyService } from './services/proxy.service';
 import { HealthCheckService } from './services/health-check.service';
 import { SwaggerAggregatorService } from './services/swagger-aggregator.service';
 import { LoggerService } from './services/logger.service';
+import { CircuitBreakerService } from './circuit-breaker/circuit-breaker.service';
 
 /**
  * Gateway Controller - Handles all incoming API requests
@@ -19,6 +30,7 @@ export class GatewayController {
     private readonly healthCheckService: HealthCheckService,
     private readonly swaggerAggregatorService: SwaggerAggregatorService,
     private readonly logger: LoggerService,
+    private readonly circuitBreakerService: CircuitBreakerService,
   ) {}
 
   /**
@@ -60,6 +72,65 @@ export class GatewayController {
   @ApiOperation({ summary: 'Get aggregated API documentation' })
   async getAggregatedDocs(): Promise<Record<string, unknown>> {
     return this.swaggerAggregatorService.getAggregatedDocs();
+  }
+
+  /**
+   * Get circuit breaker states for all services
+   */
+  @Get('v1/gateway/circuit-breakers')
+  @ApiOperation({ summary: 'Get circuit breaker states for all services' })
+  @ApiResponse({
+    status: 200,
+    description: 'Circuit breaker states',
+    schema: {
+      type: 'object',
+      properties: {
+        timestamp: { type: 'string' },
+        breakers: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              state: { type: 'string', enum: ['CLOSED', 'OPEN', 'HALF_OPEN'] },
+              failureCount: { type: 'number' },
+              successCount: { type: 'number' },
+              lastFailureTime: { type: 'string', nullable: true },
+              nextAttemptTime: { type: 'string', nullable: true },
+              totalRequests: { type: 'number' },
+              totalFailures: { type: 'number' },
+              totalSuccesses: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+  })
+  async getCircuitBreakers(): Promise<Record<string, unknown>> {
+    const breakers = this.circuitBreakerService.getAllStates();
+    return {
+      timestamp: new Date().toISOString(),
+      breakers,
+    };
+  }
+
+  /**
+   * Reset a specific circuit breaker
+   */
+  @Post('v1/gateway/circuit-breakers/:serviceName/reset')
+  @ApiOperation({ summary: 'Reset a specific circuit breaker' })
+  @ApiResponse({
+    status: 200,
+    description: 'Circuit breaker reset successful',
+  })
+  async resetCircuitBreaker(
+    @Param('serviceName') serviceName: string,
+  ): Promise<Record<string, unknown>> {
+    this.circuitBreakerService.reset(serviceName);
+    return {
+      message: `Circuit breaker for ${serviceName} has been reset`,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   /**

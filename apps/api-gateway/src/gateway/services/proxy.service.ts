@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 import { AxiosResponse } from 'axios';
 import { LoggerService } from './logger.service';
+import { CircuitBreakerService } from '../circuit-breaker/circuit-breaker.service';
+import {
+  CircuitOpenException,
+  TooManyRequestsException,
+} from '../circuit-breaker/circuit-breaker.types';
 
 /**
  * Service configuration interface
@@ -27,6 +32,7 @@ export class ProxyService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly logger: LoggerService,
+    private readonly circuitBreakerService: CircuitBreakerService,
   ) {
     this.initializeServices();
   }
@@ -98,59 +104,101 @@ export class ProxyService {
     try {
       this.logger.logProxyRequest(correlationId, serviceName, method, targetUrl);
 
-      const startTime = Date.now();
-      let response: AxiosResponse;
+      // Execute request through circuit breaker
+      const response = await this.circuitBreakerService.executeWithBreaker(
+        serviceName,
+        async () => {
+          const startTime = Date.now();
+          let axiosResponse: AxiosResponse;
 
-      switch (method.toUpperCase()) {
-        case 'GET':
-          response = await lastValueFrom(
-            this.httpService.get(targetUrl, {
-              headers: requestHeaders,
-            }),
+          switch (method.toUpperCase()) {
+            case 'GET':
+              axiosResponse = await lastValueFrom(
+                this.httpService.get(targetUrl, {
+                  headers: requestHeaders,
+                }),
+              );
+              break;
+
+            case 'POST':
+              axiosResponse = await lastValueFrom(
+                this.httpService.post(targetUrl, body, {
+                  headers: requestHeaders,
+                }),
+              );
+              break;
+
+            case 'PUT':
+              axiosResponse = await lastValueFrom(
+                this.httpService.put(targetUrl, body, {
+                  headers: requestHeaders,
+                }),
+              );
+              break;
+
+            case 'DELETE':
+              axiosResponse = await lastValueFrom(
+                this.httpService.delete(targetUrl, {
+                  headers: requestHeaders,
+                }),
+              );
+              break;
+
+            case 'PATCH':
+              axiosResponse = await lastValueFrom(
+                this.httpService.patch(targetUrl, body, {
+                  headers: requestHeaders,
+                }),
+              );
+              break;
+
+            default:
+              throw new Error(`Unsupported HTTP method: ${method}`);
+          }
+
+          const responseTime = Date.now() - startTime;
+          this.logger.logProxyResponse(
+            correlationId,
+            serviceName,
+            axiosResponse.status,
+            responseTime,
           );
-          break;
 
-        case 'POST':
-          response = await lastValueFrom(
-            this.httpService.post(targetUrl, body, {
-              headers: requestHeaders,
-            }),
-          );
-          break;
-
-        case 'PUT':
-          response = await lastValueFrom(
-            this.httpService.put(targetUrl, body, {
-              headers: requestHeaders,
-            }),
-          );
-          break;
-
-        case 'DELETE':
-          response = await lastValueFrom(
-            this.httpService.delete(targetUrl, {
-              headers: requestHeaders,
-            }),
-          );
-          break;
-
-        case 'PATCH':
-          response = await lastValueFrom(
-            this.httpService.patch(targetUrl, body, {
-              headers: requestHeaders,
-            }),
-          );
-          break;
-
-        default:
-          throw new Error(`Unsupported HTTP method: ${method}`);
-      }
-
-      const responseTime = Date.now() - startTime;
-      this.logger.logProxyResponse(correlationId, serviceName, response.status, responseTime);
+          return axiosResponse;
+        },
+      );
 
       return response;
     } catch (error) {
+      // Handle circuit breaker exceptions
+      if (error instanceof CircuitOpenException) {
+        this.logger.warn(
+          `Circuit breaker OPEN for ${serviceName}. Next attempt: ${error.nextAttemptTime.toISOString()}`,
+          'ProxyService',
+        );
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+            message: `Service "${serviceName}" is temporarily unavailable`,
+            error: 'Circuit Breaker Open',
+            nextRetryAt: error.nextAttemptTime.toISOString(),
+          },
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      if (error instanceof TooManyRequestsException) {
+        this.logger.warn(`Too many requests to ${serviceName} in HALF_OPEN state`, 'ProxyService');
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.TOO_MANY_REQUESTS,
+            message: `Too many requests to "${serviceName}" service`,
+            error: 'Circuit Breaker Half-Open',
+          },
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+
       this.logger.logError(correlationId, error, `routing to ${serviceName}`);
       throw error;
     }

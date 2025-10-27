@@ -9,6 +9,7 @@ import { HealthCheckService } from './gateway/services/health-check.service';
 import { SwaggerAggregatorService } from './gateway/services/swagger-aggregator.service';
 import { LoggerService } from './gateway/services/logger.service';
 import { SanitizationService } from '@sports-platform/shared/common/src/validation/sanitization.service';
+import { CircuitBreakerModule } from './gateway/circuit-breaker/circuit-breaker.module';
 
 @Module({
   imports: [
@@ -38,6 +39,9 @@ import { SanitizationService } from '@sports-platform/shared/common/src/validati
         limit: 100, // 100 requests per minute
       },
     ]),
+
+    // Circuit Breaker for resilience
+    CircuitBreakerModule,
   ],
   controllers: [GatewayController],
   providers: [
