@@ -68,6 +68,13 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@sports-platform)/)",
+      ".*/generated/.*"
+    ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/../../libs/shared/database/prisma/generated/"
+    ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
