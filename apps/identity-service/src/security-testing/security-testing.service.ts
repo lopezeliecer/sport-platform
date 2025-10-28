@@ -112,8 +112,8 @@ export class SecurityTestingService {
       const decoded = this.jwtService.decode(token, { complete: true }) as any;
 
       // Check secret strength
-      const jwtSecret = this.configService.get<string>('JWT_SECRET');
-      const secretEntropy = this.calculateEntropy(jwtSecret);
+      const jwtSecret = this.configService.get<string>('JWT_SECRET') || '';
+      const secretEntropy = jwtSecret ? this.calculateEntropy(jwtSecret) : 0;
       const hasStrongSecret = secretEntropy >= 4.0 && jwtSecret.length >= 32;
 
       // Check expiration
@@ -665,6 +665,11 @@ export class SecurityTestingService {
    * Private helper methods
    */
   private calculateEntropy(str: string): number {
+    // Validate input
+    if (!str || typeof str !== 'string' || str.length === 0) {
+      return 0;
+    }
+
     const freq = {};
     for (const char of str) {
       freq[char] = (freq[char] || 0) + 1;
