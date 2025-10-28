@@ -131,8 +131,7 @@ export class SwaggerAggregatorService {
         service: serviceName,
         docs: response?.data as Record<string, unknown>,
       };
-    } catch (error) {
-      console.error(error);
+    } catch {
       this.logger.warn(
         `Could not fetch Swagger docs from ${serviceName}`,
         'SwaggerAggregatorService',

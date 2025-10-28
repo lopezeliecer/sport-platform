@@ -1,8 +1,9 @@
 # API Gateway Implementation Roadmap
 
 **Fecha de Creación:** 26 de Octubre, 2025  
-**Estado Actual:** Phase 2.1 Complete - API Gateway 95% Funcional  
-**Próximo Hito:** Phase 2.2 - API Gateway Enhancement
+**Última Actualización:** 27 de Octubre, 2025  
+**Estado Actual:** Phase 2.2 In Progress - API Gateway Enhancement  
+**Próximo Hito:** Phase 2.3 - Integration Testing & Service Discovery
 
 ---
 
@@ -29,9 +30,9 @@
 
 ### **PRIORIDAD 1️⃣ - CRÍTICA: Swagger Aggregation**
 
-**Estado:** ⚠️ PARCIAL  
+**Estado:** ✅ **COMPLETADO** (27 de Octubre, 2025)  
 **Complejidad:** Media  
-**Tiempo Estimado:** 1-2 horas  
+**Tiempo Estimado:** 1-2 horas ✅ **Tiempo Real:** 1.5 horas  
 **Archivo:** `/apps/api-gateway/src/gateway/services/swagger-aggregator.service.ts`
 
 #### Descripción:
@@ -104,22 +105,29 @@ export class SwaggerAggregatorService {
 
 #### Validación de Éxito:
 
-- ✅ Acceder a `http://localhost:3000/api/docs` muestra todos endpoints
+- ✅ Acceder a `http://localhost:3000/api/docs/all` muestra todos endpoints
 - ✅ Filtrar por tag muestra endpoints correctos
 - ✅ Try-it-out funciona con credenciales JWT
 - ✅ Caching reduce latencia (< 5s para cargar docs)
+- ✅ 14 tests unitarios pasando (100%)
+- ✅ Manejo de errores cuando servicios no responden
+- ✅ Schemas namespaceed por servicio (Sports*, Identity*, etc.)
+- ✅ POST /v1/gateway/docs/clear-cache para limpiar caché manualmente
 
 ---
 
 ### **PRIORIDAD 2️⃣ - CRÍTICA: Circuit Breaker Pattern**
 
-**Estado:** ❌ NO IMPLEMENTADO  
+**Estado:** ✅ **COMPLETADO** (27 de Octubre, 2025)  
 **Complejidad:** Alta  
-**Tiempo Estimado:** 2-3 horas  
+**Tiempo Estimado:** 2-3 horas ✅ **Tiempo Real:** 2.5 horas  
 **Archivos:**
 
-- `/apps/api-gateway/src/gateway/services/proxy.service.ts`
-- `/apps/api-gateway/src/gateway/services/circuit-breaker.service.ts` (CREAR)
+- `/apps/api-gateway/src/gateway/services/proxy.service.ts` ✅
+- `/apps/api-gateway/src/gateway/circuit-breaker/circuit-breaker.service.ts` ✅
+- `/apps/api-gateway/src/gateway/circuit-breaker/circuit-breaker.ts` ✅
+- `/apps/api-gateway/src/gateway/circuit-breaker/circuit-breaker.types.ts` ✅
+- `/apps/api-gateway/src/gateway/circuit-breaker/circuit-breaker.spec.ts` ✅ (28 tests)
 
 #### Descripción:
 
@@ -219,6 +227,9 @@ export class CircuitBreakerService {
 - ✅ Circuit se abre después de 5 errores
 - ✅ Circuit intenta recuperarse después de 60 segundos
 - ✅ Logs muestran transiciones de estado
+- ✅ 28 tests unitarios pasando (100%)
+- ✅ GET /v1/gateway/circuit-breakers expone estados
+- ✅ POST /v1/gateway/circuit-breakers/:serviceName/reset permite reset manual
 
 ---
 
@@ -416,24 +427,26 @@ Métricas (Independencia: Todos lo anterior)
 
 ## 📝 Checklist de Implementación
 
-### Swagger Aggregation
+### ✅ Swagger Aggregation (COMPLETADO 27 Oct 2025)
 
-- [ ] Crear lógica de fetching de swagger.json
-- [ ] Combinar documentación
-- [ ] Implementar caching
-- [ ] Endpoint `/api/v1/gateway/docs/aggregated`
-- [ ] UI Swagger actualizada
-- [ ] Tests para SwaggerAggregatorService
+- [x] Crear lógica de fetching de swagger.json
+- [x] Combinar documentación
+- [x] Implementar caching
+- [x] Endpoint `/api/v1/gateway/docs/aggregated`
+- [x] UI Swagger actualizada en `/api/docs/all`
+- [x] Tests para SwaggerAggregatorService (14 tests passing)
+- [x] Endpoint para clear cache
 
-### Circuit Breaker
+### ✅ Circuit Breaker (COMPLETADO 27 Oct 2025)
 
-- [ ] Crear CircuitBreakerService
-- [ ] Implementar máquina de estados
-- [ ] Integrar en ProxyService.routeRequest()
-- [ ] Exponential backoff en reintentos
-- [ ] Health check periódico
-- [ ] Logging de transiciones de estado
-- [ ] Tests para CircuitBreakerService
+- [x] Crear CircuitBreakerService
+- [x] Implementar máquina de estados
+- [x] Integrar en ProxyService.routeRequest()
+- [ ] ⚠️ Exponential backoff en reintentos (pendiente)
+- [ ] ⚠️ Health check periódico (pendiente)
+- [x] Logging de transiciones de estado
+- [x] Tests para CircuitBreakerService (28 tests passing)
+- [x] Endpoints de monitoreo y reset
 
 ### Integration Tests
 

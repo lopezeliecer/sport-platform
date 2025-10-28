@@ -66,12 +66,33 @@ export class GatewayController {
   }
 
   /**
-   * Get aggregated Swagger documentation
+   * Get aggregated Swagger documentation (JSON format)
    */
   @Get('v1/gateway/docs')
-  @ApiOperation({ summary: 'Get aggregated API documentation' })
+  @ApiOperation({ summary: 'Get aggregated API documentation (JSON)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Complete OpenAPI 3.0 specification from all microservices',
+  })
   async getAggregatedDocs(): Promise<Record<string, unknown>> {
     return this.swaggerAggregatorService.getAggregatedDocs();
+  }
+
+  /**
+   * Clear Swagger documentation cache
+   */
+  @Post('v1/gateway/docs/clear-cache')
+  @ApiOperation({ summary: 'Clear aggregated documentation cache' })
+  @ApiResponse({
+    status: 200,
+    description: 'Documentation cache cleared successfully',
+  })
+  async clearDocsCache(): Promise<Record<string, unknown>> {
+    this.swaggerAggregatorService.clearCache();
+    return {
+      message: 'Swagger documentation cache cleared successfully',
+      timestamp: new Date().toISOString(),
+    };
   }
 
   /**

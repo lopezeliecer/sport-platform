@@ -66,7 +66,7 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix('api');
 
-  // Swagger documentation for API Gateway
+  // Swagger documentation for API Gateway (Gateway-only endpoints)
   const config = new DocumentBuilder()
     .setTitle('Sports Platform - API Gateway')
     .setDescription(
@@ -81,6 +81,8 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
+
+  // Setup Gateway-only Swagger UI at /api/docs
   SwaggerModule.setup('api/docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
@@ -103,6 +105,88 @@ async function bootstrap() {
     }
   });
 
+  // Setup Aggregated Swagger UI at /api/docs/all (combines all microservices)
+  // This dynamically fetches and combines docs from all services
+  app.use('/api/docs/all', async (req: any, res: any) => {
+    try {
+      // Import the swagger aggregator service
+      const swaggerAggregatorService = app.get('SwaggerAggregatorService');
+      const aggregatedDocs = await swaggerAggregatorService.getAggregatedDocs();
+
+      // Return Swagger UI HTML that uses the aggregated docs
+      const swaggerUiHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sports Platform - Complete API Documentation</title>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui.css">
+  <link rel="icon" type="image/png" href="https://unpkg.com/swagger-ui-dist@5.10.5/favicon-32x32.png" sizes="32x32" />
+  <style>
+    html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
+    *, *:before, *:after { box-sizing: inherit; }
+    body { margin:0; padding:0; }
+    .topbar { display: none; }
+    .swagger-ui .info .title { font-size: 36px; }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = function() {
+      const spec = ${JSON.stringify(aggregatedDocs)};
+      
+      window.ui = SwaggerUIBundle({
+        spec: spec,
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout",
+        persistAuthorization: true,
+        docExpansion: "none",
+        filter: true,
+        tagsSorter: "alpha",
+        operationsSorter: "alpha",
+        displayRequestDuration: true,
+        tryItOutEnabled: true
+      });
+    };
+  </script>
+</body>
+</html>`;
+
+      res.header('Content-Type', 'text/html');
+      res.status(200).send(swaggerUiHtml);
+    } catch (error) {
+      console.error('Error serving aggregated Swagger UI:', error);
+      res.status(500).send(`
+<!DOCTYPE html>
+<html>
+<head><title>Error</title></head>
+<body>
+  <h1>Failed to load aggregated documentation</h1>
+  <p>Error: ${error instanceof Error ? error.message : String(error)}</p>
+  <p>Please check that all microservices are running and accessible.</p>
+  <ul>
+    <li><a href="http://localhost:3001/api/docs">Identity Service</a></li>
+    <li><a href="http://localhost:3002/api/docs">Sports Service</a></li>
+    <li><a href="http://localhost:3003/api/docs">Club Management</a></li>
+    <li><a href="http://localhost:3004/api/docs">Communication Service</a></li>
+  </ul>
+</body>
+</html>`);
+    }
+  });
+
   // Start server
   const port = configService.get('PORT', 3000);
   await app.listen(port);
@@ -113,9 +197,11 @@ async function bootstrap() {
   console.log('║                                                            ║');
   console.log('╚════════════════════════════════════════════════════════════╝\n');
   console.log(`✅ Gateway running on: http://localhost:${port}`);
-  console.log(`📚 API Documentation: http://localhost:${port}/api/docs`);
+  console.log(`📚 Gateway API Docs: http://localhost:${port}/api/docs`);
+  console.log(`📖 Complete API Docs (All Services): http://localhost:${port}/api/docs/all`);
   console.log(`🔍 Health Check: http://localhost:${port}/api/v1/gateway/health`);
-  console.log(`📊 Services Status: http://localhost:${port}/api/v1/gateway/services/health\n`);
+  console.log(`📊 Services Status: http://localhost:${port}/api/v1/gateway/services/health`);
+  console.log(`⚡ Circuit Breakers: http://localhost:${port}/api/v1/gateway/circuit-breakers\n`);
 }
 
 // Error handling
