@@ -22,5 +22,8 @@ jobs:
       - name: Run Linting script
         run: npm run lint
 
+      - name: Build app
+        run: npm run build
+
       - name: Run unit tests
         run: npm run test
