@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-console */
+import { Request, Response } from 'express';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -29,7 +28,7 @@ async function bootstrap() {
   app.use(helmet(securityConfig.helmet as any));
 
   // Override specific headers if needed
-  app.use((req: any, res: any, next: any) => {
+  app.use((req: Request, res: Response, next: any) => {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-Gateway-Service', 'API-Gateway-v1');
     res.setHeader('X-Request-ID', `${gatewayInstanceId}-${Date.now()}`);
@@ -94,7 +93,7 @@ async function bootstrap() {
   });
 
   // Expose Gateway Swagger JSON
-  app.use('/api/docs-json', (req: any, res: any) => {
+  app.use('/api/docs-json', (req: Request, res: Response) => {
     try {
       res.header('Content-Type', 'application/json');
       res.header('Cache-Control', 'public, max-age=300');
@@ -107,7 +106,7 @@ async function bootstrap() {
 
   // Setup Aggregated Swagger UI at /api/docs/all (combines all microservices)
   // This dynamically fetches and combines docs from all services
-  app.use('/api/docs/all', async (req: any, res: any) => {
+  app.use('/api/docs/all', async (req: Request, res: Response) => {
     try {
       // Import the swagger aggregator service
       const swaggerAggregatorService = app.get('SwaggerAggregatorService');
@@ -191,17 +190,17 @@ async function bootstrap() {
   const port = configService.get('PORT', 3000);
   await app.listen(port);
 
-  console.log('\n╔════════════════════════════════════════════════════════════╗');
-  console.log('║                                                            ║');
-  console.log('║           🚀 API GATEWAY SERVICE STARTED 🚀              ║');
-  console.log('║                                                            ║');
-  console.log('╚════════════════════════════════════════════════════════════╝\n');
-  console.log(`✅ Gateway running on: http://localhost:${port}`);
-  console.log(`📚 Gateway API Docs: http://localhost:${port}/api/docs`);
-  console.log(`📖 Complete API Docs (All Services): http://localhost:${port}/api/docs/all`);
-  console.log(`🔍 Health Check: http://localhost:${port}/api/v1/gateway/health`);
-  console.log(`📊 Services Status: http://localhost:${port}/api/v1/gateway/services/health`);
-  console.log(`⚡ Circuit Breakers: http://localhost:${port}/api/v1/gateway/circuit-breakers\n`);
+  console.info('\n╔════════════════════════════════════════════════════════════╗');
+  console.info('║                                                            ║');
+  console.info('║           🚀 API GATEWAY SERVICE STARTED 🚀              ║');
+  console.info('║                                                            ║');
+  console.info('╚════════════════════════════════════════════════════════════╝\n');
+  console.info(`✅ Gateway running on: http://localhost:${port}`);
+  console.info(`📚 Gateway API Docs: http://localhost:${port}/api/docs`);
+  console.info(`📖 Complete API Docs (All Services): http://localhost:${port}/api/docs/all`);
+  console.info(`🔍 Health Check: http://localhost:${port}/api/v1/gateway/health`);
+  console.info(`📊 Services Status: http://localhost:${port}/api/v1/gateway/services/health`);
+  console.info(`⚡ Circuit Breakers: http://localhost:${port}/api/v1/gateway/circuit-breakers\n`);
 }
 
 // Error handling
