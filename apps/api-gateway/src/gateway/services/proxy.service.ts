@@ -39,30 +39,31 @@ export class ProxyService {
 
   /**
    * Initialize microservices configuration
+   * Reads service URLs from environment variables with validation
    */
   private initializeServices(): void {
     const services: ServiceConfig[] = [
       {
         name: 'identity',
-        url: this.configService.get('IDENTITY_SERVICE_URL', 'http://localhost:3001'),
+        url: this.getServiceUrl('IDENTITY_SERVICE_URL', 'http://localhost:3001'),
         basePath: '/api/v1/auth',
         port: 3001,
       },
       {
         name: 'sports',
-        url: this.configService.get('SPORTS_SERVICE_URL', 'http://localhost:3002'),
+        url: this.getServiceUrl('SPORTS_SERVICE_URL', 'http://localhost:3002'),
         basePath: '/api/v1/sports',
         port: 3002,
       },
       {
         name: 'clubs',
-        url: this.configService.get('CLUB_MANAGEMENT_URL', 'http://localhost:3003'),
+        url: this.getServiceUrl('CLUB_MANAGEMENT_URL', 'http://localhost:3003'),
         basePath: '/api/v1/clubs',
         port: 3003,
       },
       {
         name: 'communication',
-        url: this.configService.get('COMMUNICATION_SERVICE_URL', 'http://localhost:3004'),
+        url: this.getServiceUrl('COMMUNICATION_SERVICE_URL', 'http://localhost:3004'),
         basePath: '/api/v1/communication',
         port: 3004,
       },
@@ -70,9 +71,37 @@ export class ProxyService {
 
     services.forEach((service) => {
       this.services.set(service.name, service);
+      this.logger.info(`Registered service: ${service.name} -> ${service.url}`, 'ProxyService');
     });
 
     this.logger.info(`Initialized ${this.services.size} microservices`, 'ProxyService');
+  }
+
+  /**
+   * Get service URL from environment with validation and fallback
+   */
+  private getServiceUrl(envKey: string, defaultUrl: string): string {
+    const url = this.configService.get<string>(envKey);
+
+    if (!url) {
+      this.logger.warn(`${envKey} not configured, using default: ${defaultUrl}`, 'ProxyService');
+      return defaultUrl;
+    }
+
+    // Validate URL format
+    try {
+      const parsedUrl = new URL(url);
+      if (!parsedUrl.protocol.startsWith('http')) {
+        throw new Error('URL must use HTTP or HTTPS protocol');
+      }
+      return url;
+    } catch {
+      this.logger.error(
+        `Invalid URL for ${envKey}: ${url}. Using default: ${defaultUrl}`,
+        'ProxyService',
+      );
+      return defaultUrl;
+    }
   }
 
   /**

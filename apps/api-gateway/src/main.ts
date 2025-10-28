@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -25,10 +25,10 @@ async function bootstrap() {
   const gatewayInstanceId = randomUUID();
 
   // Security Headers with Helmet
-  app.use(helmet(securityConfig.helmet as any));
+  app.use(helmet(securityConfig.helmet));
 
   // Override specific headers if needed
-  app.use((req: Request, res: Response, next: any) => {
+  app.use((req: Request, res: Response, next: NextFunction) => {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-Gateway-Service', 'API-Gateway-v1');
     res.setHeader('X-Request-ID', `${gatewayInstanceId}-${Date.now()}`);
