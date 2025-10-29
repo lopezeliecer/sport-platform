@@ -26,7 +26,6 @@ describe('HealthCheckService', () => {
   let service: HealthCheckService;
   let httpService: jest.Mocked<HttpService>;
   let loggerService: jest.Mocked<LoggerService>;
-  let metricsService: MockMetricsService;
 
   const mockAxiosResponse = (data: any, status = 200): AxiosResponse => ({
     data,
@@ -78,7 +77,6 @@ describe('HealthCheckService', () => {
     service = module.get<HealthCheckService>(HealthCheckService);
     httpService = module.get(HttpService);
     loggerService = module.get(LoggerService);
-    metricsService = module.get(MetricsService);
   });
 
   afterEach(() => {
