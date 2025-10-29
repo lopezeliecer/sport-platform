@@ -5,11 +5,28 @@ import { of, throwError } from 'rxjs';
 import { AxiosResponse } from 'axios';
 import { HealthCheckService, ServiceHealth } from './health-check.service';
 import { LoggerService } from './logger.service';
+import { MetricsService } from './metrics.service';
+
+// Create a mock class for MetricsService
+class MockMetricsService {
+  recordHttpRequest = jest.fn();
+  recordHttpError = jest.fn();
+  updateCircuitBreakerState = jest.fn();
+  updateServiceHealth = jest.fn();
+  incrementActiveRequests = jest.fn();
+  decrementActiveRequests = jest.fn();
+  getMetrics = jest.fn();
+  getContentType = jest.fn();
+  resetMetrics = jest.fn();
+  clearMetrics = jest.fn();
+  onModuleInit = jest.fn();
+}
 
 describe('HealthCheckService', () => {
   let service: HealthCheckService;
   let httpService: jest.Mocked<HttpService>;
   let loggerService: jest.Mocked<LoggerService>;
+  let metricsService: MockMetricsService;
 
   const mockAxiosResponse = (data: any, status = 200): AxiosResponse => ({
     data,
@@ -54,12 +71,14 @@ describe('HealthCheckService', () => {
         { provide: HttpService, useValue: httpServiceMock },
         { provide: ConfigService, useValue: configServiceMock },
         { provide: LoggerService, useValue: loggerServiceMock },
+        { provide: MetricsService, useClass: MockMetricsService },
       ],
     }).compile();
 
     service = module.get<HealthCheckService>(HealthCheckService);
     httpService = module.get(HttpService);
     loggerService = module.get(LoggerService);
+    metricsService = module.get(MetricsService);
   });
 
   afterEach(() => {

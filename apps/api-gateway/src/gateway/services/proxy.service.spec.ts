@@ -11,6 +11,22 @@ import {
   TooManyRequestsException,
 } from '../circuit-breaker/circuit-breaker.types';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { MetricsService } from './metrics.service';
+
+// Create a mock class for MetricsService
+class MockMetricsService {
+  recordHttpRequest = jest.fn();
+  recordHttpError = jest.fn();
+  updateCircuitBreakerState = jest.fn();
+  updateServiceHealth = jest.fn();
+  incrementActiveRequests = jest.fn();
+  decrementActiveRequests = jest.fn();
+  getMetrics = jest.fn();
+  getContentType = jest.fn();
+  resetMetrics = jest.fn();
+  clearMetrics = jest.fn();
+  onModuleInit = jest.fn();
+}
 
 describe('ProxyService', () => {
   let service: ProxyService;
@@ -18,6 +34,7 @@ describe('ProxyService', () => {
   let configService: jest.Mocked<ConfigService>;
   let loggerService: jest.Mocked<LoggerService>;
   let circuitBreakerService: jest.Mocked<CircuitBreakerService>;
+  let metricsService: MockMetricsService;
 
   const mockAxiosResponse = (data: any, status = 200): AxiosResponse => ({
     data,
@@ -76,6 +93,7 @@ describe('ProxyService', () => {
         { provide: ConfigService, useValue: configServiceMock },
         { provide: LoggerService, useValue: loggerServiceMock },
         { provide: CircuitBreakerService, useValue: circuitBreakerServiceMock },
+        { provide: MetricsService, useClass: MockMetricsService },
       ],
     }).compile();
 
@@ -84,6 +102,7 @@ describe('ProxyService', () => {
     configService = module.get(ConfigService);
     loggerService = module.get(LoggerService);
     circuitBreakerService = module.get(CircuitBreakerService);
+    metricsService = module.get(MetricsService);
   });
 
   afterEach(() => {
@@ -129,6 +148,7 @@ describe('ProxyService', () => {
           { provide: ConfigService, useValue: configService },
           { provide: LoggerService, useValue: loggerService },
           { provide: CircuitBreakerService, useValue: circuitBreakerService },
+          { provide: MetricsService, useClass: MockMetricsService },
         ],
       });
 
@@ -518,6 +538,253 @@ describe('ProxyService', () => {
       const result = service.getService('non-existent');
 
       expect(result).toBeUndefined();
+    });
+  });
+
+  describe('Metrics Integration', () => {
+    beforeEach(() => {
+      // Reset all mocks before each metrics test
+      jest.clearAllMocks();
+    });
+
+    it('should increment active requests before proxy', async () => {
+      const mockResponse = mockAxiosResponse({});
+      httpService.get.mockReturnValue(of(mockResponse) as any);
+
+      await service.routeRequest('corr-123', 'GET', '/api/v1/sports/athletes', undefined, {});
+
+      expect(metricsService.incrementActiveRequests).toHaveBeenCalledWith('sports');
+      expect(metricsService.incrementActiveRequests).toHaveBeenCalledTimes(1);
+    });
+
+    it('should decrement active requests after successful response', async () => {
+      const mockResponse = mockAxiosResponse({});
+      httpService.get.mockReturnValue(of(mockResponse) as any);
+
+      await service.routeRequest('corr-123', 'GET', '/api/v1/sports/athletes', undefined, {});
+
+      expect(metricsService.decrementActiveRequests).toHaveBeenCalledWith('sports');
+      expect(metricsService.decrementActiveRequests).toHaveBeenCalledTimes(1);
+    });
+
+    it('should record HTTP request metrics on success', async () => {
+      const mockResponse = mockAxiosResponse({ data: 'test' }, 200);
+      httpService.get.mockReturnValue(of(mockResponse) as any);
+
+      await service.routeRequest('corr-123', 'GET', '/api/v1/sports/athletes', undefined, {});
+
+      expect(metricsService.recordHttpRequest).toHaveBeenCalledWith(
+        'GET',
+        '/api/v1/sports/athletes',
+        200,
+        'sports',
+        expect.any(Number), // responseTime
+      );
+    });
+
+    it('should record request duration accurately', async () => {
+      const mockResponse = mockAxiosResponse({ data: 'test' });
+      httpService.get.mockReturnValue(of(mockResponse) as any);
+
+      await service.routeRequest('corr-123', 'GET', '/api/v1/sports/athletes', undefined, {});
+
+      const recordCall = metricsService.recordHttpRequest.mock.calls[0];
+      const responseTime = recordCall[4];
+
+      expect(responseTime).toBeGreaterThanOrEqual(0);
+      expect(responseTime).toBeLessThan(1000); // Should be less than 1 second in tests
+    });
+
+    it('should record POST request metrics', async () => {
+      const mockResponse = mockAxiosResponse({ id: 1 }, 201);
+      httpService.post.mockReturnValue(of(mockResponse) as any);
+
+      await service.routeRequest(
+        'corr-123',
+        'POST',
+        '/api/v1/sports/athletes',
+        { name: 'Test' },
+        {},
+      );
+
+      expect(metricsService.recordHttpRequest).toHaveBeenCalledWith(
+        'POST',
+        '/api/v1/sports/athletes',
+        201,
+        'sports',
+        expect.any(Number),
+      );
+    });
+
+    it('should record error metrics on generic failure', async () => {
+      const error = new Error('Service error');
+      circuitBreakerService.executeWithBreaker.mockRejectedValue(error);
+
+      await expect(
+        service.routeRequest('corr-123', 'GET', '/api/v1/sports/athletes', undefined, {}),
+      ).rejects.toThrow();
+
+      expect(metricsService.recordHttpError).toHaveBeenCalledWith(
+        'GET',
+        '/api/v1/sports/athletes',
+        'Error',
+        'sports',
+      );
+    });
+
+    it('should record CircuitOpenException errors', async () => {
+      const nextAttemptTime = new Date(Date.now() + 60000);
+      const circuitError = new CircuitOpenException('sports', nextAttemptTime);
+      circuitBreakerService.executeWithBreaker.mockRejectedValue(circuitError);
+
+      await expect(
+        service.routeRequest('corr-123', 'GET', '/api/v1/sports/athletes', undefined, {}),
+      ).rejects.toThrow();
+
+      expect(metricsService.recordHttpError).toHaveBeenCalledWith(
+        'GET',
+        '/api/v1/sports/athletes',
+        'CircuitOpen',
+        'sports',
+      );
+    });
+
+    it('should record TooManyRequestsException errors', async () => {
+      const tooManyRequestsError = new TooManyRequestsException('sports');
+      circuitBreakerService.executeWithBreaker.mockRejectedValue(tooManyRequestsError);
+
+      await expect(
+        service.routeRequest('corr-123', 'GET', '/api/v1/sports/athletes', undefined, {}),
+      ).rejects.toThrow();
+
+      expect(metricsService.recordHttpError).toHaveBeenCalledWith(
+        'GET',
+        '/api/v1/sports/athletes',
+        'TooManyRequests',
+        'sports',
+      );
+    });
+
+    it('should decrement active requests even on error', async () => {
+      const error = new Error('Test error');
+      circuitBreakerService.executeWithBreaker.mockRejectedValue(error);
+
+      await expect(
+        service.routeRequest('corr-123', 'GET', '/api/v1/sports/athletes', undefined, {}),
+      ).rejects.toThrow();
+
+      expect(metricsService.decrementActiveRequests).toHaveBeenCalledWith('sports');
+    });
+
+    it('should decrement active requests on circuit breaker error', async () => {
+      const circuitError = new CircuitOpenException('sports', new Date());
+      circuitBreakerService.executeWithBreaker.mockRejectedValue(circuitError);
+
+      await expect(
+        service.routeRequest('corr-123', 'GET', '/api/v1/sports/athletes', undefined, {}),
+      ).rejects.toThrow();
+
+      expect(metricsService.decrementActiveRequests).toHaveBeenCalledWith('sports');
+    });
+
+    it('should track metrics for all HTTP methods', async () => {
+      const methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+      const mockResponse = mockAxiosResponse({});
+
+      for (const method of methods) {
+        jest.clearAllMocks();
+        httpService[
+          method.toLowerCase() as 'get' | 'post' | 'put' | 'delete' | 'patch'
+        ].mockReturnValue(of(mockResponse) as any);
+
+        await service.routeRequest('corr-123', method, '/api/v1/sports/athletes', undefined, {});
+
+        expect(metricsService.recordHttpRequest).toHaveBeenCalledWith(
+          method,
+          '/api/v1/sports/athletes',
+          200,
+          'sports',
+          expect.any(Number),
+        );
+      }
+    });
+
+    it('should track metrics for different services', async () => {
+      const mockResponse = mockAxiosResponse({});
+      httpService.get.mockReturnValue(of(mockResponse) as any);
+
+      const testCases = [
+        { path: '/api/v1/auth/login', service: 'identity' },
+        { path: '/api/v1/athletes/list', service: 'sports' },
+        { path: '/api/v1/clubs/list', service: 'clubs' },
+        { path: '/api/v1/notifications/list', service: 'communication' },
+      ];
+
+      for (const testCase of testCases) {
+        jest.clearAllMocks();
+
+        await service.routeRequest('corr-123', 'GET', testCase.path, undefined, {});
+
+        expect(metricsService.incrementActiveRequests).toHaveBeenCalledWith(testCase.service);
+        expect(metricsService.decrementActiveRequests).toHaveBeenCalledWith(testCase.service);
+        expect(metricsService.recordHttpRequest).toHaveBeenCalledWith(
+          'GET',
+          testCase.path,
+          200,
+          testCase.service,
+          expect.any(Number),
+        );
+      }
+    });
+
+    it('should handle different error types correctly', async () => {
+      const errorTypes = [
+        { error: new Error('Generic error'), expectedType: 'Error' },
+        { error: new TypeError('Type error'), expectedType: 'TypeError' },
+        { error: new RangeError('Range error'), expectedType: 'RangeError' },
+      ];
+
+      for (const { error, expectedType } of errorTypes) {
+        jest.clearAllMocks();
+        circuitBreakerService.executeWithBreaker.mockRejectedValue(error);
+
+        await expect(
+          service.routeRequest('corr-123', 'GET', '/api/v1/sports/athletes', undefined, {}),
+        ).rejects.toThrow();
+
+        expect(metricsService.recordHttpError).toHaveBeenCalledWith(
+          'GET',
+          '/api/v1/sports/athletes',
+          expectedType,
+          'sports',
+        );
+      }
+    });
+
+    it('should call metrics in correct order for successful request', async () => {
+      const mockResponse = mockAxiosResponse({});
+      httpService.get.mockReturnValue(of(mockResponse) as any);
+
+      await service.routeRequest('corr-123', 'GET', '/api/v1/sports/athletes', undefined, {});
+
+      const incrementCall = metricsService.incrementActiveRequests.mock.invocationCallOrder[0];
+      const recordCall = metricsService.recordHttpRequest.mock.invocationCallOrder[0];
+      const decrementCall = metricsService.decrementActiveRequests.mock.invocationCallOrder[0];
+
+      expect(incrementCall).toBeLessThan(recordCall);
+      expect(recordCall).toBeLessThan(decrementCall);
+    });
+
+    it('should not record success metrics on error', async () => {
+      const error = new Error('Test error');
+      circuitBreakerService.executeWithBreaker.mockRejectedValue(error);
+
+      await expect(
+        service.routeRequest('corr-123', 'GET', '/api/v1/sports/athletes', undefined, {}),
+      ).rejects.toThrow();
+
+      expect(metricsService.recordHttpRequest).not.toHaveBeenCalled();
+      expect(metricsService.recordHttpError).toHaveBeenCalled();
     });
   });
 });
