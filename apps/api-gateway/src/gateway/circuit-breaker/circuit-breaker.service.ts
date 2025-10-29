@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CircuitBreaker } from './circuit-breaker';
 import { CircuitBreakerState } from './circuit-breaker.types';
+import { MetricsService } from '../services/metrics.service';
 
 /**
  * Circuit Breaker Service
@@ -14,7 +15,10 @@ export class CircuitBreakerService {
   private readonly logger = new Logger(CircuitBreakerService.name);
   private readonly breakers = new Map<string, CircuitBreaker>();
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly metricsService: MetricsService,
+  ) {
     this.initializeBreakers();
   }
 
@@ -90,7 +94,17 @@ export class CircuitBreakerService {
    */
   async executeWithBreaker<T>(serviceKey: string, operation: () => Promise<T>): Promise<T> {
     const breaker = this.getCircuitBreaker(serviceKey);
-    return breaker.execute(operation);
+    const stateBefore = breaker.getState().state;
+
+    const result = await breaker.execute(operation);
+
+    // Update metrics if state changed
+    const stateAfter = breaker.getState().state;
+    if (stateBefore !== stateAfter) {
+      this.metricsService.updateCircuitBreakerState(serviceKey, stateAfter);
+    }
+
+    return result;
   }
 
   /**

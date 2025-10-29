@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 import { LoggerService } from './logger.service';
+import { MetricsService } from './metrics.service';
 
 /**
  * Service health status interface
@@ -51,6 +52,7 @@ export class HealthCheckService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly logger: LoggerService,
+    private readonly metricsService: MetricsService,
   ) {
     // Initialize cache with default down status
     this.services.forEach((service) => {
@@ -99,10 +101,15 @@ export class HealthCheckService {
       );
 
       const responseTime = Date.now() - startTime;
+      const status = response?.status === 200 ? 'UP' : 'DEGRADED';
+
+      // Update Prometheus metrics for service health
+      const serviceKey = this.getServiceKey(serviceName);
+      this.metricsService.updateServiceHealth(serviceKey, status);
 
       return {
         name: serviceName,
-        status: response?.status === 200 ? 'UP' : 'DEGRADED',
+        status,
         url: baseUrl,
         responseTime,
         lastCheck: new Date(),
@@ -115,6 +122,10 @@ export class HealthCheckService {
         `Health check failed for ${serviceName}: ${errorMessage}`,
         'HealthCheckService',
       );
+
+      // Update Prometheus metrics for service down
+      const serviceKey = this.getServiceKey(serviceName);
+      this.metricsService.updateServiceHealth(serviceKey, 'DOWN');
 
       return {
         name: serviceName,
@@ -156,6 +167,17 @@ export class HealthCheckService {
     }
 
     return 'DOWN';
+  }
+
+  /**
+   * Convert service name to normalized key for metrics
+   * E.g., "Identity Service" -> "identity"
+   */
+  private getServiceKey(serviceName: string): string {
+    return serviceName
+      .toLowerCase()
+      .replace(/\s+service/i, '')
+      .trim();
   }
 
   /**

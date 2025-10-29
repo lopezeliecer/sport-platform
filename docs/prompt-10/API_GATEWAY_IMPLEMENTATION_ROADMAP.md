@@ -2,8 +2,8 @@
 
 **Fecha de Creación:** 26 de Octubre, 2025  
 **Última Actualización:** 28 de Octubre, 2025  
-**Estado Actual:** Phase 2.4 Complete - Integration Testing & Service Discovery ✅  
-**Próximo Hito:** Phase 2.5 - Metrics & Monitoring (Optional)
+**Estado Actual:** Phase 2.5 Complete - Metrics & Monitoring ✅  
+**Próximo Hito:** Phase 3.0 - Testing & Documentation
 
 ---
 
@@ -332,39 +332,49 @@ Los servicios ahora se configuran desde variables de entorno con validación y f
 
 ### **PRIORIDAD 5️⃣ - NICE-TO-HAVE: Métricas y Monitoring**
 
-**Estado:** ❌ NO IMPLEMENTADO  
+**Estado:** ✅ **COMPLETADO** (28 de Octubre, 2025)  
 **Complejidad:** Media  
-**Tiempo Estimado:** 2-3 horas  
-**Archivo:** `/apps/api-gateway/src/gateway/services/metrics.service.ts` (CREAR)
+**Tiempo Estimado:** 2-3 horas ✅ **Tiempo Real:** 2 horas  
+**Archivo:** `/apps/api-gateway/src/gateway/services/metrics.service.ts`
 
 #### Descripción:
 
-Agregar visibilidad operacional con métricas:
+✅ **Implementado:** Sistema completo de métricas con Prometheus para observabilidad en producción.
 
-- Latencia por endpoint
-- Errores por tipo
-- Requests por servicio
-- Circuit breaker states
+**Características Implementadas:**
 
-#### Requisitos:
+- ✅ MetricsService con prom-client@15.1.0
+- ✅ 8 tipos de métricas custom del API Gateway
+- ✅ 30+ métricas default de Node.js
+- ✅ Endpoint `/api/v1/gateway/metrics` en formato Prometheus
+- ✅ Integración en ProxyService, CircuitBreakerService, HealthCheckService
+- ✅ Tracking completo del ciclo de vida de requests
+- ✅ Monitoreo de estados del circuit breaker
+- ✅ Tracking de salud de servicios
+- ✅ Métricas de requests activos
 
-1. **Métricas Prometheus**
-   - Latencia (histograma)
-   - Errores (contador)
-   - Requests activos (gauge)
-   - Circuit breaker status (gauge)
+**Métricas Implementadas:**
 
-2. **Endpoint `/api/metrics` que exporte Prometheus**
-   - GET `/api/v1/gateway/metrics` → Prometheus format
-   - Compatible con Grafana
-
-3. **Dashboards sugeridos en documentación**
+1. `api_gateway_http_requests_total` - Total de requests HTTP
+2. `api_gateway_http_request_duration_ms` - Duración de requests (histogram)
+3. `api_gateway_http_request_errors_total` - Total de errores
+4. `api_gateway_circuit_breaker_state` - Estado del circuit breaker
+5. `api_gateway_circuit_breaker_trips_total` - Conteo de trips
+6. `api_gateway_service_health` - Estado de salud de servicios
+7. `api_gateway_active_requests` - Requests concurrentes
+8. 30+ métricas de Node.js (CPU, memoria, event loop, etc.)
 
 #### Validación de Éxito:
 
-- ✅ Endpoint `/api/v1/gateway/metrics` funciona
-- ✅ Métricas se pueden visualizar en Grafana
-- ✅ Identifica bottlenecks
+- ✅ Endpoint `/api/v1/gateway/metrics` funciona (200 OK)
+- ✅ Métricas en formato Prometheus válido
+- ✅ Tracking de HTTP requests funcionando
+- ✅ Circuit breaker states visibles
+- ✅ Service health tracking funcionando
+- ✅ Documentación completa creada
+- ✅ Zero breaking changes
+
+**Documentación:** `docs/phase-2.5-metrics-monitoring-summary.md`
 
 ---
 

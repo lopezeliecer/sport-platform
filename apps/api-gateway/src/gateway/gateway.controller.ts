@@ -16,6 +16,7 @@ import { HealthCheckService } from './services/health-check.service';
 import { SwaggerAggregatorService } from './services/swagger-aggregator.service';
 import { LoggerService } from './services/logger.service';
 import { CircuitBreakerService } from './circuit-breaker/circuit-breaker.service';
+import { MetricsService } from './services/metrics.service';
 
 /**
  * Gateway Controller - Handles all incoming API requests
@@ -31,6 +32,7 @@ export class GatewayController {
     private readonly swaggerAggregatorService: SwaggerAggregatorService,
     private readonly logger: LoggerService,
     private readonly circuitBreakerService: CircuitBreakerService,
+    private readonly metricsService: MetricsService,
   ) {}
 
   /**
@@ -152,6 +154,29 @@ export class GatewayController {
       message: `Circuit breaker for ${serviceName} has been reset`,
       timestamp: new Date().toISOString(),
     };
+  }
+
+  /**
+   * Get Prometheus metrics
+   * Exposes metrics in Prometheus format for scraping
+   */
+  @Get('v1/gateway/metrics')
+  @ApiOperation({ summary: 'Get Prometheus metrics' })
+  @ApiResponse({
+    status: 200,
+    description: 'Prometheus metrics in text format',
+    content: {
+      'text/plain': {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+  })
+  async getMetrics(@Res() response: Response): Promise<void> {
+    const metrics = await this.metricsService.getMetrics();
+    response.set('Content-Type', this.metricsService.getContentType());
+    response.send(metrics);
   }
 
   /**

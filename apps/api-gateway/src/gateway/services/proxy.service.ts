@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 import { AxiosResponse } from 'axios';
 import { LoggerService } from './logger.service';
+import { MetricsService } from './metrics.service';
 import { CircuitBreakerService } from '../circuit-breaker/circuit-breaker.service';
 import {
   CircuitOpenException,
@@ -33,6 +34,7 @@ export class ProxyService {
     private readonly configService: ConfigService,
     private readonly logger: LoggerService,
     private readonly circuitBreakerService: CircuitBreakerService,
+    private readonly metricsService: MetricsService,
   ) {
     this.initializeServices();
   }
@@ -133,6 +135,9 @@ export class ProxyService {
     try {
       this.logger.logProxyRequest(correlationId, serviceName, method, targetUrl);
 
+      // Increment active requests
+      this.metricsService.incrementActiveRequests(serviceName);
+
       // Execute request through circuit breaker
       const response = await this.circuitBreakerService.executeWithBreaker(
         serviceName,
@@ -193,18 +198,35 @@ export class ProxyService {
             responseTime,
           );
 
+          // Record metrics
+          this.metricsService.recordHttpRequest(
+            method.toUpperCase(),
+            path,
+            axiosResponse.status,
+            serviceName,
+            responseTime,
+          );
+
           return axiosResponse;
         },
       );
 
+      // Decrement active requests
+      this.metricsService.decrementActiveRequests(serviceName);
+
       return response;
     } catch (error) {
+      // Decrement active requests on error
+      this.metricsService.decrementActiveRequests(serviceName);
+
       // Handle circuit breaker exceptions
       if (error instanceof CircuitOpenException) {
         this.logger.warn(
           `Circuit breaker OPEN for ${serviceName}. Next attempt: ${error.nextAttemptTime.toISOString()}`,
           'ProxyService',
         );
+        // Record error metric
+        this.metricsService.recordHttpError(method.toUpperCase(), path, 'CircuitOpen', serviceName);
         throw new HttpException(
           {
             statusCode: HttpStatus.SERVICE_UNAVAILABLE,
@@ -218,6 +240,13 @@ export class ProxyService {
 
       if (error instanceof TooManyRequestsException) {
         this.logger.warn(`Too many requests to ${serviceName} in HALF_OPEN state`, 'ProxyService');
+        // Record error metric
+        this.metricsService.recordHttpError(
+          method.toUpperCase(),
+          path,
+          'TooManyRequests',
+          serviceName,
+        );
         throw new HttpException(
           {
             statusCode: HttpStatus.TOO_MANY_REQUESTS,
@@ -229,6 +258,9 @@ export class ProxyService {
       }
 
       this.logger.logError(correlationId, error, `routing to ${serviceName}`);
+      // Record generic error
+      const errorType = error instanceof Error ? error.constructor.name : 'UnknownError';
+      this.metricsService.recordHttpError(method.toUpperCase(), path, errorType, serviceName);
       throw error;
     }
   }
