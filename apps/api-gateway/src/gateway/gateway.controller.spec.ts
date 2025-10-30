@@ -7,6 +7,22 @@ import { SwaggerAggregatorService } from './services/swagger-aggregator.service'
 import { LoggerService } from './services/logger.service';
 import { CircuitBreakerService } from './circuit-breaker/circuit-breaker.service';
 import { CircuitBreakerState, CircuitState } from './circuit-breaker/circuit-breaker.types';
+import { MetricsService } from './services/metrics.service';
+
+// Create a mock class for MetricsService
+class MockMetricsService {
+  recordHttpRequest = jest.fn();
+  recordHttpError = jest.fn();
+  updateCircuitBreakerState = jest.fn();
+  updateServiceHealth = jest.fn();
+  incrementActiveRequests = jest.fn();
+  decrementActiveRequests = jest.fn();
+  getMetrics = jest.fn().mockResolvedValue('# Mock metrics');
+  getContentType = jest.fn().mockReturnValue('text/plain; version=0.0.4; charset=utf-8');
+  resetMetrics = jest.fn();
+  clearMetrics = jest.fn();
+  onModuleInit = jest.fn();
+}
 
 describe('GatewayController', () => {
   let controller: GatewayController;
@@ -15,6 +31,7 @@ describe('GatewayController', () => {
   let swaggerAggregatorService: jest.Mocked<SwaggerAggregatorService>;
   let loggerService: jest.Mocked<LoggerService>;
   let circuitBreakerService: jest.Mocked<CircuitBreakerService>;
+  let metricsService: MockMetricsService;
 
   beforeEach(async () => {
     // Create mocks
@@ -64,6 +81,7 @@ describe('GatewayController', () => {
         { provide: SwaggerAggregatorService, useValue: swaggerAggregatorServiceMock },
         { provide: LoggerService, useValue: loggerServiceMock },
         { provide: CircuitBreakerService, useValue: circuitBreakerServiceMock },
+        { provide: MetricsService, useClass: MockMetricsService },
       ],
     }).compile();
 
@@ -73,6 +91,7 @@ describe('GatewayController', () => {
     swaggerAggregatorService = module.get(SwaggerAggregatorService);
     loggerService = module.get(LoggerService);
     circuitBreakerService = module.get(CircuitBreakerService);
+    metricsService = module.get(MetricsService);
   });
 
   afterEach(() => {
@@ -428,6 +447,57 @@ describe('GatewayController', () => {
 
       expect(loggerService.generateCorrelationId).toHaveBeenCalled();
       expect(responseSetHeader).toHaveBeenCalledWith('X-Correlation-ID', expect.any(String));
+    });
+  });
+
+  describe('getMetrics', () => {
+    it('should return Prometheus metrics', async () => {
+      const mockMetrics =
+        '# HELP test_metric Test metric\n# TYPE test_metric counter\ntest_metric 1';
+      metricsService.getMetrics.mockResolvedValue(mockMetrics);
+      metricsService.getContentType.mockReturnValue('text/plain; version=0.0.4');
+
+      const mockResponse = {
+        set: jest.fn().mockReturnThis(),
+        send: jest.fn(),
+      } as any;
+
+      await controller.getMetrics(mockResponse);
+
+      expect(metricsService.getMetrics).toHaveBeenCalled();
+      expect(metricsService.getContentType).toHaveBeenCalled();
+      expect(mockResponse.set).toHaveBeenCalledWith('Content-Type', 'text/plain; version=0.0.4');
+      expect(mockResponse.send).toHaveBeenCalledWith(mockMetrics);
+    });
+
+    it('should handle metrics retrieval errors', async () => {
+      const error = new Error('Metrics collection failed');
+      metricsService.getMetrics.mockRejectedValue(error);
+
+      const mockResponse = {
+        set: jest.fn().mockReturnThis(),
+        send: jest.fn(),
+      } as any;
+
+      await expect(controller.getMetrics(mockResponse)).rejects.toThrow(
+        'Metrics collection failed',
+      );
+    });
+
+    it('should set correct content type for Prometheus', async () => {
+      const mockMetrics = '# Mock metrics';
+      const expectedContentType = 'text/plain; version=0.0.4; charset=utf-8';
+      metricsService.getMetrics.mockResolvedValue(mockMetrics);
+      metricsService.getContentType.mockReturnValue(expectedContentType);
+
+      const mockResponse = {
+        set: jest.fn().mockReturnThis(),
+        send: jest.fn(),
+      } as any;
+
+      await controller.getMetrics(mockResponse);
+
+      expect(mockResponse.set).toHaveBeenCalledWith('Content-Type', expectedContentType);
     });
   });
 });

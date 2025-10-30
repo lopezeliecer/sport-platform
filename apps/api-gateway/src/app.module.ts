@@ -8,6 +8,7 @@ import { ProxyService } from './gateway/services/proxy.service';
 import { HealthCheckService } from './gateway/services/health-check.service';
 import { SwaggerAggregatorService } from './gateway/services/swagger-aggregator.service';
 import { LoggerService } from './gateway/services/logger.service';
+import { MetricsModule } from './gateway/services/metrics.module';
 import { SanitizationService } from '@sports-platform/shared/common/src/validation/sanitization.service';
 import { CircuitBreakerModule } from './gateway/circuit-breaker/circuit-breaker.module';
 
@@ -39,6 +40,9 @@ import { CircuitBreakerModule } from './gateway/circuit-breaker/circuit-breaker.
         limit: 100, // 100 requests per minute
       },
     ]),
+
+    // Metrics for observability (Global)
+    MetricsModule,
 
     // Circuit Breaker for resilience
     CircuitBreakerModule,
