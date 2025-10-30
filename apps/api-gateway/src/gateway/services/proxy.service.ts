@@ -132,12 +132,12 @@ export class ProxyService {
     const targetUrl = this.buildTargetUrl(service, path);
     const requestHeaders = this.buildHeaders(correlationId, headers);
 
+    this.logger.logProxyRequest(correlationId, serviceName, method, targetUrl);
+
+    // Increment active requests
+    this.metricsService.incrementActiveRequests(serviceName);
+
     try {
-      this.logger.logProxyRequest(correlationId, serviceName, method, targetUrl);
-
-      // Increment active requests
-      this.metricsService.incrementActiveRequests(serviceName);
-
       // Execute request through circuit breaker
       const response = await this.circuitBreakerService.executeWithBreaker(
         serviceName,
@@ -211,14 +211,8 @@ export class ProxyService {
         },
       );
 
-      // Decrement active requests
-      this.metricsService.decrementActiveRequests(serviceName);
-
       return response;
     } catch (error) {
-      // Decrement active requests on error
-      this.metricsService.decrementActiveRequests(serviceName);
-
       // Handle circuit breaker exceptions
       if (error instanceof CircuitOpenException) {
         this.logger.warn(
@@ -262,6 +256,9 @@ export class ProxyService {
       const errorType = error instanceof Error ? error.constructor.name : 'UnknownError';
       this.metricsService.recordHttpError(method.toUpperCase(), path, errorType, serviceName);
       throw error;
+    } finally {
+      // Always decrement active requests, regardless of success or failure
+      this.metricsService.decrementActiveRequests(serviceName);
     }
   }
 

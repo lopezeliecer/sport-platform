@@ -176,7 +176,7 @@ export class HealthCheckService {
   private getServiceKey(serviceName: string): string {
     return serviceName
       .toLowerCase()
-      .replace(/\s+service/i, '')
+      .replace(/\s+service/, '')
       .trim();
   }
 

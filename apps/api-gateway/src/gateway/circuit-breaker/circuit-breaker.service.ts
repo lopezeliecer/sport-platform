@@ -96,15 +96,15 @@ export class CircuitBreakerService {
     const breaker = this.getCircuitBreaker(serviceKey);
     const stateBefore = breaker.getState().state;
 
-    const result = await breaker.execute(operation);
-
-    // Update metrics if state changed
-    const stateAfter = breaker.getState().state;
-    if (stateBefore !== stateAfter) {
-      this.metricsService.updateCircuitBreakerState(serviceKey, stateAfter);
+    try {
+      return await breaker.execute(operation);
+    } finally {
+      // Update metrics if state changed (always executes, even on error)
+      const stateAfter = breaker.getState().state;
+      if (stateBefore !== stateAfter) {
+        this.metricsService.updateCircuitBreakerState(serviceKey, stateAfter);
+      }
     }
-
-    return result;
   }
 
   /**
